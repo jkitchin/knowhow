@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 import click
 from rich.console import Console
@@ -526,7 +525,7 @@ if __name__ == "__main__":
 # Helper functions
 
 
-def _find_hook(repo_path: Path, name: str) -> Optional[Path]:
+def _find_hook(repo_path: Path, name: str) -> Path | None:
     """Find a hook by name in repository."""
     hooks_dir = repo_path / "hooks"
     if not hooks_dir.exists():
@@ -574,7 +573,7 @@ def _get_hook_command(hook_path: Path) -> str:
         return str(hook_path / "hook.py")
 
 
-def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: Dict):
+def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: dict):
     """Add a hook to the settings.json file."""
     settings = {}
 
@@ -631,7 +630,7 @@ def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: Dict):
         json.dump(settings, f, indent=2)
 
 
-def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: Dict):
+def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: dict):
     """Remove a hook from the settings.json file."""
     if not settings_file.exists():
         return
@@ -669,9 +668,7 @@ def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: D
         json.dump(settings, f, indent=2)
 
 
-def _generate_hook_with_claude(
-    name: str, prompt: str, event: str
-) -> Tuple[Optional[str], Optional[str]]:
+def _generate_hook_with_claude(name: str, prompt: str, event: str) -> tuple[str | None, str | None]:
     """Use Claude CLI to generate hook content."""
     generation_prompt = f"""Generate a Claude Code hook for the following:
 

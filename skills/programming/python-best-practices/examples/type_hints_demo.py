@@ -410,7 +410,7 @@ class Circle2:
 
 # Context manager with type hints
 from contextlib import contextmanager
-from typing import Iterator as IteratorType
+from collections.abc import Iterator as IteratorType
 
 
 @contextmanager

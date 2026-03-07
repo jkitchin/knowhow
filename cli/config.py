@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-from typing import Dict, Optional
 
 import yaml
 
@@ -84,7 +83,7 @@ class Config:
         },
     }
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         """Initialize configuration."""
         self.config_path = config_path or self._default_config_path()
         self.config = self._load_config()
@@ -94,7 +93,7 @@ class Config:
         """Get the default configuration file path."""
         return Path.home() / ".config" / "skillz" / "config.yaml"
 
-    def _load_config(self) -> Dict:
+    def _load_config(self) -> dict:
         """Load configuration from file or use defaults."""
         if self.config_path.exists():
             with open(self.config_path) as f:
@@ -104,7 +103,7 @@ class Config:
                 return config
         return self.DEFAULT_CONFIG.copy()
 
-    def _deep_merge(self, base: Dict, override: Dict) -> Dict:
+    def _deep_merge(self, base: dict, override: dict) -> dict:
         """Deep merge two dictionaries, with override taking precedence."""
         result = base.copy()
         for key, value in override.items():
@@ -144,7 +143,7 @@ class Config:
 
         return Path(os.path.expanduser(path))
 
-    def get_repository_path(self) -> Optional[Path]:
+    def get_repository_path(self) -> Path | None:
         """Get the repository path."""
         repo_path = self.config.get("repository_path")
         if repo_path:

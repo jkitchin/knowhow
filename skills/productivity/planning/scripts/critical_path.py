@@ -48,13 +48,12 @@ Example:
 
 import json
 import sys
-from typing import Dict, List, Tuple
 
 
 class Task:
     """Represents a project task with CPM calculations."""
 
-    def __init__(self, task_id: str, name: str, duration: int, dependencies: List[str]):
+    def __init__(self, task_id: str, name: str, duration: int, dependencies: list[str]):
         self.id = task_id
         self.name = name
         self.duration = duration
@@ -68,7 +67,7 @@ class Task:
         self.float = 0
         self.is_critical = False
 
-    def calculate_early_times(self, tasks_dict: Dict[str, "Task"]):
+    def calculate_early_times(self, tasks_dict: dict[str, "Task"]):
         """Calculate early start and early finish (forward pass)."""
         if not self.dependencies:
             self.early_start = 0
@@ -78,7 +77,7 @@ class Task:
 
         self.early_finish = self.early_start + self.duration
 
-    def calculate_late_times(self, tasks_dict: Dict[str, "Task"], project_duration: int):
+    def calculate_late_times(self, tasks_dict: dict[str, "Task"], project_duration: int):
         """Calculate late start and late finish (backward pass)."""
         # Find all tasks that depend on this one
         dependents = [task for task in tasks_dict.values() if self.id in task.dependencies]
@@ -114,7 +113,7 @@ class Task:
         }
 
 
-def validate_tasks(tasks_data: List[dict]) -> List[str]:
+def validate_tasks(tasks_data: list[dict]) -> list[str]:
     """Validate task data and return list of errors."""
     errors = []
     task_ids = {task["id"] for task in tasks_data}
@@ -145,7 +144,7 @@ def validate_tasks(tasks_data: List[dict]) -> List[str]:
     return errors
 
 
-def find_circular_dependencies(tasks_data: List[dict]) -> List[str]:
+def find_circular_dependencies(tasks_data: list[dict]) -> list[str]:
     """Detect circular dependencies using depth-first search."""
     # Build adjacency list
     graph = {task["id"]: task.get("dependencies", []) for task in tasks_data}
@@ -153,7 +152,7 @@ def find_circular_dependencies(tasks_data: List[dict]) -> List[str]:
     visited = set()
     rec_stack = set()
 
-    def has_cycle(node: str, path: List[str]) -> List[str]:
+    def has_cycle(node: str, path: list[str]) -> list[str]:
         visited.add(node)
         rec_stack.add(node)
         path.append(node)
@@ -180,7 +179,7 @@ def find_circular_dependencies(tasks_data: List[dict]) -> List[str]:
     return []
 
 
-def topological_sort(tasks: Dict[str, Task]) -> List[str]:
+def topological_sort(tasks: dict[str, Task]) -> list[str]:
     """
     Return tasks in topological order (dependencies before dependents).
     Uses Kahn's algorithm.
@@ -210,7 +209,7 @@ def topological_sort(tasks: Dict[str, Task]) -> List[str]:
     return sorted_tasks
 
 
-def calculate_critical_path(tasks_data: List[dict]) -> Tuple[Dict[str, Task], List[str], int]:
+def calculate_critical_path(tasks_data: list[dict]) -> tuple[dict[str, Task], list[str], int]:
     """
     Calculate critical path for given tasks.
 
@@ -257,7 +256,7 @@ def calculate_critical_path(tasks_data: List[dict]) -> Tuple[Dict[str, Task], Li
     return tasks, critical_path, project_duration
 
 
-def build_critical_path(tasks: Dict[str, Task]) -> List[str]:
+def build_critical_path(tasks: dict[str, Task]) -> list[str]:
     """
     Build the critical path by tracing critical tasks from start to finish.
     """
@@ -298,7 +297,7 @@ def build_critical_path(tasks: Dict[str, Task]) -> List[str]:
     return path
 
 
-def print_results(tasks: Dict[str, Task], critical_path: List[str], project_duration: int):
+def print_results(tasks: dict[str, Task], critical_path: list[str], project_duration: int):
     """Print critical path analysis results to console."""
     print("\n" + "=" * 80)
     print("CRITICAL PATH METHOD (CPM) ANALYSIS")
@@ -363,7 +362,7 @@ def print_results(tasks: Dict[str, Task], critical_path: List[str], project_dura
 
 
 def save_results(
-    tasks: Dict[str, Task], critical_path: List[str], project_duration: int, output_file: str
+    tasks: dict[str, Task], critical_path: list[str], project_duration: int, output_file: str
 ):
     """Save results to JSON file."""
     results = {

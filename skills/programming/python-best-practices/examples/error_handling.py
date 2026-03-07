@@ -13,7 +13,8 @@ import logging
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator, TypeAlias
+from typing import Any, TypeAlias
+from collections.abc import Iterator
 
 # Configure logging
 logging.basicConfig(

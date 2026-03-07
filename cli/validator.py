@@ -2,7 +2,6 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import yaml
 
@@ -40,7 +39,7 @@ class SkillValidator:
     }
 
     @classmethod
-    def validate_skill_directory(cls, skill_path: Path) -> Tuple[bool, List[str]]:
+    def validate_skill_directory(cls, skill_path: Path) -> tuple[bool, list[str]]:
         """
         Validate a skill directory.
 
@@ -74,7 +73,7 @@ class SkillValidator:
         return len(errors) == 0, errors
 
     @classmethod
-    def validate_skill_file(cls, skill_file: Path) -> Tuple[bool, List[str]]:
+    def validate_skill_file(cls, skill_file: Path) -> tuple[bool, list[str]]:
         """
         Validate a SKILL.md file.
 
@@ -134,7 +133,7 @@ class SkillValidator:
         return len(errors) == 0, errors
 
     @staticmethod
-    def _parse_frontmatter(content: str) -> Optional[Dict]:
+    def _parse_frontmatter(content: str) -> dict | None:
         """
         Parse YAML frontmatter from markdown content.
 
@@ -170,7 +169,7 @@ class CommandValidator:
     ]
 
     @classmethod
-    def validate_command_file(cls, command_file: Path) -> Tuple[bool, List[str]]:
+    def validate_command_file(cls, command_file: Path) -> tuple[bool, list[str]]:
         """
         Validate a command file.
 
@@ -231,7 +230,7 @@ class CommandValidator:
         return len(errors) == 0, errors
 
     @staticmethod
-    def _parse_frontmatter(content: str) -> Optional[Dict]:
+    def _parse_frontmatter(content: str) -> dict | None:
         """Parse YAML frontmatter from markdown content."""
         pattern = r"^---\s*\n(.*?)\n---\s*\n"
         match = re.match(pattern, content, re.DOTALL)
@@ -274,7 +273,7 @@ class HookValidator:
     VALID_HOOK_TYPES = {"command", "prompt"}
 
     @classmethod
-    def validate_hook_directory(cls, hook_path: Path) -> Tuple[bool, List[str]]:
+    def validate_hook_directory(cls, hook_path: Path) -> tuple[bool, list[str]]:
         """
         Validate a hook directory.
 
@@ -313,7 +312,7 @@ class HookValidator:
         return len(errors) == 0, errors
 
     @classmethod
-    def validate_hook_file(cls, hook_file: Path) -> Tuple[bool, List[str]]:
+    def validate_hook_file(cls, hook_file: Path) -> tuple[bool, list[str]]:
         """
         Validate a HOOK.md file.
 
@@ -381,7 +380,7 @@ class HookValidator:
         return len(errors) == 0, errors
 
     @staticmethod
-    def _parse_frontmatter(content: str) -> Optional[Dict]:
+    def _parse_frontmatter(content: str) -> dict | None:
         """
         Parse YAML frontmatter from markdown content.
 
@@ -405,7 +404,7 @@ class HookValidator:
             return None
 
     @classmethod
-    def get_hook_metadata(cls, hook_path: Path) -> Optional[Dict]:
+    def get_hook_metadata(cls, hook_path: Path) -> dict | None:
         """
         Extract metadata from a hook's HOOK.md file.
 
@@ -455,7 +454,7 @@ class AgentValidator:
     }
 
     @classmethod
-    def validate_agent_file(cls, agent_file: Path) -> Tuple[bool, List[str]]:
+    def validate_agent_file(cls, agent_file: Path) -> tuple[bool, list[str]]:
         """
         Validate an agent markdown file.
 
@@ -554,7 +553,7 @@ class AgentValidator:
         return len(errors) == 0, errors
 
     @staticmethod
-    def _parse_frontmatter(content: str) -> Optional[Dict]:
+    def _parse_frontmatter(content: str) -> dict | None:
         """Parse YAML frontmatter from markdown content."""
         pattern = r"^---\s*\n(.*?)\n---\s*\n"
         match = re.match(pattern, content, re.DOTALL)
@@ -575,7 +574,7 @@ class AgentValidator:
         return re.sub(pattern, "", content, count=1, flags=re.DOTALL)
 
     @classmethod
-    def get_agent_metadata(cls, agent_file: Path) -> Optional[Dict]:
+    def get_agent_metadata(cls, agent_file: Path) -> dict | None:
         """
         Extract metadata from an agent file.
 

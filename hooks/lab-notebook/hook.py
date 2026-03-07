@@ -7,10 +7,10 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def load_transcript(transcript_path: str) -> List[Dict[str, Any]]:
+def load_transcript(transcript_path: str) -> list[dict[str, Any]]:
     """Load and parse the JSONL transcript file."""
     entries = []
     path = Path(transcript_path)
@@ -33,7 +33,7 @@ def load_transcript(transcript_path: str) -> List[Dict[str, Any]]:
     return entries
 
 
-def extract_session_data(transcript: List[Dict[str, Any]]) -> Dict[str, Any]:
+def extract_session_data(transcript: list[dict[str, Any]]) -> dict[str, Any]:
     """Extract relevant data from the transcript."""
     user_prompts = []
     files_modified = set()
@@ -87,7 +87,7 @@ def extract_session_data(transcript: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def get_git_info(cwd: str) -> Optional[Dict[str, str]]:
+def get_git_info(cwd: str) -> dict[str, str] | None:
     """Get git repository information."""
     try:
         # Check if in a git repo
@@ -141,8 +141,8 @@ def get_git_info(cwd: str) -> Optional[Dict[str, str]]:
 def generate_markdown(
     session_id: str,
     cwd: str,
-    session_data: Dict[str, Any],
-    git_info: Optional[Dict[str, str]],
+    session_data: dict[str, Any],
+    git_info: dict[str, str] | None,
 ) -> str:
     """Generate a markdown lab notebook entry."""
     now = datetime.now()
@@ -237,8 +237,8 @@ def generate_markdown(
 def generate_json(
     session_id: str,
     cwd: str,
-    session_data: Dict[str, Any],
-    git_info: Optional[Dict[str, str]],
+    session_data: dict[str, Any],
+    git_info: dict[str, str] | None,
 ) -> str:
     """Generate a JSON lab notebook entry."""
     now = datetime.now()
@@ -261,8 +261,8 @@ def generate_json(
 def generate_org(
     session_id: str,
     cwd: str,
-    session_data: Dict[str, Any],
-    git_info: Optional[Dict[str, str]],
+    session_data: dict[str, Any],
+    git_info: dict[str, str] | None,
 ) -> str:
     """Generate an org-mode lab notebook entry."""
     now = datetime.now()

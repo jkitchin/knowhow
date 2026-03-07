@@ -3,7 +3,6 @@
 import re
 import shutil
 from pathlib import Path
-from typing import List
 
 from rich.console import Console
 
@@ -128,7 +127,7 @@ def copy_file(src: Path, dst: Path, force: bool = False) -> bool:
         return False
 
 
-def find_skill_directories(base_path: Path) -> List[Path]:
+def find_skill_directories(base_path: Path) -> list[Path]:
     """
     Find all skill directories (containing SKILL.md) in a base path.
 
@@ -148,7 +147,7 @@ def find_skill_directories(base_path: Path) -> List[Path]:
     return sorted(skills)
 
 
-def find_command_files(base_path: Path) -> List[Path]:
+def find_command_files(base_path: Path) -> list[Path]:
     """
     Find all command files (*.md) in a base path.
 
@@ -190,7 +189,7 @@ def confirm_action(message: str, default: bool = False) -> bool:
     return response in ("y", "yes")
 
 
-def find_hook_directories(base_path: Path) -> List[Path]:
+def find_hook_directories(base_path: Path) -> list[Path]:
     """
     Find all hook directories (containing HOOK.md) in a base path.
 
@@ -210,7 +209,7 @@ def find_hook_directories(base_path: Path) -> List[Path]:
     return sorted(hooks)
 
 
-def find_agent_files(base_path: Path) -> List[Path]:
+def find_agent_files(base_path: Path) -> list[Path]:
     """
     Find all agent files (*.md) in a base path.
 

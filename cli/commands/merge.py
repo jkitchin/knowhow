@@ -5,8 +5,6 @@ Autonomous Development and Evolution. Implements the skill evolution phase where
 skills are combined, deduplicated, and reorganized.
 """
 
-from typing import Dict, List, Optional
-
 import click
 import yaml
 from rich.console import Console
@@ -64,7 +62,7 @@ Output ONLY the complete merged SKILL.md (starting with ---).
 Do not wrap in code blocks or add explanation."""
 
 
-def _get_all_skills_summary(config: Config) -> List[Dict]:
+def _get_all_skills_summary(config: Config) -> list[dict]:
     """Get name and description for all skills."""
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
@@ -96,7 +94,7 @@ def _get_all_skills_summary(config: Config) -> List[Dict]:
     return summaries
 
 
-def _format_skills_for_analysis(summaries: List[Dict]) -> str:
+def _format_skills_for_analysis(summaries: list[dict]) -> str:
     """Format skill summaries for the analysis prompt."""
     lines = []
     for s in summaries:
@@ -104,7 +102,7 @@ def _format_skills_for_analysis(summaries: List[Dict]) -> str:
     return "\n".join(lines)
 
 
-def _detect_overlaps(config: Config) -> Optional[str]:
+def _detect_overlaps(config: Config) -> str | None:
     """Use Claude to analyze all skills for overlaps."""
     summaries = _get_all_skills_summary(config)
     if not summaries:
@@ -168,9 +166,7 @@ def merge(ctx, detect, execute, merged_name, dry_run):
         console.print("\n[dim]Dry run: no changes made.[/dim]")
 
 
-def _execute_merge(
-    config: Config, name1: str, name2: str, merged_name: Optional[str], dry_run: bool
-):
+def _execute_merge(config: Config, name1: str, name2: str, merged_name: str | None, dry_run: bool):
     """Execute a merge of two specific skills."""
     repo_path = config.get_repository_path()
     if not repo_path:

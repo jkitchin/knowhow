@@ -7,7 +7,6 @@ phase where agents extract generalizable solutions from specific problem instanc
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -69,7 +68,7 @@ Output ONLY the complete SKILL.md content (starting with ---).
 Do not wrap it in code blocks or add any explanation."""
 
 
-def _find_transcripts(directory: Optional[Path] = None) -> list:
+def _find_transcripts(directory: Path | None = None) -> list:
     """Find Claude Code session transcript files."""
     if directory:
         search_dir = directory
@@ -112,7 +111,7 @@ def _read_transcript(path: Path, max_lines: int = 200) -> str:
     return "\n".join(lines)
 
 
-def _extract_skill_proposals(transcript_text: str) -> Optional[str]:
+def _extract_skill_proposals(transcript_text: str) -> str | None:
     """Use Claude to analyze transcript and propose skills."""
     prompt = HARVEST_PROMPT.format(transcript=transcript_text[:8000])
     return _run_claude_cli(prompt, timeout=180)
@@ -120,7 +119,7 @@ def _extract_skill_proposals(transcript_text: str) -> Optional[str]:
 
 def _generate_skill_content(
     name: str, description: str, category: str, patterns: str
-) -> Optional[str]:
+) -> str | None:
     """Use Claude to generate a complete SKILL.md."""
     prompt = GENERATE_SKILL_PROMPT.format(
         name=name, description=description, category=category, patterns=patterns

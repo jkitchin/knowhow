@@ -12,7 +12,6 @@ Usage:
 import argparse
 import json
 from collections import defaultdict
-from typing import Dict, List
 
 
 class SearchLog:
@@ -23,7 +22,7 @@ class SearchLog:
         self.total_papers = 0
         self.unique_papers = set()
 
-    def add_search(self, search_record: Dict):
+    def add_search(self, search_record: dict):
         """Add a search record."""
         self.searches.append(search_record)
 
@@ -45,7 +44,7 @@ class SearchLog:
             print(f"Invalid JSON in {filename}")
             return False
 
-    def get_coverage_metrics(self) -> Dict:
+    def get_coverage_metrics(self) -> dict:
         """Calculate coverage metrics."""
         total_results = sum(s.get("results", 0) for s in self.searches)
         total_retained = sum(s.get("retained", 0) for s in self.searches)
@@ -59,7 +58,7 @@ class SearchLog:
             "databases_searched": len(set(s.get("database", "") for s in self.searches)),
         }
 
-    def get_database_coverage(self) -> Dict:
+    def get_database_coverage(self) -> dict:
         """Analyze coverage by database."""
         coverage = defaultdict(lambda: {"searches": 0, "results": 0, "retained": 0})
 
@@ -71,7 +70,7 @@ class SearchLog:
 
         return dict(coverage)
 
-    def get_convergence_analysis(self) -> Dict:
+    def get_convergence_analysis(self) -> dict:
         """Analyze search convergence (diminishing returns)."""
         convergence = {
             "searches": [],
@@ -100,7 +99,7 @@ class SearchLog:
 
         return convergence
 
-    def get_temporal_trends(self) -> Dict:
+    def get_temporal_trends(self) -> dict:
         """Analyze temporal trends in searching."""
         trends = {"searches_over_time": [], "results_progression": [], "cumulative_papers": 0}
 
@@ -123,7 +122,7 @@ class SearchLog:
         trends["cumulative_papers"] = cumulative
         return trends
 
-    def recommend_next_steps(self) -> List[str]:
+    def recommend_next_steps(self) -> list[str]:
         """Generate recommendations for next steps."""
         recommendations = []
 

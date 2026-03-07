@@ -2,7 +2,6 @@
 
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -454,7 +453,7 @@ Provide results in the following format:
 # Helper functions
 
 
-def _find_agent(repo_path: Path, name: str) -> Optional[Path]:
+def _find_agent(repo_path: Path, name: str) -> Path | None:
     """Find an agent by name in repository."""
     agents_dir = repo_path / "agents"
     if not agents_dir.exists():
@@ -496,7 +495,7 @@ def _matches_query(query: str, *fields: str) -> bool:
     return False
 
 
-def _generate_agent_with_claude(name: str, prompt: str, model: str, tools: str) -> Optional[str]:
+def _generate_agent_with_claude(name: str, prompt: str, model: str, tools: str) -> str | None:
     """Use Claude CLI to generate agent content."""
     generation_prompt = f"""Generate a Claude Code agent (subagent) markdown file for the following:
 

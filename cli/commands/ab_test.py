@@ -5,8 +5,6 @@ Autonomous Development and Evolution. Implements quality-based selection through
 comparative evaluation of skill description variants.
 """
 
-from typing import Optional
-
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -51,7 +49,7 @@ TOTAL_SCORE: X/Y
 WEAKNESSES: Brief note on what the description misses or over-matches."""
 
 
-def _score_description(name: str, description: str, evals: str) -> Optional[dict]:
+def _score_description(name: str, description: str, evals: str) -> dict | None:
     """Score a description against eval queries."""
     prompt = SCORE_PROMPT.format(name=name, description=description, evals=evals)
     result = _run_claude_cli(prompt, timeout=120)
@@ -75,7 +73,7 @@ def _score_description(name: str, description: str, evals: str) -> Optional[dict
 
 def _generate_variant(
     name: str, skill_content: str, evals: str, current: str, variant_num: int
-) -> Optional[str]:
+) -> str | None:
     """Generate a description variant with different emphasis."""
     emphasis_prompts = [
         "Focus on SPECIFIC trigger phrases and concrete use cases.",

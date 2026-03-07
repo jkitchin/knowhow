@@ -7,7 +7,6 @@ descriptions are iteratively refined based on evaluation feedback.
 
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import click
 import yaml
@@ -20,7 +19,7 @@ from cli.validator import SkillValidator
 console = Console()
 
 
-def _run_claude_cli(prompt: str, timeout: int = 120) -> Optional[str]:
+def _run_claude_cli(prompt: str, timeout: int = 120) -> str | None:
     """Run claude CLI with a prompt and return output."""
     try:
         result = subprocess.run(
@@ -45,7 +44,7 @@ def _run_claude_cli(prompt: str, timeout: int = 120) -> Optional[str]:
         return None
 
 
-def _find_skill_path(name: str, config: Config) -> Optional[Path]:
+def _find_skill_path(name: str, config: Config) -> Path | None:
     """Find a skill directory by name, checking repo and installed locations."""
     search_paths = []
 
@@ -69,7 +68,7 @@ def _find_skill_path(name: str, config: Config) -> Optional[Path]:
     return None
 
 
-def _read_skill_description(skill_md: Path) -> Optional[str]:
+def _read_skill_description(skill_md: Path) -> str | None:
     """Extract description from SKILL.md frontmatter."""
     try:
         content = skill_md.read_text()
@@ -106,7 +105,7 @@ def _update_skill_description(skill_md: Path, new_description: str) -> bool:
         return False
 
 
-def _generate_evals(skill_name: str, skill_content: str) -> Optional[str]:
+def _generate_evals(skill_name: str, skill_content: str) -> str | None:
     """Generate eval queries for a skill to test triggering accuracy."""
     prompt = f"""You are an expert at evaluating AI skill triggering.
 
@@ -145,7 +144,7 @@ Be specific and realistic. Think about how real users phrase requests."""
 
 def _generate_improved_description(
     skill_name: str, skill_content: str, evals: str, current_description: str
-) -> Optional[str]:
+) -> str | None:
     """Generate an improved description based on eval queries and current weaknesses."""
     prompt = f"""You are an expert at optimizing AI skill descriptions for precise triggering.
 

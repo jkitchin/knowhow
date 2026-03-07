@@ -9,7 +9,6 @@ import json
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import click
 import yaml
@@ -49,7 +48,7 @@ def log_skill_usage(skill_name: str, triggered: bool = True, source: str = "manu
         f.write(json.dumps(entry) + "\n")
 
 
-def _load_usage_log() -> List[Dict]:
+def _load_usage_log() -> list[dict]:
     """Load all usage log entries."""
     entries = []
     if USAGE_LOG.exists():
@@ -64,7 +63,7 @@ def _load_usage_log() -> List[Dict]:
     return entries
 
 
-def _scan_transcripts_for_skills(skills: List[str], max_transcripts: int = 20) -> Counter:
+def _scan_transcripts_for_skills(skills: list[str], max_transcripts: int = 20) -> Counter:
     """Scan recent transcripts to estimate skill usage from mentions."""
     mention_counts = Counter()
     transcript_dir = Path.home() / ".claude" / "projects"
@@ -90,7 +89,7 @@ def _scan_transcripts_for_skills(skills: List[str], max_transcripts: int = 20) -
     return mention_counts
 
 
-def _get_all_skill_names(config: Config) -> List[str]:
+def _get_all_skill_names(config: Config) -> list[str]:
     """Get all skill names from repository."""
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
@@ -105,7 +104,7 @@ def _get_all_skill_names(config: Config) -> List[str]:
     return names
 
 
-def _get_skill_metadata(config: Config) -> Dict[str, Dict]:
+def _get_skill_metadata(config: Config) -> dict[str, dict]:
     """Get metadata for all skills."""
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
@@ -137,7 +136,7 @@ def _get_skill_metadata(config: Config) -> Dict[str, Dict]:
     return metadata
 
 
-def _compute_stats(config: Config, scan: bool = False) -> Tuple[Dict, Counter]:
+def _compute_stats(config: Config, scan: bool = False) -> tuple[dict, Counter]:
     """Compute usage statistics.
 
     Returns:

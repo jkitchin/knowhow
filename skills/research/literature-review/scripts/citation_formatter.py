@@ -12,7 +12,6 @@ Usage:
 
 import argparse
 import json
-from typing import Dict, List
 
 
 class Citation:
@@ -139,7 +138,7 @@ class Citation:
         # Simplified formatting
         return ", ".join(self.authors[:3]) + (" et al." if len(self.authors) > 3 else "")
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             "authors": self.authors,
@@ -165,7 +164,7 @@ class CitationFormatter:
         """Add a citation to the collection."""
         self.citations.append(citation)
 
-    def load_from_csv(self, filename: str) -> List[Citation]:
+    def load_from_csv(self, filename: str) -> list[Citation]:
         """Load citations from CSV file (simplified)."""
         citations = []
         try:
@@ -195,14 +194,14 @@ class CitationFormatter:
 
         return citations
 
-    def save_to_json(self, citations: List[Citation], filename: str):
+    def save_to_json(self, citations: list[Citation], filename: str):
         """Save citations to JSON file."""
         data = [c.to_dict() for c in citations]
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
         print(f"Saved {len(citations)} citations to {filename}")
 
-    def format_batch(self, citations: List[Citation], output_format: str = "apa") -> List[str]:
+    def format_batch(self, citations: list[Citation], output_format: str = "apa") -> list[str]:
         """Format multiple citations in specified format."""
         format_method = f"to_{output_format.lower()}"
         results = []

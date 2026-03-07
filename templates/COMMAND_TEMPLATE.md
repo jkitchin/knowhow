@@ -519,6 +519,13 @@ Before deploying your command, verify:
 | **Command** | Frequently-used single prompt |
 | **Command** | Quick automation shortcut |
 
+**Note on undertriggering:** Skills suffer from *undertriggering* — Claude may not invoke
+them when it should. Commands don't have this problem because the user explicitly types
+`/command-name`. If your automation is being ignored by Claude, consider packaging it as
+a slash command instead of a skill. Conversely, if you need Claude to apply guidance
+automatically without the user thinking about it, use a skill with a "pushy" description
+(see `SKILL_TEMPLATE.md`).
+
 ---
 
 ## Common Patterns

@@ -2,7 +2,6 @@
 
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -172,7 +171,7 @@ You can use:
         console.print(f"Created: {cmd_file}")
 
 
-def _generate_skill_with_claude(name: str, prompt: str) -> Optional[str]:
+def _generate_skill_with_claude(name: str, prompt: str) -> str | None:
     """Generate skill content using Claude CLI."""
     generation_prompt = f"""Generate a SKILL.md file for a Claude Code skill \
 with the following requirements:
@@ -184,14 +183,46 @@ The skill file must follow this format:
 1. Start with YAML frontmatter between --- delimiters
 2. Required frontmatter fields:
    - name: {name}
-   - description: A clear one-line description (max 1024 chars)
+   - description: |
+       (multi-line, max 1024 chars total — see description requirements below)
 3. Optional frontmatter fields:
-   - allowed-tools: List of tools or ["*"] for all
-4. After frontmatter, include markdown content with:
+   - allowed-tools: List of tools (Bash, Read, Write, Edit, Glob, Grep, WebFetch, etc.)
+4. After frontmatter, include markdown content (keep under 400 lines total):
    - A heading with the skill name
-   - Clear explanation of when to use this skill
-   - Detailed instructions for Claude on how to apply the skill
-   - Examples where helpful
+   - Purpose section (what it does and why)
+   - When to Use section with specific trigger conditions
+   - Step-by-step instructions that explain WHY each step matters
+   - Key examples
+   - Reference to references/ subdirectory for extended docs (if needed)
+
+DESCRIPTION REQUIREMENTS (this is the most important part):
+The description must be "pushy" — assertive about when Claude should trigger this skill.
+LLMs tend to undertrigger skills (fail to use them when they should). A weak description
+makes this worse. Write a description that:
+- Opens with what the skill does (1 sentence)
+- Has an assertive "Use this skill when the user..." block with SPECIFIC trigger conditions:
+  * Concrete verbs (asks to, wants to, needs to)
+  * Specific nouns (file types, tool names, library names, concepts)
+  * Example user phrasings in quotes if helpful
+- Optionally adds "Do NOT use when..." for disambiguation from similar skills
+- Optionally lists dependencies ("Requires: package-name")
+
+Example of a pushy description:
+  Expert guidance for pandas DataFrames — cleaning, transforming, and analyzing tabular data.
+
+  Use this skill when the user:
+  - imports pandas or asks about DataFrames, Series, or tabular data
+  - asks to read CSV/Excel/JSON files into pandas
+  - needs to filter, group, merge, or reshape data
+  - says things like "how do I pivot this?", "clean up missing values", "groupby example"
+
+  Do NOT use for general Python questions unrelated to tabular data.
+
+INSTRUCTIONS PHILOSOPHY:
+Instead of bare imperatives ("NEVER skip X", "ALWAYS do Y"), explain the reasoning:
+- Bad: "ALWAYS validate inputs first."
+- Good: "Validate inputs before processing — this surfaces the real error (bad input)
+  rather than a confusing downstream failure."
 
 Output ONLY the SKILL.md content, no explanations or markdown code blocks."""
 
@@ -216,7 +247,7 @@ Output ONLY the SKILL.md content, no explanations or markdown code blocks."""
         return None
 
 
-def _generate_command_with_claude(name: str, prompt: str) -> Optional[str]:
+def _generate_command_with_claude(name: str, prompt: str) -> str | None:
     """Generate command content using Claude CLI."""
     generation_prompt = f"""Generate a command markdown file for a Claude Code \
 slash command with the following requirements:
@@ -228,17 +259,28 @@ The command file must follow this format:
 1. Start with YAML frontmatter between --- delimiters
 2. Required frontmatter fields:
    - description: A clear one-line description (max 256 chars)
+     Unlike skills, commands are user-invoked (explicit /command-name) so the
+     description just needs to be clear and informative — it appears in /help.
+     It does NOT need to be "pushy" about when to trigger.
 3. Optional frontmatter fields:
    - model: sonnet, opus, or haiku
-   - allowed-tools: List of tools or ["*"] for all
-   - argument-hint: Hint for autocomplete (e.g., "<filename>")
-4. After frontmatter, include the command prompt content
+   - allowed-tools: List of tools (Bash, Read, Write, Edit, Glob, Grep, etc.)
+   - argument-hint: Hint for autocomplete (e.g., "<filename> [options]")
+4. After frontmatter, include the command prompt content with:
+   - Clear context/purpose explanation
+   - Step-by-step instructions for Claude to follow
+   - Output format specification
+   - Error handling guidance for invalid/missing arguments
 
 Available variables in command content:
 - $ARGUMENTS - All arguments passed to the command
 - $1, $2, etc. - Individual positional arguments
-- @filename - Include file content
-- !command - Execute bash commands
+- @filename - Include file content inline
+- !command - Execute bash commands before the prompt (requires Bash in allowed-tools)
+
+INSTRUCTIONS QUALITY:
+Write instructions that explain WHY each step matters, not just WHAT to do.
+This produces more adaptive behavior than bare imperatives like "ALWAYS" or "NEVER".
 
 Output ONLY the command .md content, no explanations or markdown code blocks."""
 

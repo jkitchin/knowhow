@@ -48,7 +48,6 @@ import json
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Tuple
 
 
 class TimelineTask:
@@ -123,7 +122,7 @@ def parse_date(date_str: str) -> datetime:
 
 def load_timeline(
     data: dict,
-) -> Tuple[str, List[TimelineTask], List[Milestone], datetime, datetime]:
+) -> tuple[str, list[TimelineTask], list[Milestone], datetime, datetime]:
     """
     Load timeline from JSON data.
 
@@ -172,8 +171,8 @@ def load_timeline(
 
 def render_gantt_chart(
     project_name: str,
-    tasks: List[TimelineTask],
-    milestones: List[Milestone],
+    tasks: list[TimelineTask],
+    milestones: list[Milestone],
     start_date: datetime,
     end_date: datetime,
 ) -> str:
@@ -310,8 +309,8 @@ def render_gantt_chart(
 
 def render_roadmap(
     project_name: str,
-    tasks: List[TimelineTask],
-    milestones: List[Milestone],
+    tasks: list[TimelineTask],
+    milestones: list[Milestone],
     start_date: datetime,
     end_date: datetime,
 ) -> str:
@@ -393,8 +392,8 @@ def render_roadmap(
 
 def render_calendar(
     project_name: str,
-    tasks: List[TimelineTask],
-    milestones: List[Milestone],
+    tasks: list[TimelineTask],
+    milestones: list[Milestone],
     start_date: datetime,
     end_date: datetime,
 ) -> str:

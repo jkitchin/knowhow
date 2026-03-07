@@ -17,9 +17,96 @@ This template helps you create a new Claude Code skill that follows the official
 **Description Guidelines:**
 - Maximum 1024 characters
 - Must explain BOTH "what it does" AND "when to use it"
-- Be specific with trigger conditions
-- Good: "Extract text and tables from PDF files. Use when working with PDF files."
+- Be specific and assertive about trigger conditions (see Pushy Descriptions below)
+- Good: "Extract text and tables from PDF files. Use when the user provides a PDF path, asks to read or analyze PDF content, or needs to convert PDF tables to structured data."
 - Bad: "Helps with documents"
+
+---
+
+## Pushy Descriptions: The #1 Skill Quality Factor
+
+**The problem:** Claude tends to *undertrigger* skills — it sees the description but decides not to invoke the skill. Vague or passive descriptions make this worse. The fix is to write descriptions that are assertive about when to trigger.
+
+**Why this matters:** The description is the primary signal Claude uses to decide whether to load and apply a skill. A weak description means the skill sits unused even when it would help.
+
+**Weak (passive) vs. Strong (pushy) examples:**
+
+| Weak | Strong |
+|------|--------|
+| "Helps with Python code" | "Use immediately when the user asks about Python code quality, style, linting, or best practices." |
+| "For PDF files" | "Trigger when the user provides a `.pdf` file path, asks to read/analyze/extract PDF content, or mentions a PDF document." |
+| "Scientific computing assistance" | "Use this skill when the user is working with ASE atoms objects, running DFT calculations, or asking about atomistic simulations." |
+
+**Structural template for a pushy description:**
+```
+[What the skill does in 1 sentence.]
+
+Use this skill when: [concrete trigger conditions — list specific verbs,
+file types, tool names, user phrasings that should activate it].
+
+[Optional: "Do NOT use when..." for disambiguation from similar skills.]
+[Optional: dependencies — "Requires: package-name"]
+```
+
+**When to trigger block (include in your description):**
+```
+Use this skill when the user:
+- mentions [specific tool/file/concept names]
+- asks to [specific action verbs]
+- provides [specific inputs like file paths, data formats]
+- says things like "[example phrase 1]" or "[example phrase 2]"
+```
+
+---
+
+## Progressive Disclosure Architecture
+
+**Keep SKILL.md under 500 lines.** Claude loads the full SKILL.md body when it invokes the skill, so large files slow down every invocation and waste context.
+
+**Three-level loading model:**
+1. **Metadata (always in context):** The `description` field — always visible, used for triggering decisions
+2. **SKILL.md body (on trigger):** Loaded when Claude invokes the skill — keep this focused and action-oriented
+3. **References (on demand):** Large docs, API references, code examples — Claude reads these only when needed
+
+**Where to put content:**
+```
+skill-name/
+├── SKILL.md          # <500 lines: purpose, instructions, key examples
+├── references/
+│   ├── api-ref.md    # Full API documentation
+│   ├── patterns.md   # Detailed pattern library
+│   └── examples.md   # Extended examples
+└── scripts/
+    ├── helper.py     # Utility scripts Claude can run
+    └── template.py   # Code generators
+```
+
+**In your SKILL.md, reference these files explicitly:**
+```markdown
+## Extended Reference
+For detailed API documentation, see @references/api-ref.md.
+For code patterns, see @references/patterns.md.
+```
+
+---
+
+## Explain the Why
+
+Instructions in SKILL.md work better when they explain *why* a guideline exists, not just *what* to do. LLMs respond better to reasoning than bare imperatives.
+
+**Imperative (less effective):**
+```
+NEVER skip validation. ALWAYS check file exists first.
+```
+
+**Reasoning-based (more effective):**
+```
+Check that the file exists before processing it — this prevents confusing
+error messages that obscure the real problem (missing input vs. bad code).
+```
+
+Bare "MUST/NEVER/ALWAYS" language is useful for hard safety constraints, but for
+workflow guidance, reasoning produces more adaptive behavior.
 
 ---
 
@@ -200,12 +287,16 @@ Before deploying your skill, verify:
 - [ ] `name` is 64 characters or less
 - [ ] `description` clearly explains "what" and "when"
 - [ ] `description` is 1024 characters or less
+- [ ] `description` is assertive — uses "Use this skill when..." with specific trigger conditions
+- [ ] `description` includes concrete trigger phrases (not just capabilities)
+- [ ] SKILL.md body is under 500 lines; overflow content is in `references/`
 - [ ] YAML frontmatter is valid (three dashes at start and end)
 - [ ] File is saved as `SKILL.md` in the skill directory
-- [ ] Instructions are clear and actionable
+- [ ] Instructions explain *why*, not just *what* (reasoning over imperatives)
 - [ ] Dependencies are listed in description
 - [ ] Tool restrictions are appropriate for the task
 - [ ] Examples demonstrate expected behavior
+- [ ] Run `skillz optimize <skill-name>` to check and improve triggering
 
 ---
 
