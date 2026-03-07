@@ -897,7 +897,7 @@ class FeatureSelectionProblem(Problem):
             n_obj=2,
             xl=0,
             xu=1,
-            type_var=int  # Binary: feature selected or not
+            vtype=int,  # Binary: feature selected or not
         )
 
     def _evaluate(self, X, out, *args, **kwargs):
@@ -1147,7 +1147,7 @@ res = minimize(
     ('n_gen', 200),
     seed=1,
     verbose=True,
-    elementwise_runner=pool.starmap
+    elementwise_runner=pool.starmap  # NOTE: elementwise_runner is deprecated in pymoo >= 0.6. Use ElementwiseEvaluation or override _evaluate instead.
 )
 pool.close()
 ```

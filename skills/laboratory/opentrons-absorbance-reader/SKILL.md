@@ -1,6 +1,6 @@
 ---
 name: opentrons-absorbance-reader
-description: Opentrons Absorbance Plate Reader Module for Flex - on-deck microplate spectrophotometry with single/multi-wavelength reading (450, 562, 600, 650nm), automated lid control, and CSV data export for ELISA, cell growth, and colorimetric assays
+description: Opentrons Absorbance Plate Reader Module for Flex - on-deck microplate spectrophotometry with single/multi-wavelength reading (380-740nm in 10nm increments), automated lid control, and CSV data export for ELISA, cell growth, and colorimetric assays
 allowed-tools: ["*"]
 ---
 
@@ -26,9 +26,8 @@ Use the Absorbance Reader skill when:
 
 **Don't use when:**
 - Working with OT-2 robot (module is Flex-only)
-- Need wavelengths outside 450, 562, 600, 650nm
+- Need wavelengths outside 380-740nm range
 - Require fluorescence or luminescence measurements
-- Need higher spectral resolution or broader wavelength range
 
 ## Quick Reference
 
@@ -41,7 +40,7 @@ Use the Absorbance Reader skill when:
 | Initialize reader | `initialize()` | mode, wavelengths, reference_wavelength |
 | Read plate | `read()` | export_filename (optional) |
 
-**Available wavelengths:** 450nm (blue), 562nm (green), 600nm (orange), 650nm (red)
+**Available wavelengths:** 380-740nm in 10nm increments (e.g., 450nm, 562nm, 600nm, 650nm)
 
 ## Platform Requirements
 
@@ -156,7 +155,7 @@ reader.open_lid()
 
 **Use case:** Multi-analyte assays, spectral analysis, dual-wavelength ELISA
 
-**Available wavelengths:**
+**Available wavelengths:** 380-740nm in 10nm increments. Common choices:
 - **450nm** - Blue (common ELISA substrate TMB)
 - **562nm** - Green (BCA protein assay)
 - **600nm** - Orange (bacterial growth OD600)
@@ -530,7 +529,7 @@ reader.initialize(mode="single", wavelengths=[550])  # Error: not supported
 
 **✅ Correct:**
 ```python
-reader.initialize(mode="single", wavelengths=[562])  # Use 450, 562, 600, or 650
+reader.initialize(mode="single", wavelengths=[562])  # Use any wavelength 380-740nm in 10nm steps
 ```
 
 **❌ Accessing wrong wavelength in data:**

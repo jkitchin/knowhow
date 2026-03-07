@@ -25,7 +25,7 @@ Based on answers, get personalized design recommendations.
 | Your Situation | Use This | Tool |
 |----------------|----------|------|
 | Batch, 2-5 factors, optimize | CCD or Box-Behnken | pyDOE3, pycse |
-| Sequential, expensive, optimize | Bayesian Optimization | GPyOpt, skopt |
+| Sequential, expensive, optimize | Bayesian Optimization | BoTorch, skopt, Ax |
 | Have mechanistic model | Model-driven D-optimal | Custom FIM |
 | Build surrogate, sequential | Active Learning + GP | modAL |
 | Many factors, screening | Fractional factorial | pyDOE3 |

@@ -6,7 +6,7 @@ description: |
   Use this skill when you need to: synthesize knowledge across multiple research domains, identify research gaps, track the evolution of methodologies, evaluate evidence quality, or write comprehensive literature reviews for academic papers, grant proposals, or research projects.
 
   Key capabilities: multi-database search strategies, iterative query refinement, content analysis and summarization, thematic synthesis, citation management, quality assessment, bias detection, and structured report generation with multiple output formats.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Scientific Literature Review Skill

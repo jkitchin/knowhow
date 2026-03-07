@@ -7,7 +7,7 @@ description: |
   or need help diagnosing root causes. Triggers include 'debug this,' 'troubleshoot,' 'why isn't
   this working,' 'getting an error,' 'something's wrong with,' 'how do I fix,' or any problem
   description.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Troubleshooting & Debugging Skill

@@ -1,6 +1,6 @@
 ---
 name: design-of-experiments
-description: Expert guidance for Design of Experiments (DOE) in Python - interactive goal-driven design selection, classical DOE (factorial, response surface, screening), Bayesian optimization with Gaussian processes, model-driven optimal designs, active learning, and sequential experimentation; includes pyDOE3, pycse, GPyOpt, scikit-optimize, statsmodels
+description: Expert guidance for Design of Experiments (DOE) in Python - interactive goal-driven design selection, classical DOE (factorial, response surface, screening), Bayesian optimization with Gaussian processes, model-driven optimal designs, active learning, and sequential experimentation; includes pyDOE3, pycse, BoTorch, Ax, scikit-optimize, statsmodels
 allowed-tools: ["*"]
 ---
 
@@ -78,7 +78,7 @@ Can experiments be run sequentially with feedback?
 │   │   ├─ YES → Bayesian Optimization
 │   │   │        • Expected Improvement for optimization
 │   │   │        • Upper Confidence Bound for exploration
-│   │   │        • Tools: GPyOpt, scikit-optimize, BoTorch
+│   │   │        • Tools: BoTorch, scikit-optimize, Ax
 │   │   │
 │   │   └─ NO → Have a model?
 │   │       ├─ YES → Model-driven sequential design
@@ -145,7 +145,7 @@ Can experiments be run sequentially with feedback?
 - Hyperparameter tuning for ML models
 - Autonomous experimentation / self-driving labs
 
-**Tools:** GPyOpt, scikit-optimize, BoTorch, Ax
+**Tools:** BoTorch, scikit-optimize, Ax
 
 ### Model-Driven DOE (Optimal Designs)
 
@@ -187,7 +187,7 @@ Can experiments be run sequentially with feedback?
 | Batch, 6-15 factors, screening | Plackett-Burman, DSD | pyDOE3, dexpy | 12-50 |
 | Batch, optimization, 2-5 factors | CCD, Box-Behnken | pyDOE3, pycse | 13-50 |
 | Batch, exploration, unknown | Latin Hypercube | pyDOE3, pycse | 10×factors |
-| **Sequential, expensive, optimize** | **Bayesian Optimization** | **GPyOpt, skopt** | **10-50** |
+| **Sequential, expensive, optimize** | **Bayesian Optimization** | **BoTorch, skopt, Ax** | **10-50** |
 | Sequential, build model | Active Learning + GP | modAL | 20-100 |
 | Have mechanistic model | Model-driven D-optimal | Custom FIM | 10-30 |
 | Parameter estimation | D-optimal, A-optimal | pyoptex | Varies |
@@ -522,8 +522,7 @@ pip install pycse
 
 # Bayesian Optimization
 pip install scikit-optimize # skopt - easiest to use
-pip install GPyOpt          # Comprehensive BO
-pip install ax-platform     # Meta's adaptive experimentation
+pip install ax-platform     # Meta's adaptive experimentation (uses BoTorch internally)
 # pip install botorch torch # Advanced BO (requires PyTorch)
 
 # Active Learning
@@ -679,7 +678,7 @@ When helping with DOE, Claude should:
 - **pyDOE3 Documentation:** https://pydoe3.readthedocs.io/
 - **pycse Examples:** https://kitchingroup.cheme.cmu.edu/pycse/
 - **scikit-optimize:** https://scikit-optimize.github.io/
-- **GPyOpt:** https://sheffieldml.github.io/GPyOpt/
+- **BoTorch:** https://botorch.org/
 - **Bayesian Optimization Book:** https://bayesoptbook.com/
 - **Design of Experiments (Montgomery):** Classic textbook
 - **Statistics for Experimenters (Box, Hunter, Hunter):** Comprehensive reference

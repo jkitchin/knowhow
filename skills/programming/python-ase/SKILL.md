@@ -1,6 +1,7 @@
 ---
 name: python-ase
 description: Expert assistance with the Atomic Simulation Environment (ASE) Python library for atomistic simulations, including structure building, calculator setup, optimization, dynamics, and analysis
+allowed-tools: ["*"]
 ---
 
 # Python ASE (Atomic Simulation Environment) Skill

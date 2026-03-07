@@ -1,7 +1,7 @@
 ---
 name: materials-databases
 description: Expert assistant for accessing materials databases (AFLOW and Materials Project) - query crystal structures, materials properties, thermodynamic data, and computational results from comprehensive databases
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Materials Databases Access Skill
@@ -63,7 +63,7 @@ pip install pandas numpy matplotlib
 ### Materials Project API Key
 
 1. **Get an API key:**
-   - Visit: https://next-gen.materialsproject.org/api
+   - Visit: https://materialsproject.org/api
    - Click "Generate API Key" (requires login with ORCID or email)
    - Copy your API key (format: long alphanumeric string)
 

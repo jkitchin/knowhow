@@ -45,7 +45,7 @@ Use the Thermocycler skill when:
 **Both Opentrons Flex and OT-2**
 
 ### Module Generations
-- **GEN1** - Original thermocycler, compatible with both platforms
+- **GEN1** - Original thermocycler, OT-2 only
 - **GEN2** - Improved plate lift mechanism, auto-sealing lid support
 
 **API compatibility:** Both generations support identical API methods
@@ -288,18 +288,18 @@ riser = protocol.load_labware(
 ### Lid Stack Management
 
 ```python
-# Stack up to 5 auto-sealing lids
-lid_stack = tc_mod.load_lid_stack(
+# Load auto-sealing lids as labware on a deck riser
+lid_on_riser = protocol.load_labware(
     "opentrons_tough_pcr_auto_sealing_lid",
-    quantity=5
+    "D2",
+    adapter="opentrons_flex_deck_riser"
 )
 
-# Move lid with gripper
-protocol.move_lid(
-    lid=lid_stack,
-    new_location=pcr_plate,
-    use_gripper=True
-)
+# Stack additional lids on top (up to 5 total)
+lid_2 = lid_on_riser.load_labware("opentrons_tough_pcr_auto_sealing_lid")
+
+# Move lid onto PCR plate with gripper
+protocol.move_labware(lid_on_riser, pcr_plate, use_gripper=True)
 ```
 
 **Important:** Do not affix rubber seal to internal Thermocycler lid when using auto-sealing lids.
@@ -311,10 +311,11 @@ protocol.move_lid(
 tc_mod = protocol.load_module("thermocyclerModuleV2")
 pcr_plate = tc_mod.load_labware("opentrons_96_wellplate_200ul_pcr_full_skirt")
 
-# Load auto-sealing lids
-lid_stack = tc_mod.load_lid_stack(
+# Load auto-sealing lid on deck riser
+seal_lid = protocol.load_labware(
     "opentrons_tough_pcr_auto_sealing_lid",
-    quantity=3
+    "D2",
+    adapter="opentrons_flex_deck_riser"
 )
 
 # Setup samples
@@ -322,7 +323,7 @@ tc_mod.open_lid()
 # ... pipette reagents ...
 
 # Apply auto-sealing lid with gripper
-protocol.move_lid(lid_stack, pcr_plate, use_gripper=True)
+protocol.move_labware(seal_lid, pcr_plate, use_gripper=True)
 
 # Close thermocycler lid
 tc_mod.close_lid()

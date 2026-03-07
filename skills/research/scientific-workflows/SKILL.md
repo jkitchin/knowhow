@@ -1,7 +1,7 @@
 ---
 name: scientific-workflows
 description: Expert assistant for choosing and implementing scientific workflow tools - from simple joblib caching to complex orchestration with Prefect, Parsl, FireWorks, and quacc. Recommends the simplest solution that meets requirements.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Scientific Workflow Management Skill
@@ -34,11 +34,7 @@ START: What type of workflow do you need?
 │  │  → USE: joblib.Parallel
 │  │
 │  └─ Large scale (cluster/cloud)?
-│     ├─ HPC with SLURM/PBS?
-│     │  → USE: Parsl (subskill: parsl)
-│     │
-│     └─ Cloud-native or hybrid?
-│        → USE: Covalent (subskill: covalent)
+│     → USE: Parsl (subskill: parsl)
 │
 ├─ Complex DAG with dependencies and monitoring?
 │  ├─ Pure Python, modern stack?
@@ -80,13 +76,6 @@ START: What type of workflow do you need?
 - **Setup:** `pip install parsl`
 - **Scale:** Laptop → supercomputers
 - **Best for:** HPC scientific workflows, Jupyter notebooks
-
-**Covalent** - Quantum/cloud workflow orchestration
-- **When:** Quantum computing workflows, cloud-agnostic deployment
-- **Complexity:** Medium (electron/lattice model)
-- **Setup:** `pip install covalent`
-- **Scale:** Local → cloud (AWS/Azure/GCP)
-- **Best for:** ML/quantum workflows, infrastructure independence
 
 ### Tier 3: Domain-Specific / Production
 
@@ -141,18 +130,18 @@ from quacc import flow, job
 
 ## Feature Comparison Matrix
 
-| Feature | joblib | Prefect | Parsl | Covalent | FireWorks | quacc |
-|---------|--------|---------|-------|----------|-----------|-------|
-| **Caching** | ✓✓✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Simple Parallel** | ✓✓✓ | ✓✓ | ✓✓✓ | ✓✓ | ✓ | ✓✓ |
-| **DAG Workflows** | ✗ | ✓✓✓ | ✓✓ | ✓✓ | ✓✓✓ | ✓✓ |
-| **HPC Integration** | ✗ | ✓ | ✓✓✓ | ✓✓ | ✓✓✓ | ✓✓✓ |
-| **Cloud Native** | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ | ✓ | ✓✓ |
-| **Error Recovery** | ✗ | ✓✓✓ | ✓✓ | ✓✓ | ✓✓✓ | ✓✓ |
-| **Monitoring UI** | ✗ | ✓✓✓ | ✓ | ✓✓ | ✓✓✓ | ✓ |
-| **Learning Curve** | Easy | Medium | Medium | Medium | Hard | Medium |
-| **Setup Complexity** | None | Low | Low | Low | High | Medium |
-| **Materials Focus** | ✗ | ✗ | ✗ | ✗ | ✓✓ | ✓✓✓ |
+| Feature | joblib | Prefect | Parsl | FireWorks | quacc |
+|---------|--------|---------|-------|-----------|-------|
+| **Caching** | ✓✓✓ | ✓ | ✓ | ✓ | ✓ |
+| **Simple Parallel** | ✓✓✓ | ✓✓ | ✓✓✓ | ✓ | ✓✓ |
+| **DAG Workflows** | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ | ✓✓ |
+| **HPC Integration** | ✗ | ✓ | ✓✓✓ | ✓✓✓ | ✓✓✓ |
+| **Cloud Native** | ✗ | ✓✓✓ | ✓✓ | ✓ | ✓✓ |
+| **Error Recovery** | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ | ✓✓ |
+| **Monitoring UI** | ✗ | ✓✓✓ | ✓ | ✓✓✓ | ✓ |
+| **Learning Curve** | Easy | Medium | Medium | Hard | Medium |
+| **Setup Complexity** | None | Low | Low | High | Medium |
+| **Materials Focus** | ✗ | ✗ | ✗ | ✓✓ | ✓✓✓ |
 
 **Legend:** ✓✓✓ Excellent, ✓✓ Good, ✓ Basic, ✗ Not available
 
@@ -204,7 +193,6 @@ To get detailed guidance on a specific tool, invoke the corresponding subskill:
 - **Simple caching/parallelism:** Use `joblib` subskill
 - **Modern Python orchestration:** Use `prefect` subskill
 - **HPC scientific computing:** Use `parsl` subskill
-- **Cloud/quantum workflows:** Use `covalent` subskill
 - **Materials production workflows:** Use `fireworks` subskill
 - **Materials high-throughput:** Use `quacc` subskill
 
@@ -316,7 +304,6 @@ See `examples/` directory for:
 - **joblib:** https://joblib.readthedocs.io/
 - **Prefect:** https://docs.prefect.io/
 - **Parsl:** https://parsl-project.org/
-- **Covalent:** https://github.com/AgnostiqHQ/covalent
 - **FireWorks:** https://materialsproject.github.io/fireworks/
 - **quacc:** https://quantum-accelerators.github.io/quacc/
 - **atomate2:** https://github.com/materialsproject/atomate2

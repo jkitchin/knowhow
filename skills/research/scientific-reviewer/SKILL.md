@@ -2,7 +2,7 @@
 name: scientific-reviewer
 description: |
   Comprehensive scientific document review and analysis. Use when Claude needs to review scientific papers, reports, preprints, or other research documents for: (1) Identifying and evaluating claims and supporting evidence, (2) Assessing logical argumentation and experimental design, (3) Reviewing citation adequacy and suggesting additional references, (4) Determining document type and research contribution, (5) Checking technical accuracy and methodology, (6) Providing constructive feedback on presentation and clarity. Also handles language, grammar, and formatting review separately.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Scientific Reviewer

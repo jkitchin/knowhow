@@ -319,7 +319,7 @@ from openai import OpenAI
 from pathlib import Path
 import base64
 
-client = OpenAI(api_key="OPENAI_API_KEY")
+client = OpenAI()  # reads OPENAI_API_KEY env var automatically
 
 # gpt-image-1.5 generation (recommended)
 response = client.images.generate(

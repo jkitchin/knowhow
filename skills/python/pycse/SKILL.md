@@ -1,6 +1,7 @@
 ---
 name: pycse
 description: Use when performing regression analysis with confidence intervals, solving ODEs, fitting models to experimental data, or caching expensive scientific computations - provides convenient wrappers around scipy that automatically calculate confidence intervals and prediction bounds for linear, nonlinear, and polynomial regression
+allowed-tools: ["*"]
 ---
 
 # pycse - Python Computations in Science and Engineering

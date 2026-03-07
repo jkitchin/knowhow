@@ -9,7 +9,7 @@ description: |
 
   Key capabilities: format detection and routing, domain-specific extraction (chemistry/materials), multi-method
   validation, table extraction, graph digitization, LLM-enhanced extraction with verification, confidence scoring.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Scientific Data Extraction Skill
@@ -63,7 +63,7 @@ The first step is identifying the input format and routing to appropriate tools:
 | Document scan | OCR (Tesseract/Surya) then text pipeline |
 | Graph/Plot | WebPlotDigitizer workflow or LLM vision |
 | Table image | Table Transformer or LLM vision |
-| Chemical structure | OSRA/MolVec for SMILES conversion |
+| Chemical structure | OSRA or DECIMER for SMILES conversion |
 
 ## Domain Detection
 
@@ -310,7 +310,7 @@ Structure extracted data consistently:
 2. **Choose specialized tool**:
    - Properties: ChemDataExtractor v2
    - Reactions: OpenChemIE
-   - Structures from images: OSRA/MolVec
+   - Structures from images: OSRA or DECIMER
 3. **Configure extraction**: Set up parsers for target properties
 4. **Run extraction**: Process document with domain tools
 5. **Post-process**: Normalize units, standardize identifiers

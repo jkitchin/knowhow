@@ -1,7 +1,7 @@
 ---
 name: vasp
 description: Expert assistant for VASP (Vienna Ab initio Simulation Package) calculations - input file generation, parameter selection, workflow setup, and best practices for accurate DFT calculations
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # VASP Calculation Setup Skill

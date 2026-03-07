@@ -1,6 +1,7 @@
 ---
 name: pycalphad
 description: Expert guidance for pycalphad - computational thermodynamics library implementing the CALPHAD method for calculating phase diagrams, phase equilibria, and thermodynamic properties of multicomponent materials systems using thermodynamic databases (TDB files)
+allowed-tools: ["*"]
 ---
 
 # pycalphad - Computational Thermodynamics in Python

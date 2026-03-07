@@ -433,7 +433,7 @@ plt.show()
 fig, ax = plt.subplots()
 
 sns.barplot(data=tips, x='day', y='total_bill', hue='sex',
-            ci=95,  # Confidence interval
+            errorbar=("ci", 95),
             ax=ax)
 
 ax.set_title('Average Total Bill by Day')
@@ -588,7 +588,8 @@ custom_palette = ['#FF6347', '#4682B4', '#32CD32']
 sns.set_palette(custom_palette)
 
 # View palette
-sns.palplot(sns.color_palette('husl', 10))
+# sns.palplot() is deprecated; use .plot() method instead
+sns.color_palette('husl', 10).plot()
 plt.show()
 ```
 

@@ -24,9 +24,6 @@ pip install prefect
 
 # HPC scientific computing
 pip install parsl
-
-# Cloud/quantum workflows
-pip install covalent
 ```
 
 **Domain-specific:**
@@ -108,7 +105,6 @@ from quacc import flow, job
 | **joblib** | Caching, simple parallel | Minimal | Single machine |
 | **Prefect** | Python DAGs, monitoring | Medium | Single → cloud |
 | **Parsl** | HPC scientific computing | Medium | Laptop → supercomputer |
-| **Covalent** | Cloud-agnostic, quantum | Medium | Local → cloud |
 | **FireWorks** | Production materials workflows | High | HPC clusters |
 | **quacc** | Materials screening | Medium | HPC/cloud |
 
@@ -205,7 +201,6 @@ scientific-workflows/
 │   ├── joblib.md         # Simple caching/parallel
 │   ├── prefect.md        # Modern orchestration
 │   ├── parsl.md          # HPC workflows
-│   ├── covalent.md       # Cloud/quantum
 │   ├── fireworks.md      # Materials production
 │   └── quacc.md          # Materials high-throughput
 ├── examples/
@@ -233,7 +228,6 @@ Invoke specific subskills for detailed guidance:
 - `joblib` - Function caching and simple parallelism
 - `prefect` - Modern Python workflow orchestration
 - `parsl` - HPC scientific computing workflows
-- `covalent` - Cloud-agnostic quantum/ML workflows
 - `fireworks` - Production materials science workflows
 - `quacc` - High-throughput materials screening
 
@@ -243,7 +237,6 @@ Invoke specific subskills for detailed guidance:
 - joblib: https://joblib.readthedocs.io/
 - Prefect: https://docs.prefect.io/
 - Parsl: https://parsl-project.org/
-- Covalent: https://github.com/AgnostiqHQ/covalent
 - FireWorks: https://materialsproject.github.io/fireworks/
 - quacc: https://quantum-accelerators.github.io/quacc/
 

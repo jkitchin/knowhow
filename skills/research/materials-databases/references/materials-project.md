@@ -6,7 +6,7 @@ Comprehensive guide to the Materials Project API using the `mp-api` Python clien
 
 ### Getting an API Key
 
-1. Visit https://next-gen.materialsproject.org/api
+1. Visit https://materialsproject.org/api
 2. Login using ORCID or email
 3. Click "Generate API Key"
 4. Copy the generated key (long alphanumeric string)
@@ -569,7 +569,7 @@ conventional = sga.get_conventional_standard_structure()
 
 ## Resources
 
-- **API Documentation**: https://next-gen.materialsproject.org/api
+- **API Documentation**: https://materialsproject.org/api
 - **GitHub**: https://github.com/materialsproject/api
 - **Pymatgen Docs**: https://pymatgen.org
 - **Forum**: https://matsci.org/materials-project

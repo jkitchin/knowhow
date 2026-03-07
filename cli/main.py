@@ -3,7 +3,22 @@
 import click
 from rich.console import Console
 
-from cli.commands import agents, config, create, hooks, info, install, search, uninstall, update
+from cli.commands import (
+    ab_test,
+    agents,
+    config,
+    create,
+    harvest,
+    hooks,
+    info,
+    install,
+    merge,
+    optimize,
+    search,
+    stats,
+    uninstall,
+    update,
+)
 from cli.commands.list import list_skills
 
 console = Console()
@@ -35,6 +50,11 @@ cli.add_command(update.update)
 cli.add_command(create.create)
 cli.add_command(hooks.hooks)
 cli.add_command(agents.agents)
+cli.add_command(optimize.optimize)
+cli.add_command(harvest.harvest)
+cli.add_command(stats.stats)
+cli.add_command(merge.merge)
+cli.add_command(ab_test.ab_test)
 
 
 if __name__ == "__main__":

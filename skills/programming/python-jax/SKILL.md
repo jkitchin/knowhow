@@ -548,21 +548,22 @@ print(jacrev(x))  # Same result
 
 ### Custom Gradients
 
+Use `@jax.custom_vjp` (reverse-mode) or `@jax.custom_jvp` (forward-mode):
+
 ```python
-@jax.custom_gradient
+@jax.custom_vjp
 def f(x):
-    # Forward pass
+    return jnp.exp(x)
+
+def f_fwd(x):
     result = jnp.exp(x)
+    return result, result  # (output, residuals for backward)
 
-    # Define custom gradient
-    def grad_fn(g):
-        # g is the gradient from downstream
-        # Return gradient w.r.t. inputs
-        return g * 2 * result  # Custom: 2x the normal gradient
+def f_bwd(result, g):
+    return (g * 2 * result,)  # Custom: 2x the normal gradient
 
-    return result, grad_fn
+f.defvjp(f_fwd, f_bwd)
 
-# Use like normal
 grad_f = jax.grad(f)
 ```
 
@@ -721,11 +722,11 @@ print(grads.keys())  # dict_keys(['w1', 'b1', 'w2', 'b2'])
 ### PyTree Operations
 
 ```python
-# Tree map - apply function to all leaves
-scaled_params = jax.tree_map(lambda x: x * 0.9, params)
+# Tree map - apply function to all leaves (JAX 0.4.25+: use jax.tree.map)
+scaled_params = jax.tree.map(lambda x: x * 0.9, params)
 
-# Tree reduce
-total_params = jax.tree_reduce(
+# Tree reduce (JAX 0.4.25+: use jax.tree.reduce)
+total_params = jax.tree.reduce(
     lambda total, x: total + x.size,
     params,
     initializer=0
@@ -981,7 +982,7 @@ JAX has a rich ecosystem built on its transformation primitives:
 
 **Neural Networks:**
 - **Flax** - Official neural network library
-- **Haiku** - DeepMind's neural network library
+- **Haiku** - DeepMind's neural network library (DEPRECATED: migrate to Flax/NNX)
 - **Equinox** - Elegant PyTorch-like library
 
 **Optimization:**

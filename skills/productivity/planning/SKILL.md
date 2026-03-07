@@ -6,7 +6,7 @@ description: |
   set milestones, estimate timelines, identify dependencies, or develop action plans.
   Triggers include 'help me plan,' 'create a roadmap for,' 'break down this project,'
   'what are the steps to,' or 'how should I approach.'
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Planning & Project Breakdown Skill

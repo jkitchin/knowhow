@@ -1,6 +1,7 @@
 ---
 name: eln
 description: Professional scientific documentation in org-mode electronic lab notebooks with date-based organization, comprehensive record-keeping of hypotheses, methods, results, reasoning, and outcomes for reproducible research
+allowed-tools: ["*"]
 ---
 
 # Electronic Lab Notebook (ELN) Skill

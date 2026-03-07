@@ -16,7 +16,7 @@ pip install aflow requests
 # Materials Project - set environment variable
 export MP_API_KEY="your_api_key_here"
 
-# Get key from: https://next-gen.materialsproject.org/api
+# Get key from: https://materialsproject.org/api
 ```
 
 ## Materials Project - Common Queries

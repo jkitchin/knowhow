@@ -1,6 +1,7 @@
 ---
 name: phd-qualifier
 description: Expert evaluation of Chemical Engineering PhD qualifying exams - review written reports, presentations, and prepare comprehensive questioning sessions to assess student readiness for doctoral research
+allowed-tools: ["*"]
 ---
 
 # PhD Qualifier Evaluation Skill

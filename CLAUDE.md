@@ -248,6 +248,32 @@ skillz hooks create my-hook --event PostToolUse --prompt "Format Python files wi
 skillz agents create my-agent --prompt "An agent that reviews security vulnerabilities"
 ```
 
+## CASCADE: Skill Evolution Commands
+
+Inspired by CASCADE (arxiv:2512.23880), skillz includes commands for autonomous skill
+improvement. See `docs/cascade.md` for full documentation.
+
+```bash
+# Harvest new skills from session transcripts
+skillz harvest
+skillz harvest -t path/to/session.jsonl --generate
+
+# Optimize skill descriptions (single or batch)
+skillz optimize python-jax
+skillz optimize --all --dry-run
+
+# A/B test description variants
+skillz ab-test python-jax -n 5
+
+# Track skill usage statistics
+skillz stats --scan
+skillz stats --unused
+
+# Detect and merge overlapping skills
+skillz merge
+skillz merge --execute skill-a skill-b --merged-name combined-skill
+```
+
 ## Common Patterns
 
 **Adding a new CLI command**: Create file in `cli/commands/`, implement as Click command, import and register in `cli/main.py`.

@@ -1,7 +1,7 @@
 ---
 name: claude-light
 description: Expert assistant for conducting remote experiments with Claude-Light - a web-accessible RGB LED and spectral sensor instrument for statistics, regression, optimization, and design of experiments
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Claude-Light Experimental Skills
@@ -235,14 +235,14 @@ def objective(inputs):
 initial_guess = [0.5, 0.5, 0.5]
 result = minimize(objective, initial_guess,
                  bounds=[(0, 1), (0, 1), (0, 1)],
-                 method='Nelder-Mead')
+                 method='L-BFGS-B')
 
 print(f"Optimal R, G, B: {result.x}")
 print(f"Final error: {result.fun}")
 ```
 
 **Optimization Methods:**
-- Scipy.optimize (Nelder-Mead, Powell, L-BFGS-B)
+- Scipy.optimize (L-BFGS-B, Powell, Nelder-Mead for unbounded problems)
 - Bayesian optimization (scikit-optimize)
 - Grid search with interpolation
 - Active learning approaches

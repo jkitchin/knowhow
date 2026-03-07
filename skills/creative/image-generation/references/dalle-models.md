@@ -1,12 +1,66 @@
-# OpenAI DALL-E Image Generation Models
+# OpenAI Image Generation Models
 
 ## Overview
 
-OpenAI's DALL-E models provide advanced AI-powered image generation from natural language descriptions. DALL-E 3, the latest version, offers improved image quality, better prompt following, and enhanced creative capabilities compared to its predecessor.
+OpenAI provides a family of image generation models ranging from the latest gpt-image-1.5 to the legacy DALL-E series. The newer models offer superior quality, flexible output formats, transparent background support, and excellent text rendering, while the legacy DALL-E models remain available for specific use cases.
 
 ## Available Models
 
-### DALL-E 3
+### gpt-image-1.5 (Recommended, December 2025)
+
+**Specifications:**
+- Resolution: 1024x1024, 1536x1024, 1024x1536, or auto
+- Output Formats: png, jpeg, webp
+- Quality Levels: low, medium, high
+- Supports transparent backgrounds
+- Can generate 1-10 images per request
+- Supports image editing via edit endpoint
+- Cost: ~$0.016 (low) to ~$0.15 (high) per image
+
+**Strengths:**
+- 4x faster than gpt-image-1, 20% lower cost
+- Built-in reasoning and world knowledge
+- Excellent text rendering in images
+- Superior face and logo preservation during edits
+- Multiple images per request
+- Transparent background support
+- Flexible output formats (png, jpeg, webp)
+
+**Limitations:**
+- Maximum resolution of 1536px on longest side
+- Newer model, smaller community prompt library
+
+**Ideal For:**
+- Production quality image generation
+- Iterative editing workflows
+- Text-heavy images and infographics
+- Logo and branding work
+- Any use case requiring fast, high-quality output
+
+### gpt-image-1 (April 2025)
+
+**Specifications:**
+- Resolution: up to 4096x4096
+- Output Formats: png, jpeg, webp
+- Quality Levels: low, medium, high
+- Single image per request, no inpainting
+- Cost: ~$0.02 (low), ~$0.07 (medium), ~$0.19 (high)
+
+**Strengths:**
+- Maximum resolution up to 4096x4096
+- High-quality output with detailed rendering
+- Flexible output formats (png, jpeg, webp)
+
+**Limitations:**
+- Single image per request only
+- No inpainting support
+- Slower and more expensive than gpt-image-1.5
+
+**Ideal For:**
+- Maximum resolution needs (large prints, detailed posters)
+- Use cases requiring ultra-high-resolution output
+
+### DALL-E 3 (Legacy)
 
 **Specifications:**
 - Resolution Options: 1024x1024 (square), 1024x1792 (portrait), 1792x1024 (landscape)
@@ -39,7 +93,7 @@ OpenAI's DALL-E models provide advanced AI-powered image generation from natural
 - Fantasy and sci-fi scenes
 - Natural language creative requests
 
-### DALL-E 2
+### DALL-E 2 (Legacy)
 
 **Specifications:**
 - Resolution Options: 1024x1024, 512x512, 256x256
@@ -79,11 +133,80 @@ from openai import OpenAI
 from pathlib import Path
 import requests
 
-# Initialize client
-client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
+# Initialize client (reads OPENAI_API_KEY from environment automatically)
+client = OpenAI()
 ```
 
-### DALL-E 3: Text-to-Image
+### gpt-image-1.5: Text-to-Image (Recommended)
+
+```python
+# Basic generation
+response = client.images.generate(
+    model="gpt-image-1.5",
+    prompt="A serene mountain lake at sunset with pine trees and mist",
+    size="1024x1024",      # or "1536x1024", "1024x1536", "auto"
+    quality="high",        # or "low", "medium"
+    n=1,                   # 1-10 images per request
+    output_format="png",   # or "jpeg", "webp"
+)
+
+# Get image URL
+image_url = response.data[0].url
+
+# Download and save
+image_data = requests.get(image_url).content
+Path("output.png").write_bytes(image_data)
+```
+
+### gpt-image-1.5: Multiple Images
+
+```python
+# Generate multiple images in a single request
+response = client.images.generate(
+    model="gpt-image-1.5",
+    prompt="Minimalist tech company logo, abstract geometric design, blue and silver",
+    size="1024x1024",
+    quality="medium",
+    n=4,  # Generate 4 variations at once
+    output_format="png",
+)
+
+for idx, image_data in enumerate(response.data):
+    img_bytes = requests.get(image_data.url).content
+    Path(f"logo_option_{idx}.png").write_bytes(img_bytes)
+```
+
+### gpt-image-1.5: Image Editing
+
+```python
+# Edit an existing image via the edit endpoint
+with open("original.png", "rb") as image_file:
+    response = client.images.edit(
+        model="gpt-image-1.5",
+        image=image_file,
+        prompt="Change the background to a tropical beach at sunset",
+        size="1024x1024",
+        quality="high",
+    )
+
+edited_url = response.data[0].url
+```
+
+### gpt-image-1: High Resolution
+
+```python
+# Generate ultra-high-resolution image
+response = client.images.generate(
+    model="gpt-image-1",
+    prompt="Detailed botanical illustration of a rare orchid species, scientific accuracy",
+    quality="high",
+    output_format="png",
+)
+
+image_url = response.data[0].url
+```
+
+### DALL-E 3 (Legacy): Text-to-Image
 
 ```python
 # Basic generation
@@ -107,7 +230,7 @@ revised_prompt = response.data[0].revised_prompt
 print(f"DALL-E used this prompt: {revised_prompt}")
 ```
 
-### DALL-E 3: High Quality (HD)
+### DALL-E 3 (Legacy): High Quality (HD)
 
 ```python
 # HD quality (more detail, higher cost)
@@ -122,7 +245,7 @@ response = client.images.generate(
 image_url = response.data[0].url
 ```
 
-### DALL-E 3: Different Aspect Ratios
+### DALL-E 3 (Legacy): Different Aspect Ratios
 
 ```python
 # Square
@@ -147,7 +270,7 @@ response_landscape = client.images.generate(
 )
 ```
 
-### DALL-E 2: Text-to-Image
+### DALL-E 2 (Legacy): Text-to-Image
 
 ```python
 # Basic generation (can request multiple images)
@@ -165,7 +288,7 @@ for idx, image_data in enumerate(response.data):
     Path(f"output_{idx}.png").write_bytes(img_bytes)
 ```
 
-### DALL-E 2: Create Variations
+### DALL-E 2 (Legacy): Create Variations
 
 ```python
 # Generate variations of an existing image
@@ -183,7 +306,7 @@ for idx, image_data in enumerate(response.data):
     Path(f"variation_{idx}.png").write_bytes(img_bytes)
 ```
 
-### DALL-E 2: Edit Images (Inpainting)
+### DALL-E 2 (Legacy): Edit Images (Inpainting)
 
 ```python
 # Edit specific parts of an image using a mask
@@ -205,6 +328,29 @@ edited_url = response.data[0].url
 ```
 
 ## Prompt Engineering Best Practices
+
+### gpt-image-1.5 and gpt-image-1 Prompting
+
+The newer models have built-in reasoning and world knowledge, making them highly capable with both simple and detailed prompts:
+
+**Text Rendering:**
+```
+"A professional infographic showing '5 Steps to Better Sleep' with numbered
+sections, clean modern typography, blue and white color scheme"
+```
+
+**Precise Control:**
+```
+"Product photo of a ceramic coffee mug with the text 'Good Morning' in
+elegant serif font, on a wooden table, soft natural lighting, transparent
+background"
+```
+
+**Best Practices for gpt-image-1.5 / gpt-image-1:**
+- Leverage built-in world knowledge for accurate depictions
+- Use for text-heavy images (the models excel at text rendering)
+- Specify output format based on needs (webp for web, png for transparency)
+- Use quality levels strategically (low for drafts, high for finals)
 
 ### DALL-E 3 Prompting
 
@@ -287,33 +433,47 @@ dreamlike and expressive
 
 ## Model Comparison
 
-| Feature | DALL-E 3 | DALL-E 2 |
-|---------|----------|----------|
-| **Image Quality** | Exceptional | Good |
-| **Prompt Understanding** | Advanced, conversational | Literal, explicit |
-| **Automatic Prompt Enhancement** | Yes | No |
-| **Resolution Options** | 3 options (up to 1792px) | 3 options (up to 1024px) |
-| **Quality Levels** | Standard, HD | Standard only |
-| **Multiple Images per Request** | No (n=1 only) | Yes (n up to 10) |
-| **Image Variations** | No | Yes |
-| **Image Editing** | No | Yes (inpainting) |
-| **Outpainting** | No | Yes |
-| **Cost** | Higher | Lower |
-| **Speed** | Moderate | Fast |
-| **Best For** | Final quality, creative | Iterations, editing |
+| Feature | gpt-image-1.5 | gpt-image-1 | DALL-E 3 (Legacy) | DALL-E 2 (Legacy) |
+|---------|----------------|-------------|-------------------|-------------------|
+| **Image Quality** | Excellent | Excellent | Exceptional | Good |
+| **Max Resolution** | 1536px | 4096px | 1792px | 1024px |
+| **Output Formats** | png, jpeg, webp | png, jpeg, webp | png | png |
+| **Quality Levels** | low, medium, high | low, medium, high | Standard, HD | Standard only |
+| **Multiple Images/Request** | Yes (1-10) | No (n=1 only) | No (n=1 only) | Yes (n up to 10) |
+| **Transparent Backgrounds** | Yes | No | No | No |
+| **Text Rendering** | Excellent | Good | Limited | Poor |
+| **Image Editing** | Yes (edit endpoint) | No | No | Yes (inpainting) |
+| **Image Variations** | No | No | No | Yes |
+| **Prompt Enhancement** | Built-in reasoning | Built-in reasoning | Auto-expansion | No |
+| **Speed** | Fast | Moderate | Moderate | Fast |
+| **Cost** | ~$0.016-$0.15 | ~$0.02-$0.19 | Higher | Lower |
+| **Best For** | Production, editing, text | Max resolution | Creative art | Iterations, editing |
 
 ## Model Selection Guide
 
-### Choose DALL-E 3 When:
+### Choose gpt-image-1.5 When (Recommended):
+- You want the best balance of quality, speed, and cost
+- Creating production-quality images
+- Working with text-heavy images or infographics
+- Need transparent backgrounds
+- Iterative editing workflows
+- Need multiple images per request
+- Logo and branding work requiring face/logo preservation
+
+### Choose gpt-image-1 When:
+- Maximum resolution is required (up to 4096x4096)
+- Creating large prints or posters
+- Ultra-high-resolution output is the priority
+
+### Choose DALL-E 3 (Legacy) When:
 - Quality is paramount
 - Creating final deliverables
 - Need creative interpretation
 - Working with natural language descriptions
 - Want automatic prompt enhancement
 - Creating artistic/illustrative content
-- Budget allows for premium quality
 
-### Choose DALL-E 2 When:
+### Choose DALL-E 2 (Legacy) When:
 - Need to generate multiple variations
 - Editing existing images (inpainting)
 - Budget is constrained
@@ -325,87 +485,132 @@ dreamlike and expressive
 
 ## Cost Optimization
 
-**DALL-E 3:**
+**gpt-image-1.5 (Recommended):**
+- Use "low" quality (~$0.016) for rapid prototyping
+- Use "medium" for most production needs
+- Reserve "high" (~$0.15) for final deliverables
+- Generate multiple images per request to explore concepts efficiently
+
+**gpt-image-1:**
+- Use "low" quality (~$0.02) for drafts
+- Use "medium" (~$0.07) for standard output
+- Reserve "high" (~$0.19) for maximum resolution needs
+
+**DALL-E 3 (Legacy):**
 - Use "standard" quality for most needs
 - Reserve "hd" for critical final deliverables
 - Can only generate 1 image per request
 
-**DALL-E 2:**
+**DALL-E 2 (Legacy):**
 - Generate multiple variations in single request (cheaper per image)
 - Use 512x512 for rapid prototyping
 - Scale up to 1024x1024 only for selected concepts
 - Leverage variations feature to explore concepts efficiently
 
-**Hybrid Approach:**
-- Use DALL-E 2 for exploration (multiple cheap iterations)
-- Switch to DALL-E 3 for final selected concept
-- Use DALL-E 2 editing to refine DALL-E 3 outputs if needed
+**Recommended Approach:**
+- Use gpt-image-1.5 with "low" quality for exploration and iteration
+- Use gpt-image-1.5 with "high" quality for final production images
+- Use gpt-image-1 only when you need resolution above 1536px
 
 ## Common Use Cases
 
 ### Marketing Visuals
 
-**DALL-E 3** (preferred):
+**gpt-image-1.5** (recommended):
 ```python
 response = client.images.generate(
-    model="dall-e-3",
+    model="gpt-image-1.5",
     prompt="Dynamic marketing image showing diverse team collaborating on "
            "creative project, modern office environment, energetic and "
            "professional atmosphere, vibrant colors, lifestyle photography style",
-    size="1792x1024",  # Landscape for web banners
-    quality="hd",
+    size="1536x1024",  # Landscape for web banners
+    quality="high",
+    output_format="jpeg",
 )
 ```
 
 ### Logo Concepts
 
-**DALL-E 2** (for multiple options):
+**gpt-image-1.5** (multiple options with transparency):
 ```python
 response = client.images.generate(
-    model="dall-e-2",
+    model="gpt-image-1.5",
     prompt="Minimalist tech company logo, abstract geometric network symbol, "
            "blue and silver colors, clean modern design, professional",
     size="1024x1024",
+    quality="high",
     n=5,  # Generate 5 different concepts
+    output_format="png",  # Supports transparency
+)
+```
+
+### Text-Heavy Infographics
+
+**gpt-image-1.5** (excellent text rendering):
+```python
+response = client.images.generate(
+    model="gpt-image-1.5",
+    prompt="Clean infographic titled 'The Water Cycle' with labeled diagrams "
+           "showing evaporation, condensation, precipitation, and collection, "
+           "educational style, blue color palette, clear readable text",
+    size="1024x1536",  # Portrait for infographic
+    quality="high",
+    output_format="png",
 )
 ```
 
 ### Character Design
 
-**DALL-E 3** (preferred):
+**gpt-image-1.5** (recommended):
 ```python
 response = client.images.generate(
-    model="dall-e-3",
+    model="gpt-image-1.5",
     prompt="Fantasy character design: Elven archer with intricate leaf-pattern "
            "armor, holding ornate longbow, confident stance, forest background, "
            "detailed digital art style, vibrant fantasy colors",
-    size="1024x1792",  # Portrait orientation
-    quality="hd",
+    size="1024x1536",  # Portrait orientation
+    quality="high",
+    output_format="png",
+)
+```
+
+### Ultra-High-Resolution Art
+
+**gpt-image-1** (maximum resolution):
+```python
+response = client.images.generate(
+    model="gpt-image-1",
+    prompt="Highly detailed botanical illustration of a rare orchid, "
+           "scientific accuracy, fine line work, watercolor style",
+    quality="high",
+    output_format="png",
 )
 ```
 
 ### Product Mockups
 
-**Start with DALL-E 2, refine with DALL-E 3**:
+**Start with gpt-image-1.5 low quality, refine with high quality**:
 ```python
-# Iteration phase (DALL-E 2)
+# Iteration phase (low cost)
 response = client.images.generate(
-    model="dall-e-2",
+    model="gpt-image-1.5",
     prompt="Smartphone mockup showing weather app interface, hand holding phone, "
            "clean white background, professional product photography",
     size="1024x1024",
+    quality="low",
     n=3,
 )
 
-# Final version (DALL-E 3)
+# Final version (high quality)
 response = client.images.generate(
-    model="dall-e-3",
+    model="gpt-image-1.5",
     prompt="Professional product photo: hand holding modern smartphone displaying "
            "elegant weather app interface with gradient blue sky background, "
            "clean white studio background, soft professional lighting, "
            "commercial photography quality",
     size="1024x1024",
-    quality="hd",
+    quality="high",
+    output_format="png",
 )
 ```
 
@@ -414,13 +619,14 @@ response = client.images.generate(
 ```python
 from openai import OpenAI, OpenAIError
 
-client = OpenAI(api_key="YOUR_API_KEY")
+client = OpenAI()
 
 try:
     response = client.images.generate(
-        model="dall-e-3",
+        model="gpt-image-1.5",
         prompt=user_prompt,
         size="1024x1024",
+        quality="high",
     )
     image_url = response.data[0].url
 
@@ -455,6 +661,8 @@ OpenAI has strict content policies. Images cannot:
 
 - Free tier: Limited requests per minute
 - Paid tier: Higher limits based on usage tier
+- gpt-image-1.5: Optimized for throughput
+- gpt-image-1: Moderate rate limits
 - DALL-E 3: Generally lower rate limits
 - DALL-E 2: Higher rate limits (cheaper)
 
@@ -480,16 +688,16 @@ def generate_with_retry(client, **kwargs):
 
 ## Best Practices Summary
 
-1. **Choose the right model** for your use case (quality vs. cost vs. features)
-2. **DALL-E 3**: Use natural language, trust auto-enhancement
-3. **DALL-E 2**: Be explicit and detailed in prompts
-4. **Start cheap**: Iterate with DALL-E 2, finalize with DALL-E 3
-5. **Leverage variations**: Use DALL-E 2's variation feature for exploration
-6. **Handle errors gracefully**: Content policy and rate limits are real
-7. **Save all outputs**: Generation isn't deterministic
-8. **Check revised prompts**: Learn from DALL-E 3's prompt expansions
-9. **Respect content policy**: Keep prompts appropriate
-10. **Optimize costs**: Use appropriate size and quality for each stage
+1. **Use gpt-image-1.5 as the default** - best balance of quality, speed, and cost
+2. **Use gpt-image-1 for max resolution** - when you need output above 1536px
+3. **Leverage quality levels** - low for drafts, medium for production, high for finals
+4. **Use transparent backgrounds** (gpt-image-1.5) for logos and compositing
+5. **Generate multiple images** per request with gpt-image-1.5 for exploration
+6. **Choose the right output format** - png for transparency, jpeg for photos, webp for web
+7. **Handle errors gracefully** - content policy and rate limits are real
+8. **Save all outputs** - generation isn't deterministic
+9. **Respect content policy** - keep prompts appropriate
+10. **Optimize costs** - use appropriate quality level for each stage
 
 ## API Resources
 

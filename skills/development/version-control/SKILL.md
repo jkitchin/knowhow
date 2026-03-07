@@ -6,7 +6,7 @@ description: |
   and professional collaboration patterns. Use when users need help with git commands, branching strategies,
   commit messages, PRs, merge conflicts, or git troubleshooting. Triggers include 'git,' 'commit,' 'branch,'
   'merge,' 'rebase,' 'PR,' 'pull request,' or version control questions.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Version Control & Git Workflow Skill
@@ -875,9 +875,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
       - name: Install
@@ -900,10 +900,10 @@ jobs:
   lint-commits:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v5
+      - uses: wagoid/commitlint-github-action@v6
 ```
 
 See `examples/github-actions/` for more workflow examples.

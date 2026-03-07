@@ -7,7 +7,7 @@ description: |
   simulations, energy systems modeling, power plant design, material and energy balances, or
   process optimization. Triggers include 'IDAES', 'flowsheet', 'process model', 'unit operation',
   'process optimization', 'property package', 'energy systems', or process engineering tasks.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # IDAES Process Systems Engineering

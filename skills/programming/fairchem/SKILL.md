@@ -1,6 +1,7 @@
 ---
 name: fairchem
 description: Expert guidance for Meta's FAIRChem library - machine learning methods for materials science and quantum chemistry using pretrained UMA models with ASE integration for fast, accurate predictions
+allowed-tools: ["*"]
 ---
 
 # FAIRChem Skill
@@ -203,7 +204,7 @@ calc = FAIRChemCalculator(
 )
 
 # Large system
-atoms = bulk("C", "fcc", a=3.57) * (20, 20, 20)  # 8000 atoms
+atoms = bulk("C", "diamond", a=3.57) * (10, 10, 10)  # Large system
 atoms.calc = calc
 
 # Initialize velocities
@@ -376,16 +377,14 @@ predict_unit = load_predict_unit(
 ### Batch Predictions
 
 ```python
-# For multiple similar calculations
-from fairchem.data.ase import batch_predict
-
-structures = [atoms1, atoms2, atoms3, ...]
-
-results = batch_predict(
-    structures,
-    predict_unit=predict_unit,
-    task_name="omat"
-)
+# For multiple similar calculations, iterate over structures
+results = []
+for atoms in [atoms1, atoms2, atoms3]:
+    atoms.calc = calc
+    results.append({
+        'energy': atoms.get_potential_energy(),
+        'forces': atoms.get_forces()
+    })
 ```
 
 ## Best Practices
@@ -503,7 +502,7 @@ eos = calculate_eos(atoms)
 huggingface-cli login
 
 # Request access to UMA models at:
-# https://huggingface.co/meta-llama/uma-m-1p1
+# https://huggingface.co/fairchem-team/uma-m-1p1
 ```
 
 ### GPU Memory Issues

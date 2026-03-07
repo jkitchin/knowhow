@@ -57,7 +57,7 @@ pip install aflow requests
 
 ### 2. Get Materials Project API Key
 
-1. Visit: https://next-gen.materialsproject.org/api
+1. Visit: https://materialsproject.org/api
 2. Click "Generate API Key" (login with ORCID or email)
 3. Copy your API key
 
@@ -155,8 +155,8 @@ print(poscar)
 
 ## Resources
 
-- **Materials Project**: https://next-gen.materialsproject.org
-  - API Docs: https://next-gen.materialsproject.org/api
+- **Materials Project**: https://materialsproject.org
+  - API Docs: https://materialsproject.org/api
   - Python Client: https://github.com/materialsproject/api
 
 - **AFLOW**: https://aflow.org
@@ -169,7 +169,7 @@ print(poscar)
 
 **"MPRestError: Unauthorized"**
 - Check that your API key is set correctly
-- Verify the key at https://next-gen.materialsproject.org/api
+- Verify the key at https://materialsproject.org/api
 
 **AFLOW queries timing out**
 - Try more specific search criteria

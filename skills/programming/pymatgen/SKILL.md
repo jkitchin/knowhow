@@ -8,7 +8,7 @@ description: |
   properties, computational chemistry calculations, or materials databases. Triggers include
   'pymatgen', 'crystal structure', 'Materials Project', 'CIF file', 'POSCAR', 'band structure',
   'phase diagram', or materials analysis tasks.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Pymatgen Materials Analysis

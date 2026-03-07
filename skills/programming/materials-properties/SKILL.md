@@ -1,7 +1,7 @@
 ---
 name: materials-properties
 description: Expert assistant for calculating materials properties from first-principles using ASE - structure relaxation, surface energies, adsorption, reaction barriers, phonons, elastic constants, and thermodynamic modeling with proper scientific methodology
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Materials Properties Calculation Skill

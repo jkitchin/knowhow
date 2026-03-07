@@ -7,17 +7,17 @@ description: |
   formatting manuscripts, responding to reviewers, writing grant proposals, or need help with any aspect
   of scientific communication. Triggers include 'write a paper,' 'scientific writing,' 'format my
   manuscript,' 'methods section,' 'respond to reviewers,' or any research writing task.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
-* Scientific Writing
+# Scientific Writing
 
 Systematic guidance for writing research papers, grants, and scientific communications with
 emphasis on clarity, reproducibility, and adherence to field conventions.
 
-** Scientific Writing Workflow
+## Scientific Writing Workflow
 
-*** 1. Identify Document Type and Requirements
+### 1. Identify Document Type and Requirements
 
 Determine what you're writing:
 - Research article → Full paper with novel findings
@@ -34,7 +34,7 @@ Gather venue requirements:
 - Figure/table format specifications
 - Submission guidelines and templates
 
-*** 2. Select Structure and Route to Guidance
+### 2. Select Structure and Route to Guidance
 
 For research articles:
 - Use IMRAD structure (see references/paper-structure.md)
@@ -58,7 +58,7 @@ For revision responses:
 - See references/revision-response.md for point-by-point format
 - Diplomatic language and tracking changes
 
-*** 3. Write Section by Section
+### 3. Write Section by Section
 
 Follow section-specific guidance:
 
@@ -88,7 +88,7 @@ Discussion (references/discussion-writing.md)
 - Discuss implications and future work
 - Mix of present (facts) and past (your results)
 
-*** 4. Create Figures and Tables
+### 4. Create Figures and Tables
 
 Figures (references/figure-design.md)
 - Match figure type to data type
@@ -103,15 +103,15 @@ Tables (references/table-design.md)
 - Descriptive captions
 
 Tools:
-#+begin_src bash
+```bash
 # Generate publication-quality figures
 python scripts/figure_generator.py data.csv config.yaml --output fig1.pdf
 
 # Format tables for journals
 python scripts/table_formatter.py data.csv --format latex --journal nature
-#+end_src
+```
 
-*** 5. Manage Citations and References
+### 5. Manage Citations and References
 
 Citation formatting (references/citation-management.md)
 - Match journal's required style:
@@ -123,12 +123,12 @@ Citation formatting (references/citation-management.md)
 - Consistent formatting throughout
 
 Tools:
-#+begin_src bash
+```bash
 # Validate citation consistency
 python scripts/citation_checker.py manuscript.docx --style apa
-#+end_src
+```
 
-*** 6. Improve Clarity and Conciseness
+### 6. Improve Clarity and Conciseness
 
 Language clarity (references/language-clarity.md)
 - Active voice preferred (field norms vary)
@@ -138,15 +138,15 @@ Language clarity (references/language-clarity.md)
 - Logical paragraph flow
 
 Tools:
-#+begin_src bash
+```bash
 # Analyze readability
 python scripts/readability_analyzer.py section.txt
 
 # Count words by section
 python scripts/word_counter.py manuscript.docx
-#+end_src
+```
 
-*** 7. Review Against Requirements
+### 7. Review Against Requirements
 
 Pre-submission checklist:
 - [ ] Word limits met for each section
@@ -162,9 +162,9 @@ Pre-submission checklist:
 - [ ] Data availability statement
 - [ ] Ethics approvals included
 
-** Document Type Routing
+## Document Type Routing
 
-*** Research Article → IMRAD Structure
+### Research Article → IMRAD Structure
 
 Structure overview (references/paper-structure.md)
 
@@ -188,7 +188,7 @@ Common mistakes to avoid:
 - ❌ Missing gap identification in introduction
 - ❌ Ignoring limitations
 
-*** Review Article → Thematic Organization
+### Review Article → Thematic Organization
 
 See references/review-writing.md
 
@@ -203,7 +203,7 @@ Key principles:
 - Identify patterns, gaps, controversies
 - Future directions
 
-*** Grant Proposal → Funder-Specific Structure
+### Grant Proposal → Funder-Specific Structure
 
 See references/grant-writing.md
 
@@ -219,7 +219,7 @@ Review criteria alignment:
 - Use headings matching criteria
 - Make reviewers' job easy
 
-*** Revision Response → Point-by-Point
+### Revision Response → Point-by-Point
 
 See references/revision-response.md
 
@@ -234,9 +234,9 @@ Response strategies:
 - Agree but can't comply: Explain why, offer alternative
 - Disagree: Provide evidence diplomatically
 
-** Section-Specific Guidance
+## Section-Specific Guidance
 
-*** Introduction Writing
+### Introduction Writing
 
 See references/introduction-writing.md
 
@@ -251,7 +251,7 @@ Length: Typically 1-3 pages
 
 Tense: Present for established facts, past for previous studies
 
-*** Methods Writing
+### Methods Writing
 
 See references/methods-writing.md
 
@@ -273,7 +273,7 @@ Detail level:
 - Novel procedures: Full detail
 - Modified procedures: Highlight changes
 
-*** Results Writing
+### Results Writing
 
 See references/results-writing.md
 
@@ -294,7 +294,7 @@ Figure integration:
 - Describe key finding from each
 - Don't just say "see Figure X"
 
-*** Discussion Writing
+### Discussion Writing
 
 See references/discussion-writing.md
 
@@ -313,7 +313,7 @@ Limitations:
 - Suggest how to address
 - Don't introduce obscure limitations
 
-*** Abstract Writing
+### Abstract Writing
 
 See references/abstract-writing.md
 
@@ -335,9 +335,9 @@ Self-contained requirement:
 - Understandable without reading paper
 - Include actual data, not just "significant"
 
-** Universal Scientific Writing Principles
+## Universal Scientific Writing Principles
 
-*** 1. Clarity Over Complexity
+### 1. Clarity Over Complexity
 
 - Simple words over complex when meaning is same
 - Short sentences preferred
@@ -345,7 +345,7 @@ Self-contained requirement:
 - Active voice when possible (field norms vary)
 - Define specialized terms
 
-*** 2. Precision in Language
+### 2. Precision in Language
 
 - Specific numbers over vague terms
 - "Approximately 50%" not "many"
@@ -353,7 +353,7 @@ Self-contained requirement:
 - Clear about causation vs correlation
 - Avoid hedging excessively ("relatively," "quite," "very")
 
-*** 3. Objectivity in Reporting
+### 3. Objectivity in Reporting
 
 - Separate observations (results) from interpretations (discussion)
 - Present negative results honestly
@@ -361,7 +361,7 @@ Self-contained requirement:
 - Don't overstate conclusions
 - Appropriate level of certainty
 
-*** 4. Reproducibility in Methods
+### 4. Reproducibility in Methods
 
 - Include all information needed to reproduce
 - Equipment specifications
@@ -370,7 +370,7 @@ Self-contained requirement:
 - Software versions and parameters
 - Code availability when applicable
 
-*** 5. Logical Flow of Argument
+### 5. Logical Flow of Argument
 
 - Each section builds on previous
 - Clear transitions between ideas
@@ -378,7 +378,7 @@ Self-contained requirement:
 - Introduction sets up discussion
 - Discussion answers introduction's questions
 
-*** 6. Appropriate Detail for Audience
+### 6. Appropriate Detail for Audience
 
 - Assume audience has field background
 - Define specialized terms first use
@@ -386,9 +386,9 @@ Self-contained requirement:
 - Don't explain fundamental concepts
 - Do explain novel techniques or applications
 
-** Tense and Voice Usage Guide
+## Tense and Voice Usage Guide
 
-*** Tense by Section
+### Tense by Section
 
 Introduction:
 - Present: Established facts ("DNA is composed of...")
@@ -411,7 +411,7 @@ Discussion:
 Conclusions:
 - Present: General conclusions ("This approach provides...")
 
-*** Voice by Field
+### Voice by Field
 
 Biology/Medicine:
 - More passive acceptable in methods
@@ -425,7 +425,7 @@ Physics/Chemistry:
 - Varies by journal and author preference
 - Either acceptable if consistent
 
-** Quick Reference - Common Issues
+## Quick Reference - Common Issues
 
 Results vs Discussion: Keep observations in results, interpretations in discussion
 
@@ -441,49 +441,49 @@ Limitations: Be honest but not self-defeating; explain impact, suggest solutions
 
 See individual reference files for detailed examples and guidance.
 
-** Tools and Utilities
+## Tools and Utilities
 
-*** Citation Checker
+### Citation Checker
 
-#+begin_src bash
+```bash
 python scripts/citation_checker.py manuscript.docx --style apa
-#+end_src
+```
 
 Validates citation consistency between in-text and reference list.
 
-*** Figure Generator
+### Figure Generator
 
-#+begin_src bash
+```bash
 python scripts/figure_generator.py data.csv config.yaml --output fig1.pdf
-#+end_src
+```
 
 Creates publication-quality figures from data.
 
-*** Word Counter
+### Word Counter
 
-#+begin_src bash
+```bash
 python scripts/word_counter.py manuscript.docx
-#+end_src
+```
 
 Counts words by section for length requirements.
 
-*** Readability Analyzer
+### Readability Analyzer
 
-#+begin_src bash
+```bash
 python scripts/readability_analyzer.py section.txt
-#+end_src
+```
 
 Analyzes text complexity and suggests improvements.
 
-*** Table Formatter
+### Table Formatter
 
-#+begin_src bash
+```bash
 python scripts/table_formatter.py data.csv --format latex --journal nature
-#+end_src
+```
 
 Formats tables for specific journals.
 
-** Templates
+## Templates
 
 Access templates for common document types:
 - assets/templates/manuscript_template.docx - Generic manuscript
@@ -493,7 +493,7 @@ Access templates for common document types:
 - assets/templates/abstract_template.txt - Structured abstract
 - assets/templates/methods_checklist.md - Reproducibility checklist
 
-** Style Guides
+## Style Guides
 
 Journal-specific quick references:
 - assets/style-guides/apa_guide.md - APA style

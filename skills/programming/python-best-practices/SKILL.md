@@ -459,7 +459,7 @@ uv pip install pandas numpy pytest
 uv pip install "requests>=2.28.0,<3.0"
 
 # Install development dependencies
-uv pip install --dev pytest black ruff mypy
+uv pip install -e ".[dev]"
 
 # Create requirements file
 uv pip freeze > requirements.txt

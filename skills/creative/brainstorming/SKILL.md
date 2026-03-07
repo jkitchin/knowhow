@@ -5,7 +5,7 @@ description: |
   Use when users want to generate ideas, explore solutions, break through creative blocks,
   or need facilitated ideation sessions. Triggers include requests like 'help me brainstorm,'
   'generate ideas for,' 'creative solutions to,' or 'think of alternatives.'
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Brainstorming & Ideation Facilitation Skill

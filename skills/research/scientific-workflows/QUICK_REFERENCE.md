@@ -29,8 +29,8 @@
                   │         │     │       │
                   ▼         ▼     ▼       ▼
              ┌────────┐┌───────┐┌────┐┌────┐
-             │joblib  ││Parsl/ ││Pref││Loop│
-             │.Parallel││Covalent│ect││with│
+             │joblib  ││Parsl  ││Pref││Loop│
+             │.Parallel││       │ect││with│
              └────────┘└───────┘└────┘│deps│
                                       └────┘
 
@@ -55,7 +55,7 @@ Materials Science?
 | Run 10-100 tasks on laptop | **joblib.Parallel** | Built-in, no setup |
 | Run 100+ tasks on HPC | **Parsl** | HPC-aware, implicit parallelism |
 | Complex DAG with retries | **Prefect** | Modern, Pythonic, great UI |
-| Cloud-agnostic deployment | **Covalent** | Infrastructure abstraction |
+| Cloud deployment | **Prefect Cloud** | Managed orchestration |
 | Materials DFT workflows | **quacc** | Pre-built recipes, modern |
 | Production materials workflows | **FireWorks** | Battle-tested, Materials Project |
 
@@ -133,23 +133,6 @@ futures = [compute(i) for i in range(100)]
 results = [f.result() for f in futures]
 ```
 
-### Covalent - Cloud
-
-```python
-import covalent as ct
-
-@ct.electron
-def task(x):
-    return x * 2
-
-@ct.lattice
-def workflow(x):
-    return task(x)
-
-dispatch_id = ct.dispatch(workflow)(5)
-result = ct.get_result(dispatch_id)
-```
-
 ### quacc - Materials
 
 ```python
@@ -180,21 +163,18 @@ print(result["results"]["energy"])  # Final energy
 - ✗ joblib
 - ✓ Prefect (excellent)
 - ✓ Parsl (good)
-- ✓ Covalent (good)
 - ✓ FireWorks (excellent)
 
 ### Need Monitoring UI?
 - ✗ joblib
 - ✓ Prefect (excellent)
 - ◐ Parsl (basic)
-- ✓ Covalent (good)
 - ✓ FireWorks (excellent)
 
 ### Need HPC Integration?
 - ✗ joblib
 - ◐ Prefect (via workers)
 - ✓ Parsl (excellent)
-- ✓ Covalent (good)
 - ✓ FireWorks (excellent)
 
 ## Installation Commands
@@ -208,9 +188,6 @@ pip install prefect
 
 # HPC workflows
 pip install parsl
-
-# Cloud/quantum
-pip install covalent
 
 # Materials science
 pip install quacc
@@ -234,8 +211,8 @@ pip install fireworks atomate2
 Low Complexity                              High Complexity
 │                                                          │
 joblib ────→ Prefect ────→ Parsl ────→ FireWorks
-            ↓              ↓
-         Covalent       quacc
+                           ↓
+                         quacc
 
 Low Features                              High Features
 ```
@@ -290,17 +267,17 @@ Low Features                              High Features
 
 ## Decision Table
 
-| Requirement | joblib | Prefect | Parsl | Covalent | FireWorks |
-|-------------|--------|---------|-------|----------|-----------|
-| Caching | ✓✓✓ | ✓ | ✓ | ✓ | ✓ |
-| Simple parallel | ✓✓✓ | ✓✓ | ✓✓✓ | ✓✓ | ✓ |
-| DAG workflows | ✗ | ✓✓✓ | ✓✓ | ✓✓ | ✓✓✓ |
-| HPC (SLURM/PBS) | ✗ | ✓ | ✓✓✓ | ✓✓ | ✓✓✓ |
-| Cloud native | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ | ✓ |
-| Error recovery | ✗ | ✓✓✓ | ✓✓ | ✓✓ | ✓✓✓ |
-| Monitoring | ✗ | ✓✓✓ | ✓ | ✓✓ | ✓✓✓ |
-| Setup complexity | None | Low | Low | Low | High |
-| Learning curve | Easy | Med | Med | Med | Hard |
+| Requirement | joblib | Prefect | Parsl | FireWorks |
+|-------------|--------|---------|-------|-----------|
+| Caching | ✓✓✓ | ✓ | ✓ | ✓ |
+| Simple parallel | ✓✓✓ | ✓✓ | ✓✓✓ | ✓ |
+| DAG workflows | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ |
+| HPC (SLURM/PBS) | ✗ | ✓ | ✓✓✓ | ✓✓✓ |
+| Cloud native | ✗ | ✓✓✓ | ✓✓ | ✓ |
+| Error recovery | ✗ | ✓✓✓ | ✓✓ | ✓✓✓ |
+| Monitoring | ✗ | ✓✓✓ | ✓ | ✓✓✓ |
+| Setup complexity | None | Low | Low | High |
+| Learning curve | Easy | Med | Med | Hard |
 
 **Legend:** ✓✓✓ Excellent, ✓✓ Good, ✓ Basic, ✗ No
 

@@ -7,7 +7,7 @@ description: |
   test-first, or want guidance on test structure and implementation. Triggers include 'use TDD,'
   'test-driven development,' 'write tests first,' 'red-green-refactor,' or requests to develop
   functionality with tests.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Test-Driven Development (TDD) Skill

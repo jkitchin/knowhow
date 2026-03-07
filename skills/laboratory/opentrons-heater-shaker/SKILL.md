@@ -128,7 +128,7 @@ hs_mod.deactivate_heater()
 ```
 
 **Temperature range:**
-- **Minimum:** 37°C or 1.5°C above ambient temperature (whichever is lower)
+- **Minimum:** The greater of 37°C or ambient temperature + 1.5°C (the Heater-Shaker cannot actively cool)
 - **Maximum:** 95°C
 - **Resolution:** 1°C
 
@@ -258,16 +258,20 @@ hs_mod.deactivate_heater()
 
 ### Bacterial Transformation
 
+**Note:** The Heater-Shaker cannot cool below 37C. Use a Temperature Module for ice incubation and heat shock steps, then transfer to the Heater-Shaker for the 37C recovery with shaking.
+
 ```python
-# Heat shock protocol
-hs_mod.set_and_wait_for_temperature(celsius=4)
+# Ice incubation and heat shock on Temperature Module
+temp_mod.set_temperature(celsius=4)
 protocol.delay(minutes=20)  # Ice incubation
+temp_mod.set_temperature(celsius=42)
+protocol.delay(seconds=45)  # Heat shock
 
-# Heat shock
-hs_mod.set_and_wait_for_temperature(celsius=42)
-protocol.delay(seconds=45)
+# Transfer plate to Heater-Shaker for recovery
+temp_mod.deactivate()
+protocol.move_labware(plate, hs_mod, use_gripper=True)
 
-# Recovery
+# Recovery at 37C with shaking
 hs_mod.set_and_wait_for_temperature(celsius=37)
 hs_mod.close_labware_latch()
 hs_mod.set_and_wait_for_shake_speed(rpm=300)
@@ -293,12 +297,14 @@ hs_mod.close_labware_latch()
 hs_mod.set_and_wait_for_shake_speed(rpm=300)
 protocol.delay(minutes=30)
 
-# Stop reaction by cooling
+# Stop reaction - transfer to Temperature Module for cooling
 hs_mod.deactivate_shaker()
-hs_mod.open_labware_latch()
-hs_mod.set_and_wait_for_temperature(celsius=4)
-
 hs_mod.deactivate_heater()
+hs_mod.open_labware_latch()
+
+# Use Temperature Module for cooling below 37C
+# protocol.move_labware(hs_plate, temp_mod, use_gripper=True)
+# temp_mod.set_temperature(celsius=4)
 ```
 
 ### ELISA Wash with Incubation

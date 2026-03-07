@@ -297,7 +297,7 @@ def parallel_dot_product(matrices):
 - ❌ Need complex task dependencies (use Prefect)
 - ❌ Running on HPC cluster (use Parsl)
 - ❌ Need failure recovery (use Prefect/FireWorks)
-- ❌ Tasks must run on different machines (use Parsl/Covalent)
+- ❌ Tasks must run on different machines (use Parsl/Prefect)
 - ❌ Need monitoring UI (use Prefect/FireWorks)
 
 ## Troubleshooting

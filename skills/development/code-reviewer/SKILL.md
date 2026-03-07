@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Comprehensive code review and analysis for software quality assurance. Use when Claude needs to review code in any format including (1) Individual files (Python, R, JavaScript, etc.), (2) Directory structures and project organization, (3) Scripts and automation code, (4) Jupyter notebooks and data analysis workflows, (5) Documentation assessment and improvement suggestions, (6) Bug detection and logic verification, (7) Testing coverage and strategy evaluation, (8) Code consistency and maintainability analysis. Provides actionable improvement recommendations across all aspects of software development.
-allowed-tools: "*"
+allowed-tools: ["*"]
 ---
 
 # Code Reviewer
