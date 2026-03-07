@@ -46,8 +46,9 @@ def mock_usage_log(temp_dir):
 class TestLogSkillUsage:
     def test_creates_log_entry(self, temp_dir):
         log_file = temp_dir / "test_usage.jsonl"
-        with patch("cli.commands.stats.USAGE_LOG", log_file), patch(
-            "cli.commands.stats.STATS_DIR", temp_dir
+        with (
+            patch("cli.commands.stats.USAGE_LOG", log_file),
+            patch("cli.commands.stats.STATS_DIR", temp_dir),
         ):
             log_skill_usage("test-skill", triggered=True, source="test")
 
@@ -94,8 +95,9 @@ class TestStatsCommand:
     def test_log_skill(self, temp_dir):
         runner = CliRunner()
         log_file = temp_dir / "usage.jsonl"
-        with patch("cli.commands.stats.USAGE_LOG", log_file), patch(
-            "cli.commands.stats.STATS_DIR", temp_dir
+        with (
+            patch("cli.commands.stats.USAGE_LOG", log_file),
+            patch("cli.commands.stats.STATS_DIR", temp_dir),
         ):
             result = runner.invoke(stats, ["--log", "test-skill"])
         assert result.exit_code == 0
@@ -105,8 +107,9 @@ class TestStatsCommand:
         runner = CliRunner()
         log_file = temp_dir / "usage.jsonl"
         log_file.write_text("{}\n")
-        with patch("cli.commands.stats.USAGE_LOG", log_file), patch(
-            "cli.commands.stats.STATS_DIR", temp_dir
+        with (
+            patch("cli.commands.stats.USAGE_LOG", log_file),
+            patch("cli.commands.stats.STATS_DIR", temp_dir),
         ):
             result = runner.invoke(stats, ["--reset"], input="y\n")
         assert result.exit_code == 0
