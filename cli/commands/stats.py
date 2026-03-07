@@ -265,11 +265,11 @@ def stats(ctx, scan, sort_by, unused, top, log_skill, reset):
 
     total = len(metadata)
     used = sum(1 for n in metadata if usage_counts.get(n, 0) > 0)
-    console.print(f"\n[dim]Total: {total} skills | " f"Used: {used} | Unused: {total - used}[/dim]")
+    console.print(f"\n[dim]Total: {total} skills | Used: {used} | Unused: {total - used}[/dim]")
 
     if scan:
         console.print(
-            "[dim]Note: Transcript scan counts are approximate " "(based on name mentions).[/dim]"
+            "[dim]Note: Transcript scan counts are approximate (based on name mentions).[/dim]"
         )
 
 

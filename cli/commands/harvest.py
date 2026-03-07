@@ -187,7 +187,7 @@ def harvest(ctx, transcript, recent, generate, output_dir, dry_run):
     all_proposals = []
     for i, t_path in enumerate(transcripts, 1):
         console.print(
-            f"[yellow]Analyzing transcript {i}/{len(transcripts)}: " f"{t_path.name}...[/yellow]"
+            f"[yellow]Analyzing transcript {i}/{len(transcripts)}: {t_path.name}...[/yellow]"
         )
 
         transcript_text = _read_transcript(t_path)
@@ -213,7 +213,7 @@ def harvest(ctx, transcript, recent, generate, output_dir, dry_run):
             console.print("\n[dim]Dry run: no files created.[/dim]")
         else:
             console.print(
-                "\n[dim]Use --generate to create SKILL.md files " "for these proposals.[/dim]"
+                "\n[dim]Use --generate to create SKILL.md files for these proposals.[/dim]"
             )
         return
 
@@ -230,16 +230,14 @@ def harvest(ctx, transcript, recent, generate, output_dir, dry_run):
 
     for proposal_text in all_proposals:
         # Parse proposals for skill names/descriptions
-        console.print(
-            "[yellow]Enter skill details to generate " "(or press Enter to skip):[/yellow]"
-        )
+        console.print("[yellow]Enter skill details to generate (or press Enter to skip):[/yellow]")
         name = click.prompt("Skill name (lowercase-with-hyphens)", default="", show_default=False)
         if not name:
             continue
 
         if not validate_name(name):
             console.print(
-                "[red]Invalid name. Use lowercase letters, numbers, " "and hyphens only.[/red]"
+                "[red]Invalid name. Use lowercase letters, numbers, and hyphens only.[/red]"
             )
             continue
 
