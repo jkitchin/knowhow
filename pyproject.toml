@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "click>=8.0.0",
+    "click>=8.3.2",
     "pyyaml>=6.0.0",
     "rich>=13.0.0",
 ]
