@@ -33,7 +33,7 @@ dev = [
     "pre-commit>=3.0.0",
 ]
 git = [
-    "gitpython>=3.1.0",
+    "gitpython>=3.1.47",
 ]
 templates = [
     "jinja2>=3.0.0",
