@@ -44,6 +44,8 @@ pip install openai elevenlabs pillow requests
 export OPENAI_API_KEY="your-openai-key"  # For DALL-E
 # OR
 export GOOGLE_API_KEY="your-google-key"  # For Gemini
+# OR, explicitly select the optional Atlas Cloud provider
+export ATLASCLOUD_API_KEY="your-atlascloud-key"
 
 # Required for audio narration
 export ELEVENLABS_API_KEY="your-elevenlabs-key"
@@ -53,6 +55,7 @@ export ELEVENLABS_API_KEY="your-elevenlabs-key"
 - OpenAI: https://platform.openai.com/api-keys
 - Google AI: https://makersuite.google.com/app/apikey
 - ElevenLabs: https://elevenlabs.io/app/settings/api-keys
+- Atlas Cloud: https://www.atlascloud.ai/console/api-keys
 
 **Install ffmpeg:**
 ```bash
@@ -83,6 +86,8 @@ Claude will automatically:
 2. Generate consistent images for each scene
 3. Create narrated audio with emotion
 4. Assemble everything into final MP4 video
+
+The existing image-generation skill remains the default. To use Atlas Cloud for story frames, run `scripts/atlas_image.py` as documented in `references/atlas-cloud.md`; narration continues to use ElevenLabs.
 
 ## Features
 
@@ -521,6 +526,7 @@ ls output/scene_*.mp3
 ## Related Skills
 
 - **image-generation** - Standalone image creation (Gemini, DALL-E)
+- **Atlas Cloud** - Optional story-frame generation through `scripts/atlas_image.py`
 - **elevenlabs** - Audio generation (TTS, sound effects, music)
 - **python-plotting** - Video visualization and analysis
 - **scientific-writing** - Narrative and storytelling writing

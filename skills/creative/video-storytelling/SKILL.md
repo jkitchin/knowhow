@@ -18,7 +18,7 @@ description: |
   character voice narration, automatic video assembly
 
   Default: 1 title scene + 5 story scenes
-  Dependencies: image-generation skill, elevenlabs skill, ffmpeg
+  Dependencies: image-generation skill (or optional Atlas Cloud image provider), elevenlabs skill, ffmpeg
 allowed-tools: ["*"]
 ---
 
@@ -279,6 +279,8 @@ Key features: {', '.join(character['features'])}
 ### Step 5: Generate Image Sequence
 
 Generate images using multi-turn generation for consistency:
+
+Use the existing `image-generation` skill by default. If the user explicitly selects Atlas Cloud, use `scripts/atlas_image.py` for each frame and follow [references/atlas-cloud.md](references/atlas-cloud.md). Atlas is opt-in and does not change the existing image or narration providers.
 
 **Implementation:**
 ```python
@@ -586,12 +588,13 @@ scenes = [
 ## Requirements
 
 **Skills:**
-- `image-generation` - For creating consistent visual scenes
+- `image-generation` - Default provider for creating consistent visual scenes
+- Atlas Cloud - Optional image provider through `scripts/atlas_image.py`
 - `elevenlabs` - For character voice narration
 
 **Python Packages:**
 ```bash
-pip install elevenlabs pillow
+pip install elevenlabs pillow requests
 ```
 
 **System:**
@@ -601,7 +604,7 @@ pip install elevenlabs pillow
 - 2GB+ free disk space (for temporary files)
 
 **API Keys:**
-- OpenAI or Google (for image generation)
+- OpenAI or Google (for default image generation), or Atlas Cloud when explicitly selected
 - ElevenLabs (for voice narration)
 
 **File Permissions:**
@@ -752,6 +755,7 @@ pip install elevenlabs pillow
 ## Related Skills
 
 - `image-generation` - Required for visual generation
+- `references/atlas-cloud.md` - Optional Atlas Cloud image-provider workflow
 - `elevenlabs` - Required for voice narration
 - `python-plotting` - For visualizing story analytics
 - `scientific-writing` - For writing narrative scripts
