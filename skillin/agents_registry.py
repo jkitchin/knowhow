@@ -9,6 +9,7 @@ build_registry): new names become extra targets, and changed `skills_dir` /
 """
 
 import os
+import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -29,6 +30,23 @@ def _claude_home() -> Path:
 
 def _codex_home() -> Path:
     return Path(os.environ.get("CODEX_HOME", "").strip() or _home() / ".codex")
+
+
+def _vscode_user_dir() -> Path:
+    """VS Code's per-user data directory (exists once VS Code has been run)."""
+    if sys.platform == "darwin":
+        return _home() / "Library" / "Application Support" / "Code"
+    if sys.platform == "win32":
+        return Path(os.environ.get("APPDATA") or _home() / "AppData" / "Roaming") / "Code"
+    return _xdg_config() / "Code"
+
+
+def _vscode_detect() -> Path:
+    """First VS Code marker that exists (user data dir or ~/.vscode extensions dir)."""
+    for p in (_vscode_user_dir(), _home() / ".vscode"):
+        if p.exists():
+            return p
+    return _vscode_user_dir()
 
 
 @dataclass(frozen=True)
@@ -97,6 +115,17 @@ AGENTS: dict[str, AgentTarget] = {
             lambda: _home() / ".copilot" / "skills",
             lambda: _home() / ".copilot",
         ),
+        # VS Code (GitHub Copilot in VS Code) reads .agents/skills, .claude/skills and
+        # .github/skills in a workspace, and ~/.agents/skills, ~/.claude/skills and
+        # ~/.copilot/skills for the user, so the canonical copy is all it needs.
+        # Not an npx skills agent; npx covers VS Code through github-copilot.
+        AgentTarget(
+            "vscode",
+            "VS Code",
+            CANONICAL_PROJECT_DIR,
+            lambda: _home() / ".agents" / "skills",
+            _vscode_detect,
+        ),
         AgentTarget(
             "goose",
             "Goose",
@@ -115,7 +144,7 @@ AGENTS: dict[str, AgentTarget] = {
 }
 
 # skillin --platform names -> agent names
-PLATFORM_ALIASES = {"claude": "claude-code", "gemini": "gemini-cli"}
+PLATFORM_ALIASES = {"claude": "claude-code", "gemini": "gemini-cli", "code": "vscode"}
 
 
 def _expand(path) -> Path:

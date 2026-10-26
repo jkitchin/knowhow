@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `skillin installed`: an offline inventory of everything skillin installed (skills, commands, subagents, hooks, MCP servers), for the project and the user, checked against disk (`ok` / `missing` / `broken`). `--untracked` audits agent folders for items skillin didn't install; `--json` gives scriptable output.
 - `skillin remove --all [-g]` removes everything skillin installed in a scope. Items skillin didn't install are left alone.
+- VS Code as a named skill target (`-a vscode`, alias `code`), detected from `~/.vscode` or the VS Code user data folder. VS Code reads `.agents/skills`, so a VS Code-only user no longer gets an unneeded `.claude/` folder.
 - Custom platforms (#6): any name under `platforms:` in config.yaml works with `--platform` and `skillin add -a`. `skillin add` copies skills into its `skills_dir` / `project_skills_dir`. Commands that need an unconfigured directory say which key to set. Changed paths for built-in platforms override `skillin add`'s defaults.
 - `skillin add <source>`: install skills from GitHub/GitLab/any git URL/local path without installing skillin (`uvx skillin add owner/repo --skill name`). Layout, install paths (`.agents/skills` + symlinks) and lock files are compatible with `npx skills`.
 - `--command`, `--subagent`, `--hook` and `--mcp` install slash commands, subagents, hooks and MCP servers for Claude Code. Hooks and MCP servers are previewed and must be confirmed.

@@ -12,7 +12,7 @@ A repository that follows this guide also works with:
 - [`npx skills`](https://github.com/vercel-labs/skills), using the same layout, install
   locations and lock files;
 - any agent that implements the [Agent Skills specification](https://agentskills.io/specification),
-  including Claude Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot.
+  including Claude Code, VS Code (GitHub Copilot), Codex, OpenCode, Gemini CLI and Cursor.
 
 There is no registry to sign up for. A public git repository is enough.
 
@@ -200,7 +200,7 @@ and copies its directory:
 | Claude Code | `.claude/skills/<name>`, a symlink to the canonical copy | `~/.claude/skills/<name>`, a symlink |
 | Lock file | `skills-lock.json` (users commit it) | `~/.agents/.skill-lock.json` |
 
-Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
+VS Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
 Users can pass `--copy` to get real copies instead of symlinks, and `-a/--agent` to choose
 which agents to install for.
 

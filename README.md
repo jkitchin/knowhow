@@ -9,7 +9,7 @@
 
 Install AI agent skills, slash commands, subagents, hooks and MCP servers from any git
 repository with one command. There's nothing to install first and no repository to clone.
-Works with Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot and more.
+Works with Claude Code, VS Code (GitHub Copilot), Codex, OpenCode, Gemini CLI, Cursor and more.
 
 > **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for other agents.
 
@@ -48,8 +48,8 @@ Until `skillin` is published on PyPI, use
 
 - **Compatible with [`npx skills`](https://github.com/vercel-labs/skills):** skills use the same
   repository layout, install locations and lock files, so the two tools can be mixed. A skill
-  is copied once to `.agents/skills/<name>`, which Codex, OpenCode, Gemini CLI, Cursor and
-  Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
+  is copied once to `.agents/skills/<name>`, which VS Code, Codex, OpenCode, Gemini CLI,
+  Cursor and Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
   happens under `~/`.
 - **Tracked:** installs are recorded in `skills-lock.json` (commit it) and
   `.claude/skillin-lock.json`. `check` and `upgrade` use these to find upstream changes.
@@ -112,7 +112,7 @@ you want a clean slate.
 - **Search**: `find` searches skills.sh and GitHub; `search` searches a local skills repository
 - **Create**: interactive wizard or AI-assisted creation of skills, commands, hooks and agents
 - **Validate**: `skillin validate` checks a repo against the Agent Skills spec and how installers will see it (CI-friendly exit codes)
-- **Multi-agent**: Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf
+- **Multi-agent**: Claude Code, VS Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf, plus [custom platforms](#custom-platforms)
 - **Hooks**: lifecycle hooks for Claude Code (formatting, logging, security, notifications)
 - **Skill evolution**: harvest, optimize, A/B test and merge skills (see [docs/cascade.md](docs/cascade.md))
 
@@ -542,6 +542,7 @@ Skillin manages skills and commands for these AI coding assistants:
 - **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
 - **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal. See [OpenAI adopts "skills"](https://simonwillison.net/2025/Dec/12/openai-skills/) for details on their skills implementation.
 - **Gemini** - Google's AI assistant.
+- **VS Code** (GitHub Copilot in VS Code) reads `.agents/skills` and `~/.agents/skills`, so skills installed with `skillin add` work there out of the box; `-a vscode` targets it explicitly.
 - Cursor, GitHub Copilot, Goose and Windsurf are supported targets for `skillin add` skills.
 
 ### Related Skills Projects
