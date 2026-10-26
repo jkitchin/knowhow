@@ -76,9 +76,14 @@ your machine. skillin is careful about what it changes:
 - **You review code that runs.** Hooks and MCP servers must be named explicitly. Their
   scripts or config are shown, with terminal escape codes stripped, and need confirmation
   (or `-y`).
-- **It won't corrupt your config files.** `settings.json` and `.mcp.json` are only edited if
-  they parse cleanly. Changes are written atomically, and the previous version is kept as
-  `<file>.bak`.
+- **It won't corrupt your config files.** `settings.json`, MCP configs and lock files are
+  only edited if they parse cleanly; a damaged file stops skillin with a message rather
+  than being replaced. Changes are written atomically. `<file>.bak` keeps each file as it
+  was before the most recent skillin command, so you may want `*.bak` in `.gitignore`.
+- **It stays inside the project.** Symlinked config files are updated in place, which
+  keeps dotfiles setups working. In a project, though, skillin refuses any file that links
+  outside the project. Lock files record only which agents an MCP server went to, never
+  file paths, so a cloned repository's lock can't redirect where skillin writes.
 - **Files are confined to the skill.** Only files inside the skill's directory are copied.
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
@@ -118,7 +123,10 @@ into each selected agent's own config file. Agents come from `-a`, or else from
 
 `skillin installed` lists everything skillin installed for this project and for your user.
 It works offline from the lock files and checks each item is still on disk.
-`--untracked` also shows items in agent folders that skillin didn't install.
+`--untracked` also shows items skillin didn't install: skills and Claude Code
+commands, subagents and hooks in agent folders, and MCP servers in every agent's MCP
+config. Claude Code's global MCP servers live in `~/.claude.json`, managed by `claude mcp`,
+and aren't read; they show as `registered`.
 
 | Installed with | Remove with | What gets removed |
 |---|---|---|

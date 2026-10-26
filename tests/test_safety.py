@@ -174,7 +174,7 @@ def test_legacy_hooks_uninstall_unregisters_and_does_not_crash(env):
     settings = env["home"] / ".claude" / "settings.json"
     assert "PostToolUse" in json.loads(settings.read_text())["hooks"]
     run("hooks", "uninstall", "h1", "--force")
-    assert json.loads(settings.read_text())["hooks"] == {}
+    assert json.loads(settings.read_text()).get("hooks", {}) == {}
     assert not (env["home"] / ".claude" / "hooks" / "h1").exists()
 
 
@@ -188,7 +188,9 @@ def test_hook_event_change_leaves_one_registration(env):
     hooks = json.loads((env["proj"] / ".claude" / "settings.json").read_text())["hooks"]
     assert list(hooks) == ["PreToolUse"]
     run("remove", "--hook", "h1", "-y")
-    assert json.loads((env["proj"] / ".claude" / "settings.json").read_text())["hooks"] == {}
+    assert (
+        json.loads((env["proj"] / ".claude" / "settings.json").read_text()).get("hooks", {}) == {}
+    )
 
 
 # M3 ------------------------------------------------------------------------
@@ -291,7 +293,7 @@ def test_hook_commands_are_shell_safe_and_portable(env, tmp_path, monkeypatch):
     spaced = tmp_path / "my project" / ".claude" / "hooks" / "h1"
     spaced.mkdir(parents=True)
     (spaced / "hook.sh").write_text("echo hi\n")
-    settings = tmp_path / "settings.json"
+    settings = tmp_path / "my project" / ".claude" / "settings.json"
     meta = {"event": "Stop"}
 
     _add_hook_to_settings(settings, spaced, meta)  # global form: quoted absolute path
@@ -309,7 +311,7 @@ def test_hook_commands_are_shell_safe_and_portable(env, tmp_path, monkeypatch):
     data["hooks"]["Stop"].append({"hooks": [{"type": "command", "command": str(spaced / "x.py")}]})
     settings.write_text(json.dumps(data))
     _remove_hook_from_settings(settings, spaced, project_root=project)
-    assert json.loads(settings.read_text())["hooks"] == {}
+    assert json.loads(settings.read_text()).get("hooks", {}) == {}
 
 
 def test_prompt_hooks_are_refused(env):

@@ -66,26 +66,60 @@ def read_json_object(path: Path) -> dict:
     return data
 
 
-def write_json_atomic(path: Path, data, backup: bool = True) -> None:
-    """
-    Write JSON to `path` atomically (temp file + rename in the same directory).
+_BACKED_UP: set[str] = set()
 
-    With `backup`, the previous contents are kept at `<path>.bak`.
+
+def real_target(path: Path, confine: Path | None = None) -> Path:
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if backup and path.exists():
-        shutil.copy2(path, path.with_name(path.name + ".bak"))
-    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    The file a write to `path` should change: symlinks are followed (dotfiles
+    setups keep working), but with `confine` the result must stay inside that
+    directory, so a link planted in a project can't redirect writes elsewhere.
+    """
+    real = Path(os.path.realpath(path))
+    if confine is not None:
+        root = Path(os.path.realpath(confine))
+        if real != root and root not in real.parents:
+            raise ConfigFileError(
+                f"{path} points outside {confine} (to {real}); skillin will not modify it"
+            )
+    return real
+
+
+def backup_once(real: Path) -> None:
+    """Keep `<file>.bak` as the file was before this skillin command first changed it."""
+    if real.exists() and str(real) not in _BACKED_UP:
+        shutil.copy2(real, real.with_name(real.name + ".bak"))
+        _BACKED_UP.add(str(real))
+
+
+def write_text_atomic(
+    path: Path, text: str, backup: bool = True, confine: Path | None = None
+) -> None:
+    """Write text atomically (temp file + rename) to path's real target."""
+    real = real_target(path, confine)
+    real.parent.mkdir(parents=True, exist_ok=True)
+    if backup:
+        backup_once(real)
+    fd, tmp = tempfile.mkstemp(prefix=f".{real.name}.", suffix=".tmp", dir=real.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-            f.write("\n")
-        if path.exists():
-            shutil.copymode(path, tmp)
-        os.replace(tmp, path)
+            f.write(text)
+        if real.exists():
+            shutil.copymode(real, tmp)
+        os.replace(tmp, real)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise
+
+
+def write_json_atomic(path: Path, data, backup: bool = True, confine: Path | None = None) -> None:
+    """
+    Write JSON atomically to `path` (following symlinks, see real_target).
+
+    With `backup`, the file as it was before this command is kept at `<file>.bak`.
+    Non-ASCII text is written as-is.
+    """
+    write_text_atomic(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n", backup, confine)
 
 
 def safe(text, max_len: int | None = None) -> str:

@@ -124,7 +124,7 @@ def test_install_command_subagent_hook(env):
     r = run("remove", "--hook", "fmt", "--command", "commit", "-y")
     assert r.exit_code == 0
     assert not (claude / "hooks" / "fmt").exists()
-    assert json.loads((claude / "settings.json").read_text())["hooks"] == {}
+    assert json.loads((claude / "settings.json").read_text()).get("hooks", {}) == {}
     assert json.loads((claude / "skillin-lock.json").read_text())["commands"] == {}
 
 

@@ -468,6 +468,15 @@ def add(
                     where = str(target_path(e, global_, cwd))
                 console.print(f"  [green]{e.kind} {safe(e.name)}[/green] -> {safe(where)}")
 
+            hooks_chosen = [e for e in chosen_extras if e.kind == "hook"]
+            if hooks_chosen:
+                from skillin.commands.hooks import check_settings_file
+
+                # checked up front so a bad settings.json can't leave a half-installed hook
+                check_settings_file(
+                    claude_dir(global_, cwd) / "settings.json", None if global_ else cwd
+                )
+
             conflicts = _add_conflicts(
                 selected, chosen_extras, agents, global_, copy, cwd, registry, mcp_places
             )
@@ -636,6 +645,16 @@ def remove(
         agents = resolve_agent_names(agent_names, registry) if agent_names else None
     except ValueError as e:
         raise click.ClickException(str(e)) from e
+
+    # Subagents and hooks may be named by display name or install dir name
+    def extra_key(kind, n):
+        table = extras_lock[LOCK_KEYS[kind]]
+        if n in table or kind in ("command", "mcp"):
+            return n
+        key = install_dir_name(n)
+        return next((k for k in table if install_dir_name(k) == key), n)
+
+    extra_targets = [(k, extra_key(k, n)) for k, n in extra_targets]
 
     # Only remove what skillin (or npx skills) recorded installing, unless --force
     unmanaged = [n for n in skill_targets if n not in lock["skills"]] + [
@@ -888,6 +907,9 @@ def _check_extra(kind, name, entry, extras, src, checkout, global_, apply, yes, 
         return "up to date"
     if not apply:
         return "update available"
+    if kind == "mcp":
+        where = ", ".join(p.label for p in mcp_placements_for(entry, global_, cwd))
+        console.print(f"MCP {safe(name)} will be updated in: {safe(where)}")
     try:
         _confirm_code(extra, yes)
     except click.Abort:
