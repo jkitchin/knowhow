@@ -5,7 +5,7 @@ description: |
   documentation, and technical resources. Use when researching a topic,
   finding relevant papers, or gathering background information.
 tools: Read, Grep, Glob, WebSearch, WebFetch
-model: sonnet
+model: opus
 ---
 
 # Literature Searcher

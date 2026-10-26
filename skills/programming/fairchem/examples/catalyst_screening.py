@@ -8,8 +8,7 @@ but completes in minutes with FAIRChem.
 """
 
 import numpy as np
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import fcc111, add_adsorbate
 from ase.optimize import LBFGS
 from ase.constraints import FixAtoms
@@ -120,7 +119,7 @@ def screen_metals(metals, adsorbate="CO", model_name="uma-m-1p1", use_turbo=Fals
     adsorbate : str
         Adsorbate to test
     model_name : str
-        UMA model to use ('uma-s-1p1' or 'uma-m-1p1')
+        UMA model to use ('uma-s-1p2', 'uma-s-1p1', or 'uma-m-1p1')
     use_turbo : bool
         Enable turbo mode for speed
     workers : int
@@ -144,14 +143,22 @@ def screen_metals(metals, adsorbate="CO", model_name="uma-m-1p1", use_turbo=Fals
 
     # Load model
     print("\nLoading FAIRChem model...")
+    inference_settings = None
     if use_turbo:
-        predict_unit = load_predict_unit(model_name, inference_settings="turbo")
-    else:
-        predict_unit = load_predict_unit(model_name)
+        # Use turbo_umas for UMA-S models, turbo for others
+        if model_name.startswith("uma-s"):
+            inference_settings = "turbo_umas"
+        else:
+            inference_settings = "turbo"
+
+    predictor = pretrained_mlip.get_predict_unit(
+        model_name,
+        inference_settings=inference_settings,
+    )
 
     # Create calculator for catalysis (oc20)
     calc = FAIRChemCalculator(
-        predict_unit=predict_unit,
+        predictor,
         task_name="oc20",  # Catalysis domain
         workers=workers,
     )
@@ -277,14 +284,14 @@ if __name__ == "__main__":
     # results_turbo = screen_metals(
     #     metals=["Cu", "Ag", "Au", "Pt", "Pd", "Ni", "Rh", "Ir"],
     #     adsorbate="CO",
-    #     model_name="uma-s-1p1",  # Small model
-    #     use_turbo=True,  # Maximum speed
+    #     model_name="uma-s-1p2",  # Latest small model
+    #     use_turbo=True,  # Maximum speed (turbo_umas)
     #     workers=4  # Use 4 GPUs if available
     # )
     #
     # analyze_and_plot_results(results_turbo, adsorbate="CO")
 
-    print("\n✓ Catalyst screening complete!")
+    print("\nCatalyst screening complete!")
     print("\nNOTE: This screening took minutes with FAIRChem.")
     print("      The same workflow would take days with DFT.")
     print("\nNext steps:")

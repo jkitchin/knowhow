@@ -152,7 +152,7 @@ Be conservative - only extract points you can clearly identify. If uncertain,
 indicate approximate values or ranges."""
 
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-5",
         max_tokens=4096,
         messages=[
             {
@@ -217,7 +217,7 @@ Check:
 Provide corrections if needed, or confirm "VERIFIED" if accurate."""
 
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-5",
         max_tokens=2048,
         messages=[
             {

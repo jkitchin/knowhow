@@ -39,13 +39,13 @@ export RALPH_COST_ACTION=warn
 
 ## Token Pricing
 
-Current pricing (updated 2025):
+Current pricing (updated July 2026):
 
 | Model | Input (per 1M tokens) | Output (per 1M tokens) |
 |-------|----------------------|------------------------|
 | Claude Sonnet | $3.00 | $15.00 |
-| Claude Opus | $15.00 | $75.00 |
-| Claude Haiku | $0.25 | $1.25 |
+| Claude Opus | $5.00 | $25.00 |
+| Claude Haiku | $1.00 | $5.00 |
 
 ## Usage
 
@@ -65,7 +65,7 @@ cat .ralph-costs.json | jq '.iterations'
 {
   "session_id": "ralph-1705678900",
   "started_at": "2025-01-19T12:00:00Z",
-  "model": "sonnet",
+  "model": "opus",
   "limit_usd": 50.00,
   "summary": {
     "total_input_tokens": 1250000,

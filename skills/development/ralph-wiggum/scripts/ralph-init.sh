@@ -183,7 +183,7 @@ main() {
     local mode="${1:-build}"
     local max_iterations="${2:-0}"
     local iteration=0
-    local model="${RALPH_MODEL:-sonnet}"
+    local model="${RALPH_MODEL:-opus}"
 
     local prompt_file="RALPH_PROMPT.md"
     [[ "$mode" == "plan" ]] && [[ -f "RALPH_PROMPT_plan.md" ]] && prompt_file="RALPH_PROMPT_plan.md"
@@ -292,7 +292,7 @@ docker run --rm -it \
     --security-opt no-new-privileges:true \
     -v "$PROJECT_DIR:/workspace" \
     -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" \
-    -e "RALPH_MODEL=${RALPH_MODEL:-sonnet}" \
+    -e "RALPH_MODEL=${RALPH_MODEL:-opus}" \
     "$IMAGE_NAME" \
     ./ralph.sh "$MODE" "$MAX_ITERATIONS"
 

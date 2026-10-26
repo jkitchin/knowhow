@@ -83,7 +83,7 @@ Graph digitization (also called plot digitization or data extraction from figure
 
 ### 3. LLM Vision for Graph Extraction
 
-**Purpose**: Use multimodal LLMs (GPT-4V, Claude 3) to interpret graphs and extract data.
+**Purpose**: Use multimodal LLMs (Claude Opus 5, GPT-4V) to interpret graphs and extract data.
 
 **Best for**:
 - Quick approximate extraction
@@ -164,7 +164,7 @@ Return the data as JSON with this structure:
 """
 
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-5",
         max_tokens=4096,
         messages=[
             {

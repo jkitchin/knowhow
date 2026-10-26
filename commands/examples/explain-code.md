@@ -1,7 +1,7 @@
 ---
 description: Explain how code works in detail
 argument-hint: <file-or-function>
-model: sonnet
+model: opus
 ---
 
 # Explain Code

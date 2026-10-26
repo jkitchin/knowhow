@@ -7,7 +7,7 @@
 #
 # Environment variables:
 #   ANTHROPIC_API_KEY     - Optional: Not needed with Claude Code subscription
-#   RALPH_MODEL           - Optional: Model to use (default: sonnet)
+#   RALPH_MODEL           - Optional: Model to use (default: opus)
 #   RALPH_I_KNOW_WHAT_IM_DOING=sandboxed - Override sandbox check (dangerous)
 
 set -euo pipefail
@@ -212,7 +212,7 @@ main() {
     local mode="${1:-build}"
     local max_iterations="${2:-0}"
     local iteration=0
-    local model="${RALPH_MODEL:-sonnet}"
+    local model="${RALPH_MODEL:-opus}"
 
     # Select prompt file
     local prompt_file="RALPH_PROMPT.md"

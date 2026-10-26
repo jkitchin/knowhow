@@ -6,7 +6,7 @@ description: |
   pull requests, before committing significant changes, or when auditing
   code quality.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: opus
 ---
 
 # Code Reviewer
