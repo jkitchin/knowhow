@@ -460,8 +460,23 @@ def add(
     is_flag=True,
     help="Also remove items that skillin did not install (not in a lock file)",
 )
+@click.option(
+    "--all",
+    "all_items",
+    is_flag=True,
+    help="Remove everything skillin installed in this scope (project, or global with -g)",
+)
 def remove(
-    names, command_names, subagent_names, hook_names, mcp_names, global_, agent_names, yes, force
+    names,
+    command_names,
+    subagent_names,
+    hook_names,
+    mcp_names,
+    global_,
+    agent_names,
+    yes,
+    force,
+    all_items,
 ):
     """
     Remove installed items.
@@ -474,6 +489,10 @@ def remove(
       skillin remove fairchem
       skillin remove --command commit --hook black-on-save
       skillin remove jkitchin/skillz -g
+      skillin remove --all          # everything skillin installed in this project
+      skillin remove --all -g       # ... or for your user
+
+    See what is installed with `skillin installed`.
     """
     cwd = Path.cwd()
     cdir = claude_dir(global_, cwd)
@@ -521,8 +540,20 @@ def remove(
         else:
             skill_targets.append(lock_key(n) or n)
 
+    if all_items:
+        if skill_targets or extra_targets:
+            raise click.UsageError("--all cannot be combined with names")
+        skill_targets = list(lock["skills"])
+        extra_targets = [(k, n) for k, key in LOCK_KEYS.items() for n in extras_lock[key]]
+        if not skill_targets and not extra_targets:
+            scope = "global" if global_ else "project"
+            console.print(f"[yellow]Nothing installed by skillin ({scope} scope)[/yellow]")
+            return
+
     if not skill_targets and not extra_targets:
-        raise click.UsageError("Give skill names, a source, or --command/--subagent/--hook/--mcp")
+        raise click.UsageError(
+            "Give skill names, a source, --command/--subagent/--hook/--mcp, or --all"
+        )
 
     try:
         registry = build_registry(Config())
@@ -538,8 +569,8 @@ def remove(
         scope = "global" if global_ else "project"
         raise click.ClickException(
             f"Not installed by skillin ({scope} scope): {', '.join(unmanaged)}. "
-            "Nothing was removed. Use -g for global installs, or --force to remove "
-            "these anyway."
+            "Nothing was removed. See what skillin installed with `skillin installed`; "
+            "use -g for global installs, or --force to remove these anyway."
         )
 
     labels = skill_targets + [f"{k} {n}" for k, n in extra_targets]

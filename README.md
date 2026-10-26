@@ -36,9 +36,11 @@ uvx skillin add jkitchin/skillz --hook black-on-save   # shows the script for re
 uvx skillin add someone/repo --mcp their-server         # from the repo's .mcp.json
 
 uvx skillin find plotting   # search skills.sh / GitHub
+uvx skillin installed       # everything skillin installed (project + global)
 uvx skillin check           # any upstream changes?
 uvx skillin upgrade         # apply them
 uvx skillin remove fairchem
+uvx skillin remove --all    # remove everything skillin installed in this project (-g: global)
 ```
 
 Until `skillin` is published on PyPI, use
@@ -78,6 +80,30 @@ your machine. skillin is careful about what it changes:
 - **Files are confined to the skill.** Only files inside the skill's directory are copied.
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
+
+## Seeing and removing what's installed
+
+`skillin installed` lists everything skillin installed for this project and for your user.
+It works offline from the lock files and checks each item is still on disk.
+`--untracked` also shows items in agent folders that skillin didn't install.
+
+| Installed with | Remove with | What gets removed |
+|---|---|---|
+| `add -s NAME` (project) | `remove NAME` | `.agents/skills/NAME`, agent links/copies (`.claude/skills/NAME`, ...), lock entry |
+| `add -s NAME -g` | `remove NAME -g` | the same under `~/` |
+| `add ... -a custom-platform` | `remove NAME [-g]` | the copy in the platform's `skills_dir` / `project_skills_dir` |
+| `add --command N` / `--subagent N` | `remove --command N` / `--subagent N` | `.claude/commands/N.md` / `.claude/agents/N.md` |
+| `add --hook N` | `remove --hook N` | `.claude/hooks/N/` and every `settings.json` entry for it |
+| `add --mcp N` | `remove --mcp N` | the `.mcp.json` entry, or the `claude mcp` user-scope server with `-g` |
+| everything from one repo | `remove owner/repo [-g]` | all of the above that came from that source |
+| everything | `remove --all [-g]` | all of the above, in one scope |
+| legacy `install` / `hooks install` / `agents install` | `uninstall` / `hooks uninstall` / `agents uninstall` | (not tracked in lock files; `remove NAME --force` also works) |
+
+`remove` only touches things recorded in a lock file. Pass `--force` for anything else.
+Other servers in `.mcp.json`, other hooks in `settings.json`, and your own files are left
+alone. To uninstall skillin itself, run `uv tool uninstall skillin`. Installed skills stay
+until you remove them, so run `skillin remove --all` and `skillin remove --all -g` first if
+you want a clean slate.
 
 ## Features
 

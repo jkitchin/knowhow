@@ -13,6 +13,7 @@ from skillin.commands import (
     hooks,
     info,
     install,
+    installed,
     merge,
     optimize,
     search,
@@ -50,6 +51,7 @@ cli.add_command(add.add)
 cli.add_command(add.remove)
 cli.add_command(add.check)
 cli.add_command(add.upgrade)
+cli.add_command(installed.installed)
 cli.add_command(add.find)
 cli.add_command(validate.validate)
 cli.add_command(uninstall.uninstall)
