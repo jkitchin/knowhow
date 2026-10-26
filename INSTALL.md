@@ -111,6 +111,14 @@ Private repositories work wherever `git clone` works for you.
   `skillin config set repository /path/to/clone`.
 - **A hook or MCP server won't install non-interactively**: these run code, so pass `-y`
   once you have reviewed them.
+- **`Refusing to replace items that skillin did not install`**: something with the same
+  name already exists, for example your own `.claude/skills/<name>`. Rename or remove it,
+  or pass `--force` to replace it.
+- **`Not installed by skillin`** from `remove`: the name isn't in a skillin lock file for
+  this scope. Add `-g` for global installs, or `--force` to remove it anyway.
+- **`... is not valid JSON; skillin will not overwrite it`**: fix the file mentioned
+  (often a trailing comma in `settings.json`) and retry. skillin never rewrites a file it
+  can't parse.
 
 ## Uninstallation
 

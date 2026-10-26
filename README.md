@@ -59,6 +59,26 @@ Until `skillin` is published on PyPI, use
 
 The `skillz` command still works as an alias of `skillin`.
 
+### Safety
+
+Skills, hooks and MCP servers come from other people's repositories and can run code on
+your machine. skillin is careful about what it changes:
+
+- **It never replaces your own files.** If a skill folder, command, subagent, hook or MCP
+  server with the same name exists and wasn't installed by skillin (or npx skills), `add`
+  lists it and stops. Pass `--force` to replace it.
+- **It only removes what it installed.** `remove` refuses names that aren't in a skillin
+  lock file unless you pass `--force`. Without a terminal it requires `-y`.
+- **You review code that runs.** Hooks and MCP servers must be named explicitly. Their
+  scripts or config are shown, with terminal escape codes stripped, and need confirmation
+  (or `-y`).
+- **It won't corrupt your config files.** `settings.json` and `.mcp.json` are only edited if
+  they parse cleanly. Changes are written atomically, and the previous version is kept as
+  `<file>.bak`.
+- **Files are confined to the skill.** Only files inside the skill's directory are copied.
+  Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
+  scripts are never run during installation.
+
 ## Features
 
 - **Remote install**: `add` skills, commands, subagents, hooks and MCP servers from GitHub, GitLab, any git URL or a local path

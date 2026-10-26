@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.table import Table
 
 from skillin.config import Config, platform_option
+from skillin.safeio import safe
 from skillin.utils import (
     PathTraversalError,
     confirm_action,
@@ -81,13 +82,13 @@ def list_agents(ctx, target, platform):
             if isinstance(tools, list):
                 tools = ", ".join(tools[:3]) + ("..." if len(tools) > 3 else "")
             table.add_row(
-                metadata.get("name", agent_file.stem),
-                metadata.get("model", "inherit"),
-                str(tools)[:20],
-                _truncate(metadata.get("description", ""), 35),
+                safe(metadata.get("name", agent_file.stem)),
+                safe(metadata.get("model", "inherit")),
+                safe(tools, 20),
+                safe(_truncate(str(metadata.get("description", "")), 35)),
             )
         else:
-            table.add_row(agent_file.stem, "-", "-", "[dim]Invalid agent[/dim]")
+            table.add_row(safe(agent_file.stem), "-", "-", "[dim]Invalid agent[/dim]")
 
     console.print(table)
 
@@ -318,9 +319,9 @@ def search(ctx, query):
 
     for agent_file, metadata in results:
         table.add_row(
-            metadata.get("name", agent_file.stem),
-            metadata.get("model", "inherit"),
-            _truncate(metadata.get("description", ""), 50),
+            safe(metadata.get("name", agent_file.stem)),
+            safe(metadata.get("model", "inherit")),
+            safe(_truncate(str(metadata.get("description", "")), 50)),
         )
 
     console.print(table)

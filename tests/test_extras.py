@@ -154,7 +154,10 @@ def test_mcp_project_merges(env):
 def test_mcp_global_uses_claude_cli(env, monkeypatch):
     bindir, log = env["tmp"] / "bin", env["tmp"] / "calls.log"
     bindir.mkdir()
-    (bindir / "claude").write_text(f'#!/bin/sh\necho "$@" >> {log}\n')
+    # like the real CLI: `mcp get` fails for servers that don't exist
+    (bindir / "claude").write_text(
+        f'#!/bin/sh\necho "$@" >> {log}\n[ "$1 $2" = "mcp get" ] && exit 1\nexit 0\n'
+    )
     (bindir / "claude").chmod(0o755)
     monkeypatch.setenv("PATH", f"{bindir}{os.pathsep}{os.environ['PATH']}")
     r = run("add", env["url"], "--mcp", "web", "-g", "-y")

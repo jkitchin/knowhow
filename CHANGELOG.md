@@ -22,6 +22,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The strict `SkillValidator` accepts the spec's space-separated `allowed-tools` string, scoped tools like `Bash(git:*)` and `mcp__*` tools.
 
 ### Fixed
+- Safety fixes from a pre-release review:
+  - A global install no longer deletes the skill when `~/.claude/skills` is a symlink to `~/.agents/skills`.
+  - `add` refuses to replace skills, commands, subagents, hooks or MCP servers it didn't install. Use `--force` to override.
+  - `remove` only removes lock-file entries unless given `--force`, and requires `-y` without a terminal.
+  - Hook install no longer wipes an unparseable `settings.json`. Config edits are atomic and keep a `.bak`.
+  - Terminal escape codes are stripped from code previews and repo-controlled text.
+  - `skillin hooks uninstall` no longer crashes or leaves a dangling `settings.json` entry.
+  - Hooks whose event changed are re-registered once, not twice.
+  - Relative file symlinks are copied, and directory symlinks (including loops) are skipped. A failed copy leaves the previous install intact.
+  - Malformed `.mcp.json` files are refused rather than crashing or being rewritten.
+  - MCP server configs are type-checked.
+  - `remove` rejects path-like names.
+  - Removing a skill by its folder name now clears its lock entry.
 - Skills installed as symlinks are now seen by `list`, `search`, `stats`, `optimize` and `merge`.
 - Initial release of Claude Skills CLI tool
 - Complete CLI for managing skills and commands

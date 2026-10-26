@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.table import Table
 
 from skillin.config import Config
+from skillin.safeio import safe
 from skillin.utils import find_command_files, find_skill_directories
 from skillin.validator import CommandValidator, SkillValidator
 
@@ -86,9 +87,9 @@ def search(ctx, query, item_type):
     for match in matches:
         table.add_row(
             match["type"],
-            match["name"],
-            match["description"][:80],
-            match["path"],
+            safe(match["name"]),
+            safe(match["description"], 80),
+            safe(match["path"]),
         )
 
     console.print(table)
