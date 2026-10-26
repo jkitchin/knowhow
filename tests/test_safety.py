@@ -259,7 +259,7 @@ def test_malformed_mcp_json_is_refused_not_rewritten(env):
     target = env["proj"] / ".mcp.json"
     target.write_text("[]")
     r = run("add", str(env["repo"]), "--mcp", "fs", "-y", ok=False)
-    assert r.exit_code != 0 and "JSON object" in r.output
+    assert r.exit_code != 0 and "JSON object" in " ".join(r.output.split())
     assert target.read_text() == "[]"
 
 

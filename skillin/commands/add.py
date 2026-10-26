@@ -1,8 +1,9 @@
 """Install skills (and commands, hooks, subagents, MCP servers) from any source.
 
 Skills follow `npx skills` conventions (layout, install paths, lock files).
-Commands, hooks, subagents and MCP servers follow skillin / Claude Code
-conventions and are installed for Claude Code.
+Commands, hooks and subagents follow skillin / Claude Code conventions and are
+installed for Claude Code. MCP servers are installed into each selected agent's
+own config (see mcp_targets.py).
 
     skillin add owner/repo --skill name
     skillin add owner/repo --command review --subagent code-reviewer
@@ -24,6 +25,7 @@ from rich.markup import escape
 from rich.syntax import Syntax
 from rich.table import Table
 
+from skillin import mcp_targets
 from skillin.agents_registry import AGENTS, build_registry, default_agents, resolve_agent_names
 from skillin.config import Config
 from skillin.discovery import DiscoveredSkill, discover_skills, install_dir_name
@@ -35,9 +37,12 @@ from skillin.extras import (
     discover_extras,
     extra_exists,
     install_extra,
+    install_mcp,
+    mcp_placements_for,
     preview,
     target_path,
     uninstall_extra,
+    uninstall_mcp,
 )
 from skillin.fetch import FetchError, fetch_source, git_tree_hash, github_tree
 from skillin.installer import (
@@ -59,7 +64,7 @@ from skillin.lock import (
     remove_extra,
     resolve_local_source,
 )
-from skillin.safeio import safe
+from skillin.safeio import ConfigFileError, safe, strip_controls
 from skillin.sources import Source, SourceError, parse_source
 
 console = Console()
@@ -191,8 +196,10 @@ def _lock_entry(source: Source, skill: DiscoveredSkill, checkout, global_: bool,
     }
 
 
-def _extra_entry(source: Source, extra: Extra, global_: bool, cwd: Path) -> dict:
-    return {
+def _extra_entry(
+    source: Source, extra: Extra, global_: bool, cwd: Path, placements: list | None = None
+) -> dict:
+    entry = {
         "source": _lock_source(source, global_, cwd),
         "sourceType": source.type,
         "sourceUrl": None if source.is_local else source.url,
@@ -200,6 +207,19 @@ def _extra_entry(source: Source, extra: Extra, global_: bool, cwd: Path) -> dict
         "path": extra.rel_path,
         "hash": extra.content_hash(),
     }
+    if placements is not None:  # MCP: every agent config the server was written to
+        entry["targets"] = [mcp_targets.to_record(p) for p in placements]
+    return entry
+
+
+def _report_mcp_failures(name: str, failed: list) -> None:
+    for p, err, snippet in failed:
+        console.print(
+            f"[yellow]MCP {safe(name)}: skipped {p.target.display} ({safe(p.label)}): "
+            f"{safe(err)}[/yellow]"
+        )
+        console.print("[dim]Add this by hand if you want it there:[/dim]")
+        console.print(Syntax(strip_controls(snippet), "toml" if p.target.fmt == "toml" else "json"))
 
 
 def _confirm_code(extra: Extra, yes: bool) -> None:
@@ -226,7 +246,7 @@ def _is_managed_skill(name: str, lock: dict) -> bool:
     return any(n == name or install_dir_name(n) == key for n in lock.get("skills", {}))
 
 
-def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry) -> list[str]:
+def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry, mcp_places) -> list[str]:
     """Human-readable descriptions of unmanaged things an install would replace."""
     lock = read_lock(global_, cwd)
     extras_lock = read_extras_lock(claude_dir(global_, cwd))
@@ -239,13 +259,12 @@ def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry) -> list
     for e in extras:
         if e.name in extras_lock[LOCK_KEYS[e.kind]]:
             continue
-        if extra_exists(e, global_, cwd):
-            where = (
-                "claude mcp (user scope)"
-                if e.kind == "mcp" and global_
-                else target_path(e, global_, cwd)
-            )
-            out.append(f"{e.kind} {e.name}: {where}")
+        if e.kind == "mcp":
+            for p in mcp_places.get(e.name, []):
+                if mcp_targets.exists(p, e.name):
+                    out.append(f"mcp {e.name}: {p.label}")
+        elif extra_exists(e, global_, cwd):
+            out.append(f"{e.kind} {e.name}: {target_path(e, global_, cwd)}")
     return out
 
 
@@ -255,7 +274,12 @@ def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry) -> list
 @click.option("--command", "command_names", multiple=True, help="Slash command(s) ('*' = all)")
 @click.option("--subagent", "subagent_names", multiple=True, help="Subagent(s) ('*' = all)")
 @click.option("--hook", "hook_names", multiple=True, help="Hook(s) to install (by name)")
-@click.option("--mcp", "mcp_names", multiple=True, help="MCP server(s) to install (by name)")
+@click.option(
+    "--mcp",
+    "mcp_names",
+    multiple=True,
+    help="MCP server(s) to install for the selected agents (by name)",
+)
 @click.option(
     "--agent",
     "-a",
@@ -300,9 +324,9 @@ def add(
     a GitHub/GitLab URL (optionally with /tree/<ref>/<path>), any git URL,
     a local path, or an alias from `skillin config set alias.NAME SOURCE`.
 
-    Skills install for the detected agents (or --agent). Commands, subagents,
-    hooks and MCP servers install for Claude Code. --all selects skills only;
-    hooks and MCP servers must be named and are shown for review first.
+    Skills and MCP servers install for the detected agents (or --agent);
+    commands, subagents and hooks install for Claude Code. --all selects skills
+    only; hooks and MCP servers must be named and are shown for review first.
 
     \b
     Examples:
@@ -388,6 +412,38 @@ def add(
                 for e in _match_extras(kind, extras[kind], wanted)
             ]
 
+            # MCP servers go to every selected agent that supports MCP
+            mcp_places, mcp_unusable = {}, []
+            mcp_extras = [e for e in chosen_extras if e.kind == "mcp"]
+            if mcp_extras:
+                base, notes = mcp_targets.plan(agents, global_, cwd, explicit=bool(agent_names))
+                for n in notes:
+                    console.print(f"[dim]MCP: {safe(n)}[/dim]")
+                for e in mcp_extras:
+                    cfg = {k: v for k, v in e.config.items() if k != "description"}
+                    usable = []
+                    for p in base:
+                        try:
+                            mcp_targets.exists(p, e.name)  # can we read (and so edit) it?
+                            usable.append(p)
+                        except (ConfigFileError, mcp_targets.McpTargetError) as err:
+                            snippet = mcp_targets.snippet(p, e.name, cfg)
+                            mcp_unusable.append((e.name, p, str(err), snippet))
+                    mcp_places[e.name] = usable
+                for name, p, err, snippet in mcp_unusable:
+                    _report_mcp_failures(name, [(p, err, snippet)])
+                for e in mcp_extras:
+                    cfg = {k: v for k, v in e.config.items() if k != "description"}
+                    for p in mcp_places[e.name]:
+                        for c in p.target.caveats(cfg, global_):
+                            console.print(f"[yellow]MCP {safe(e.name)}: {safe(c)}[/yellow]")
+                stuck = [e.name for e in mcp_extras if not mcp_places[e.name]]
+                if stuck:
+                    raise click.ClickException(
+                        f"No agent config can take MCP server(s) {', '.join(stuck)}. "
+                        "Choose agents with -a, or fix the files reported above."
+                    )
+
             # Plan
             if selected:
                 console.print(
@@ -399,12 +455,14 @@ def add(
                 where = [str(p) for p in ([canon] if canon else []) + targets]
                 console.print(f"  [green]{escape(s.name)}[/green] -> {escape(', '.join(where))}")
             for e in chosen_extras:
-                dest = target_path(e, global_, cwd)
-                where = "claude mcp (user scope)" if e.kind == "mcp" and global_ else str(dest)
-                console.print(f"  [green]{e.kind} {escape(e.name)}[/green] -> {escape(where)}")
+                if e.kind == "mcp":
+                    where = ", ".join(f"{p.target.display}: {p.label}" for p in mcp_places[e.name])
+                else:
+                    where = str(target_path(e, global_, cwd))
+                console.print(f"  [green]{e.kind} {safe(e.name)}[/green] -> {safe(where)}")
 
             conflicts = _add_conflicts(
-                selected, chosen_extras, agents, global_, copy, cwd, registry
+                selected, chosen_extras, agents, global_, copy, cwd, registry, mcp_places
             )
             if conflicts:
                 verb = "Replacing" if force else "Refusing to replace"
@@ -430,16 +488,27 @@ def add(
                     s, agents, checkout.root, global_=global_, copy=copy, cwd=cwd, registry=registry
                 )
                 record_install(s.name, _lock_entry(src, s, checkout, global_, cwd), global_, cwd)
+            failed_mcp = []
             for e in chosen_extras:
-                install_extra(e, checkout.root, global_, cwd)
+                placements = None
+                if e.kind == "mcp":
+                    placements, failed = install_mcp(e, mcp_places[e.name])
+                    _report_mcp_failures(e.name, failed)
+                    if not placements:
+                        failed_mcp.append(e.name)
+                        continue
+                else:
+                    install_extra(e, checkout.root, global_, cwd)
                 record_extra(
                     LOCK_KEYS[e.kind],
                     e.name,
-                    _extra_entry(src, e, global_, cwd),
+                    _extra_entry(src, e, global_, cwd, placements),
                     claude_dir(global_, cwd),
                 )
-            total = len(selected) + len(chosen_extras)
+            total = len(selected) + len(chosen_extras) - len(failed_mcp)
             console.print(f"[green]✓ Installed {total} item(s)[/green]")
+            if failed_mcp:
+                raise click.ClickException(f"MCP server(s) not installed: {', '.join(failed_mcp)}")
     except FetchError as e:
         raise click.ClickException(f"Could not fetch {src.lock_source}: {e}") from e
     except ExtraError as e:
@@ -590,6 +659,29 @@ def remove(
             console.print(f"[yellow]{escape(name)} is not installed here[/yellow]")
 
     for kind, name in extra_targets:
+        if kind == "mcp":
+            entry = extras_lock["mcp"].get(name)
+            try:
+                removed, failed = uninstall_mcp(name, mcp_placements_for(entry, global_, cwd))
+            except ExtraError as e:
+                console.print(f"[red]Could not remove mcp {safe(name)}: {safe(e)}[/red]")
+                continue
+            for p, err in failed:
+                console.print(
+                    f"[red]Could not remove mcp {safe(name)} from {p.target.display} "
+                    f"({safe(p.label)}): {safe(err)}[/red]"
+                )
+            if failed and entry:
+                # keep only the places it is still configured, so it can be retried
+                still = [mcp_targets.to_record(p) for p, _ in failed]
+                record_extra("mcp", name, {"targets": still}, cdir)
+            else:
+                remove_extra("mcp", name, cdir)
+            if removed:
+                console.print(f"[green]✓ Removed mcp {safe(name)}[/green]")
+            elif not failed:
+                console.print(f"[yellow]mcp {safe(name)} is not installed here[/yellow]")
+            continue
         try:
             removed = uninstall_extra(kind, name, global_, cwd)
         except ExtraError as e:
@@ -739,6 +831,16 @@ def _check_extra(kind, name, entry, extras, src, checkout, global_, apply, yes, 
         _confirm_code(extra, yes)
     except click.Abort:
         return "skipped"
+    if kind == "mcp":
+        placements = mcp_placements_for(entry, global_, cwd)
+        written, failed = install_mcp(extra, placements)
+        _report_mcp_failures(name, failed)
+        if not written:
+            return "error: no agent config could be updated"
+        record_extra(
+            LOCK_KEYS[kind], name, _extra_entry(src, extra, global_, cwd, placements), cdir
+        )
+        return "updated" if not failed else "partly updated"
     try:
         install_extra(extra, checkout.root, global_, cwd)
     except ExtraError as e:

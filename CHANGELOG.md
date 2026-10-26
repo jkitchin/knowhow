@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed the tool to **skillin**, because the name `skillz` on PyPI belongs to an unrelated project. The Python package `cli` is now `skillin`. The `skillz` command remains as an alias, and the config path `~/.config/skillz` is unchanged.
 
 ### Added
+- MCP servers install across agents: Claude Code, VS Code, Cursor, Codex, Gemini CLI, OpenCode, Copilot CLI and Windsurf (`skillin/mcp_targets.py`).
+  - Each agent gets its own format and file, and `${VAR}` placeholders are translated per agent; Codex uses `env_vars` and `bearer_token_env_var`.
+  - Files are edited only if they parse cleanly. JSONC files are skipped with a paste-able snippet. Codex TOML is edited by appending or removing only the server's own table, preserving comments.
+  - The lock records every file written, so `remove`, `upgrade` and `installed` cover all of them. Older Claude-only lock entries keep working.
 - `skillin installed`: an offline inventory of everything skillin installed (skills, commands, subagents, hooks, MCP servers), for the project and the user, checked against disk (`ok` / `missing` / `broken`). `--untracked` audits agent folders for items skillin didn't install; `--json` gives scriptable output.
 - `skillin remove --all [-g]` removes everything skillin installed in a scope. Items skillin didn't install are left alone.
 - VS Code as a named skill target (`-a vscode`, alias `code`), detected from `~/.vscode` or the VS Code user data folder. VS Code reads `.agents/skills`, so a VS Code-only user no longer gets an unneeded `.claude/` folder.

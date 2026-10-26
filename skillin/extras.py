@@ -7,23 +7,23 @@ and install for Claude Code:
     command     commands/**/*.md, .claude/commands/**/*.md   commands/<name>.md
     subagent    agents/**/*.md, .claude/agents/**/*.md       agents/<name>.md
     hook        hooks/**/HOOK.md, .claude/hooks/**/HOOK.md   hooks/<name>/ + settings.json
-    mcp         .mcp.json, mcp/**/*.json ("mcpServers")      ./.mcp.json, or `claude mcp add-json
-                                                             --scope user` with --global
+    mcp         .mcp.json, mcp/**/*.json ("mcpServers")      every selected agent's MCP config
+                                                             (see mcp_targets.py)
 """
 
 import json
 import os
 import re
 import shutil
-import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from skillin import mcp_targets
 from skillin.agents_registry import _claude_home
 from skillin.discovery import SKIP_DIRS, install_dir_name, sanitize_text
 from skillin.installer import copy_skill_tree, remove_path
 from skillin.lock import compute_file_hash, compute_folder_hash
-from skillin.safeio import read_json_object, strip_controls, write_json_atomic
+from skillin.safeio import ConfigFileError, strip_controls
 from skillin.validator import AgentValidator, CommandValidator, HookValidator
 
 KINDS = ("command", "subagent", "hook", "mcp")
@@ -208,9 +208,7 @@ def target_path(extra: Extra, global_: bool, cwd: Path | None = None) -> Path:
         return base / "agents" / f"{install_dir_name(extra.name)}.md"
     if extra.kind == "hook":
         return base / "hooks" / install_dir_name(extra.name)
-    if global_:
-        return Path.home() / ".claude.json"  # managed by `claude mcp`
-    return (cwd or Path.cwd()) / ".mcp.json"
+    raise ValueError("MCP servers can have several targets; see mcp_targets.plan")
 
 
 def preview(extra: Extra, max_lines: int = 40) -> str:
@@ -257,57 +255,52 @@ def _copy_file(src: Path, dst: Path, boundary: Path) -> None:
     shutil.copyfile(src, dst)
 
 
-def _claude_mcp_exists(name: str) -> bool:
-    """True if Claude Code has a user-scope MCP server called `name`."""
-    if not shutil.which("claude"):
-        return False
-    result = subprocess.run(
-        ["claude", "mcp", "get", name], capture_output=True, text=True, timeout=60
-    )
-    return result.returncode == 0
-
-
-def _claude_cli(args: list[str]) -> None:
-    if not shutil.which("claude"):
-        raise ExtraError(
-            "Global MCP install needs the `claude` CLI on PATH (it manages ~/.claude.json)"
-        )
-    result = subprocess.run(["claude", *args], capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        raise ExtraError(result.stderr.strip() or f"claude {' '.join(args)} failed")
-
-
-def _mcp_servers(path: Path) -> tuple[dict, dict]:
-    """(whole file, its mcpServers map); refuses files it could not safely rewrite."""
-    data = read_json_object(path)
-    servers = data.setdefault("mcpServers", {})
-    if not isinstance(servers, dict):
-        raise ExtraError(f"{path}: 'mcpServers' is not an object; not modifying it")
-    return data, servers
-
-
-def _update_mcp_json(path: Path, name: str, cfg: dict | None) -> bool:
-    """Set or (cfg=None) delete one server. Returns False if there was nothing to delete."""
-    data, servers = _mcp_servers(path)
-    if cfg is None:
-        if name not in servers:
-            return False
-        del servers[name]
-    else:
-        servers[name] = cfg
-    write_json_atomic(path, data)
-    return True
-
-
 def extra_exists(extra: Extra, global_: bool, cwd: Path | None = None) -> bool:
-    """True if something with this extra's name is already installed at its target."""
-    cwd = cwd or Path.cwd()
+    """True if a command/subagent/hook with this name already exists at its target."""
     if extra.kind == "mcp":
-        if global_:
-            return _claude_mcp_exists(extra.name)
-        return extra.name in _mcp_servers(cwd / ".mcp.json")[1]
-    dest = target_path(extra, global_, cwd)
+        raise ValueError("use mcp_targets.exists for MCP servers")
+    dest = target_path(extra, global_, cwd or Path.cwd())
     return dest.exists() or dest.is_symlink()
+
+
+def mcp_placements_for(entry: dict | None, global_: bool, cwd: Path) -> list:
+    """Where a recorded MCP server was written (legacy entries: Claude Code only)."""
+    records = (entry or {}).get("targets")
+    if isinstance(records, list) and records:
+        places = [mcp_targets.placement_from_record(r, global_) for r in records]
+        return [p for p in places if p is not None]
+    return mcp_targets.legacy_placements(global_, cwd)
+
+
+def install_mcp(extra: Extra, placements: list) -> tuple[list, list]:
+    """
+    Write an MCP server to each placement.
+
+    Returns (written placements, [(placement, error, snippet to add by hand)]).
+    A failure for one agent (e.g. a config file with comments) doesn't stop the others.
+    """
+    cfg = {k: v for k, v in extra.config.items() if k != "description"}
+    written, failed = [], []
+    for p in placements:
+        try:
+            mcp_targets.write(p, extra.name, cfg)
+            written.append(p)
+        except (ConfigFileError, mcp_targets.McpTargetError) as e:
+            failed.append((p, str(e), mcp_targets.snippet(p, extra.name, cfg)))
+    return written, failed
+
+
+def uninstall_mcp(name: str, placements: list) -> tuple[bool, list]:
+    """Remove an MCP server from each placement. Returns (removed any, [(placement, error)])."""
+    if not _SAFE_NAME.match(name):
+        raise ExtraError(f"Invalid mcp name: {name!r}")
+    removed, failed = False, []
+    for p in placements:
+        try:
+            removed |= mcp_targets.remove(p, name)
+        except (ConfigFileError, mcp_targets.McpTargetError) as e:
+            failed.append((p, str(e)))
+    return removed, failed
 
 
 def install_extra(
@@ -325,16 +318,8 @@ def install_extra(
         for script in list(dest.glob("*.py")) + list(dest.glob("*.sh")):
             os.chmod(script, 0o755)
         _add_hook_to_settings(claude_dir(global_, cwd) / "settings.json", dest, extra.config)
-    elif global_:
-        cfg = {k: v for k, v in extra.config.items() if k != "description"}
-        try:  # `claude mcp add-json` refuses to overwrite an existing server
-            _claude_cli(["mcp", "remove", "--scope", "user", extra.name])
-        except ExtraError:
-            pass
-        _claude_cli(["mcp", "add-json", "--scope", "user", extra.name, json.dumps(cfg)])
     else:
-        cfg = {k: v for k, v in extra.config.items() if k != "description"}
-        _update_mcp_json(dest, extra.name, cfg)
+        raise ValueError("use install_mcp for MCP servers")
     return dest
 
 
@@ -354,13 +339,8 @@ def uninstall_extra(kind: str, name: str, global_: bool = False, cwd: Path | Non
         p = base / "hooks" / install_dir_name(name)
         # unregister even if the directory is already gone
         _remove_hook_from_settings(base / "settings.json", p)
-    elif global_:
-        if not _claude_mcp_exists(name):
-            return False
-        _claude_cli(["mcp", "remove", "--scope", "user", name])
-        return True
     else:
-        return _update_mcp_json(cwd / ".mcp.json", name, None)
+        raise ValueError("use uninstall_mcp for MCP servers")
     if p.exists() or p.is_symlink():
         remove_path(p)
         return True

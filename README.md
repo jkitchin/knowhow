@@ -30,10 +30,12 @@ uvx skillin add jkitchin/skillz -s pycse -s python-plotting -g -y
 uvx skillin add someone/their-skills@their-skill
 uvx skillin add https://github.com/o/r/tree/main/skills/foo
 
-# Slash commands, subagents, hooks and MCP servers (installed for Claude Code)
+# Slash commands, subagents and hooks (installed for Claude Code)
 uvx skillin add jkitchin/skillz --command commit --subagent code-reviewer
 uvx skillin add jkitchin/skillz --hook black-on-save   # shows the script for review first
-uvx skillin add someone/repo --mcp their-server         # from the repo's .mcp.json
+
+# MCP servers, from the repo's .mcp.json, for every selected agent
+uvx skillin add someone/repo --mcp their-server -a claude-code -a vscode -a cursor
 
 uvx skillin find plotting   # search skills.sh / GitHub
 uvx skillin installed       # everything skillin installed (project + global)
@@ -81,6 +83,35 @@ your machine. skillin is careful about what it changes:
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
 
+## MCP servers
+
+`--mcp NAME` installs an MCP server from the source repo's `.mcp.json` (or `mcp/*.json`)
+into each selected agent's own config file. Agents come from `-a`, or else from
+`default_platform` or detection. skillin translates the config to each agent's format.
+
+| Agent (`-a`) | Project file | Global file (`-g`) | `${VAR}` written as |
+|---|---|---|---|
+| `claude-code` | `.mcp.json` | via `claude mcp add-json --scope user` | `${VAR}` |
+| `vscode` | `.vscode/mcp.json` (`servers`) | VS Code user `mcp.json` | `${env:VAR}` |
+| `cursor` | `.cursor/mcp.json` | `~/.cursor/mcp.json` | `${env:VAR}` |
+| `codex` | `.codex/config.toml` | `~/.codex/config.toml` | `env_vars`, `bearer_token_env_var`, `env_http_headers` |
+| `gemini-cli` | `.gemini/settings.json` | `~/.gemini/settings.json` | `${VAR}` (not verified) |
+| `opencode` | `opencode.json(c)` (`mcp`) | `~/.config/opencode/opencode.json` | `{env:VAR}` |
+| `github-copilot` | `.mcp.json` | `~/.copilot/mcp-config.json` | `${VAR}` |
+| `windsurf` | (global only) | `~/.codeium/windsurf/mcp_config.json` | `${VAR}` (not verified) |
+
+- **Existing files are respected.** A file is only edited if it parses cleanly, and the
+  previous version is kept as `.bak`. Files with comments (JSONC) are never rewritten: that
+  agent is skipped and skillin prints the snippet to paste yourself. For Codex's TOML, skillin
+  appends or removes only the server's own table, and keeps your comments.
+- **Project files are only created for agents set up in that project.** Without `-a`, an
+  agent needs its folder (e.g. `.vscode/`) to get a project file. Name an agent with `-a` to
+  create its file anyway.
+- **Untranslatable values are flagged.** If a value can't be expressed for an agent (for
+  example `${VAR}` inside Codex `args`), you get a warning instead of a broken config.
+- **Removal reaches every place.** `remove --mcp NAME` removes the server from every file it
+  was written to. `skillin installed` shows each location and its status.
+
 ## Seeing and removing what's installed
 
 `skillin installed` lists everything skillin installed for this project and for your user.
@@ -94,7 +125,7 @@ It works offline from the lock files and checks each item is still on disk.
 | `add ... -a custom-platform` | `remove NAME [-g]` | the copy in the platform's `skills_dir` / `project_skills_dir` |
 | `add --command N` / `--subagent N` | `remove --command N` / `--subagent N` | `.claude/commands/N.md` / `.claude/agents/N.md` |
 | `add --hook N` | `remove --hook N` | `.claude/hooks/N/` and every `settings.json` entry for it |
-| `add --mcp N` | `remove --mcp N` | the `.mcp.json` entry, or the `claude mcp` user-scope server with `-g` |
+| `add --mcp N` | `remove --mcp N` | the server in every agent config it was written to (see [MCP servers](#mcp-servers)) |
 | everything from one repo | `remove owner/repo [-g]` | all of the above that came from that source |
 | everything | `remove --all [-g]` | all of the above, in one scope |
 | legacy `install` / `hooks install` / `agents install` | `uninstall` / `hooks uninstall` / `agents uninstall` | (not tracked in lock files; `remove NAME --force` also works) |

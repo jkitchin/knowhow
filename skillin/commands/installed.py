@@ -9,13 +9,14 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from skillin import mcp_targets
 from skillin.agents_registry import build_registry, canonical_dir
 from skillin.config import Config
 from skillin.discovery import install_dir_name
-from skillin.extras import KINDS, LOCK_KEYS, Extra, claude_dir, target_path
+from skillin.extras import KINDS, LOCK_KEYS, Extra, claude_dir, mcp_placements_for, target_path
 from skillin.installer import _agent_bases, find_installed
 from skillin.lock import read_extras_lock, read_lock
-from skillin.safeio import safe
+from skillin.safeio import ConfigFileError, safe
 
 console = Console()
 
@@ -30,17 +31,29 @@ class Item:
     paths: list[str] = field(default_factory=list)
 
 
-def _extra_status(kind: str, name: str, global_: bool, cwd: Path) -> tuple[str, list[str]]:
-    if kind == "mcp":
-        if global_:
-            # Lives in ~/.claude.json via `claude mcp`; not inspected offline
-            return "registered", ["claude mcp (user scope)"]
-        mcp = cwd / ".mcp.json"
+def _mcp_status(name: str, entry: dict, global_: bool, cwd: Path) -> tuple[str, list[str]]:
+    """Check each agent config the server was written to (Claude's CLI store is not read)."""
+    statuses, labels = [], []
+    for p in mcp_placements_for(entry, global_, cwd):
+        labels.append(f"{p.target.display}: {p.label}")
+        if p.file is None:
+            statuses.append("registered")  # in ~/.claude.json via `claude mcp`
+            continue
         try:
-            servers = json.loads(mcp.read_text()).get("mcpServers", {})
-        except (OSError, ValueError, AttributeError):
-            servers = {}
-        return ("ok" if name in servers else "missing"), [str(mcp)]
+            statuses.append("ok" if mcp_targets.exists(p, name) else "missing")
+        except (ConfigFileError, mcp_targets.McpTargetError):
+            statuses.append("unreadable")
+    for bad in ("unreadable", "missing"):
+        if bad in statuses:
+            return bad, labels
+    return ("ok" if "ok" in statuses else "registered"), labels
+
+
+def _extra_status(
+    kind: str, name: str, global_: bool, cwd: Path, entry=None
+) -> tuple[str, list[str]]:
+    if kind == "mcp":
+        return _mcp_status(name, entry or {}, global_, cwd)
     path = target_path(Extra(kind, name, "", Path(), ""), global_, cwd)
     exists = path.exists() or path.is_symlink()
     return ("ok" if exists else "missing"), [str(path)]
@@ -66,7 +79,7 @@ def collect(global_: bool, cwd: Path, registry=None, untracked: bool = False) ->
     extras_lock = read_extras_lock(claude_dir(global_, cwd))
     for kind in KINDS:
         for name, entry in sorted(extras_lock[LOCK_KEYS[kind]].items()):
-            status, paths = _extra_status(kind, name, global_, cwd)
+            status, paths = _extra_status(kind, name, global_, cwd, entry)
             items.append(Item(scope, kind, name, entry.get("source", ""), status, paths))
     if untracked:
         items += _untracked(global_, cwd, registry, lock, extras_lock)
@@ -144,6 +157,7 @@ def installed(global_, project, untracked, as_json):
         "registered": "green",
         "missing": "red",
         "broken": "red",
+        "unreadable": "red",
         "untracked": "yellow",
     }
     for i in items:

@@ -67,7 +67,7 @@ skillin add jkitchin/skillz --list
 | Skills (canonical copy) | `.agents/skills/<name>` | `~/.agents/skills/<name>` |
 | Skills for Claude Code | `.claude/skills/<name>` (symlink) | `~/.claude/skills/<name>` (symlink) |
 | Commands / subagents / hooks | `.claude/commands`, `.claude/agents`, `.claude/hooks` | same under `~/.claude` |
-| MCP servers | `./.mcp.json` | `claude mcp add-json --scope user` |
+| MCP servers | each selected agent's project MCP file (`.mcp.json`, `.vscode/mcp.json`, ...) | each agent's global MCP file; Claude Code via `claude mcp` |
 | Lock files | `skills-lock.json`, `.claude/skillin-lock.json` | `~/.agents/.skill-lock.json`, `~/.claude/skillin-lock.json` |
 
 - VS Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
