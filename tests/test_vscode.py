@@ -60,8 +60,8 @@ def test_global_install_for_vscode(env):
 
 def test_vscode_only_user_gets_no_claude_dir(env):
     (env["home"] / ".vscode").mkdir()
-    out = run("add", str(env["repo"]), "-s", "sample", "-y").output
-    assert "VS Code" in out
+    out = " ".join(run("add", str(env["repo"]), "-s", "sample", "-y").output.split())
+    assert "skill(s) for VS Code" in out
     assert (env["proj"] / ".agents" / "skills" / "sample").is_dir()
     assert not (env["proj"] / ".claude").exists()
     run("remove", "sample", "-y")

@@ -448,8 +448,10 @@ def add(
             # Plan
             if selected:
                 console.print(
-                    f"Installing {len(selected)} skill(s) to {scope} for: "
-                    f"{', '.join(registry[a].display_name for a in agents)}"
+                    # agents first: a long project path must not push them off screen
+                    f"Installing {len(selected)} skill(s) for "
+                    f"{', '.join(registry[a].display_name for a in agents)} "
+                    f"({safe(scope)})"
                 )
             skipped = [a for a in agents if not global_ and _skip_project_agent(a, cwd, registry)]
             if selected and skipped:
