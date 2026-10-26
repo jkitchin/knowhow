@@ -46,6 +46,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive test suite (44 tests)
 
 ### Fixed
+- Follow-ups from an independent verification review:
+  - Lock files record only which agents an MCP server was installed for, never file paths. Paths are recomputed, so a committed project lock can't make skillin write elsewhere, and the lock is portable.
+  - Symlinked config files are updated in place, keeping dotfiles working. Project files that link outside the project are refused.
+  - A damaged `settings.json` is detected before a hook's files are copied, so nothing is left half-installed.
+  - Subagents with display names like "Code Reviewer" can be removed, including by `remove --all`.
+  - Replacing a Claude Code global MCP server only removes it if it exists, and says so if the re-add fails.
+  - A malformed source `.mcp.json` gives a warning instead of a traceback.
+  - Non-ASCII text is preserved in JSON and TOML configs.
+  - Damaged lock files are refused instead of silently overwritten.
+  - `.bak` holds the state before the command.
+  - `installed --untracked` scans every agent's MCP config.
+  - `upgrade` shows which files an MCP server will be updated in.
+  - Removing the last hook no longer leaves `"hooks": {}` behind.
 - More review follow-ups:
   - `upgrade` lists added, changed and removed files per skill. It asks before applying new or changed scripts and executables, and skips them without a terminal unless `-y` is given.
   - Project hooks are registered as `"$CLAUDE_PROJECT_DIR"/.claude/hooks/...`, so a committed `settings.json` works for everyone; global hooks use a shell-quoted path. Entries written by older versions are still cleaned up.

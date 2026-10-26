@@ -15,6 +15,7 @@ from skillin.config import Config, platform_option
 from skillin.safeio import (
     ConfigFileError,
     read_json_object,
+    real_target,
     safe,
     strip_controls,
     write_json_atomic,
@@ -634,6 +635,15 @@ def _strip_hook(settings: dict, hook_path: Path, project_root: Path | None = Non
     return removed
 
 
+def check_settings_file(settings_file: Path, project_root: Path | None = None) -> dict:
+    """
+    Read settings.json, or raise if skillin could not safely update it (invalid
+    JSON, or a project file that links outside the project). Changes nothing.
+    """
+    real_target(settings_file, project_root)
+    return read_json_object(settings_file)
+
+
 def _add_hook_to_settings(
     settings_file: Path, hook_path: Path, metadata: dict, project_root: Path | None = None
 ):
@@ -649,7 +659,7 @@ def _add_hook_to_settings(
         raise click.ClickException(
             f"Hook {hook_path.name}: only `type: command` hooks can be installed by skillin"
         )
-    settings = read_json_object(settings_file)
+    settings = check_settings_file(settings_file, project_root)
     _strip_hook(settings, hook_path, project_root)
     if not isinstance(settings.get("hooks"), dict):
         settings["hooks"] = {}
@@ -665,7 +675,7 @@ def _add_hook_to_settings(
     if not isinstance(events, list):
         raise ConfigFileError(f"{settings_file}: hooks.{event} is not a list; not modifying it")
     events.append(entry)
-    write_json_atomic(settings_file, settings)
+    write_json_atomic(settings_file, settings, confine=project_root)
 
 
 def _remove_hook_from_settings(
@@ -682,9 +692,11 @@ def _remove_hook_from_settings(
     """
     if not settings_file.exists():
         return
-    settings = read_json_object(settings_file)
+    settings = check_settings_file(settings_file, project_root)
     if _strip_hook(settings, hook_path, project_root):
-        write_json_atomic(settings_file, settings)
+        if settings.get("hooks") == {}:
+            del settings["hooks"]  # don't leave an empty block behind
+        write_json_atomic(settings_file, settings, confine=project_root)
 
 
 def _generate_hook_with_claude(name: str, prompt: str, event: str) -> tuple[str | None, str | None]:

@@ -31,7 +31,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from skillin.agents_registry import _codex_home, _home, _vscode_user_dir, _xdg_config
-from skillin.safeio import ConfigFileError, read_json_object, write_json_atomic
+from skillin.safeio import (
+    ConfigFileError,
+    read_json_object,
+    real_target,
+    write_json_atomic,
+    write_text_atomic,
+)
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -353,6 +359,7 @@ class Placement:
     target: McpTarget
     file: Path | None  # None for Claude's global CLI
     global_: bool = False
+    root: Path | None = None  # project root: reads/writes must stay inside it
 
     @property
     def label(self) -> str:
@@ -389,7 +396,7 @@ def plan(
         if key in seen:
             continue
         seen.add(key)
-        placements.append(Placement(t, file, global_))
+        placements.append(Placement(t, file, global_, None if global_ else cwd))
     return placements, notes
 
 
@@ -403,6 +410,7 @@ def _claude(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def _servers_json(p: Placement) -> tuple[dict, dict]:
+    real_target(p.file, p.root)  # a project file must not lead outside the project
     data = read_json_object(p.file)  # raises ConfigFileError for JSONC/invalid files
     servers = data.setdefault(p.target.key, {})
     if not isinstance(servers, dict):
@@ -423,16 +431,24 @@ def _toml_value(v) -> str:
     if isinstance(v, bool):
         return "true" if v else "false"
     if isinstance(v, str):
-        return json.dumps(v)  # JSON string escapes are valid TOML basic strings
+        # JSON escapes (\\", \\\\, \\uXXXX for controls) are valid TOML basic strings;
+        # other characters, including emoji, are written as-is
+        return json.dumps(v, ensure_ascii=False)
     if isinstance(v, list):
         return "[" + ", ".join(_toml_value(x) for x in v) + "]"
     if isinstance(v, dict):
-        return "{ " + ", ".join(f"{json.dumps(k)} = {_toml_value(x)}" for k, x in v.items()) + " }"
+        return (
+            "{ "
+            + ", ".join(
+                f"{json.dumps(k, ensure_ascii=False)} = {_toml_value(x)}" for k, x in v.items()
+            )
+            + " }"
+        )
     raise McpTargetError(f"unsupported TOML value: {v!r}")
 
 
 def _toml_block(table: str, name: str, cfg: dict) -> str:
-    lines = [f"[{table}.{json.dumps(name)}]"]
+    lines = [f"[{table}.{json.dumps(name, ensure_ascii=False)}]"]
     lines += [f"{k} = {_toml_value(v)}" for k, v in cfg.items()]
     return "\n".join(lines) + "\n"
 
@@ -462,8 +478,17 @@ def exists(p: Placement, name: str) -> bool:
     if p.file is None:
         return _claude(["mcp", "get", name]).returncode == 0
     if p.target.fmt == "toml":
+        real_target(p.file, p.root)
         return name in (_toml_load(p.file).get(p.target.key) or {})
     return name in _servers_json(p)[1]
+
+
+def server_names(p: Placement) -> list[str]:
+    """Names of the MCP servers configured at a placement (file-based targets only)."""
+    if p.target.fmt == "toml":
+        real_target(p.file, p.root)
+        return list(_toml_load(p.file).get(p.target.key) or {})
+    return list(_servers_json(p)[1])
 
 
 def snippet(p: Placement, name: str, cfg: dict) -> str:
@@ -478,20 +503,31 @@ def write(p: Placement, name: str, cfg: dict) -> None:
     """Add or replace one server. Raises ConfigFileError/McpTargetError on failure."""
     shaped = p.target.config(cfg, p.global_)
     if p.file is None:
-        _claude(["mcp", "remove", "--scope", "user", name])  # add-json won't overwrite
+        # add-json won't overwrite, so an existing server must be removed first
+        replacing = _claude(["mcp", "get", name]).returncode == 0
+        if replacing:
+            r = _claude(["mcp", "remove", "--scope", "user", name])
+            if r.returncode != 0:
+                raise McpTargetError(r.stderr.strip() or "claude mcp remove failed")
         r = _claude(["mcp", "add-json", "--scope", "user", name, json.dumps(shaped)])
         if r.returncode != 0:
-            raise McpTargetError(r.stderr.strip() or "claude mcp add-json failed")
+            msg = r.stderr.strip() or "claude mcp add-json failed"
+            if replacing:
+                msg += f" (the previous '{name}' server was removed; re-add it if needed)"
+            raise McpTargetError(msg)
         return
     if p.target.fmt == "toml":
-        _write_toml(p.file, p.target.key, name, shaped)
+        _write_toml(p.file, p.target.key, name, shaped, p.root)
         return
     data, servers = _servers_json(p)
     servers[name] = shaped
-    write_json_atomic(p.file, data)
+    write_json_atomic(p.file, data, confine=p.root)
 
 
-def _write_toml(path: Path, table: str, name: str, cfg: dict | None) -> bool:
+def _write_toml(
+    path: Path, table: str, name: str, cfg: dict | None, confine: Path | None = None
+) -> bool:
+    path = real_target(path, confine)  # follow dotfile symlinks, but not out of a project
     _toml_load(path)  # refuse invalid files before touching them
     text = path.read_text(encoding="utf-8") if path.exists() else ""
     new = _toml_remove_block(text, table, name)
@@ -509,12 +545,7 @@ def _write_toml(path: Path, table: str, name: str, cfg: dict | None) -> bool:
     present = name in (parsed.get(table) or {})
     if present != (cfg is not None):
         raise McpTargetError(f"could not safely edit {path} (server defined in another form?)")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        shutil.copy2(path, path.with_name(path.name + ".bak"))
-    tmp = path.with_name(f".{path.name}.skillin-tmp")
-    tmp.write_text(new, encoding="utf-8")
-    os.replace(tmp, path)
+    write_text_atomic(path, new)
     return True
 
 
@@ -530,29 +561,47 @@ def remove(p: Placement, name: str) -> bool:
     if not p.file.exists():
         return False
     if p.target.fmt == "toml":
-        return _write_toml(p.file, p.target.key, name, None)
+        return _write_toml(p.file, p.target.key, name, None, p.root)
     data, servers = _servers_json(p)
     if name not in servers:
         return False
     del servers[name]
-    write_json_atomic(p.file, data)
+    write_json_atomic(p.file, data, confine=p.root)
     return True
 
 
-def placement_from_record(rec: dict, global_: bool) -> Placement | None:
-    """Rebuild a placement from a lock-file record {"agent": ..., "file": ...}."""
+def placement_from_record(rec: dict, global_: bool, cwd: Path) -> Placement | None:
+    """
+    Rebuild a placement from a lock-file record {"agent": ...}.
+
+    The file is recomputed from the agent table, never taken from the record:
+    a project lock file is usually committed, so a cloned repository must not
+    be able to point skillin at arbitrary files.
+    """
     t = TARGETS.get(rec.get("agent", "")) if isinstance(rec, dict) else None
     if t is None:
         return None
-    file = rec.get("file")
-    return Placement(t, None if file in (None, CLAUDE_CLI) else Path(file), global_)
+    if global_:
+        file = None if t.global_via_cli else (t.global_() if t.global_ else None)
+        if file is None and not t.global_via_cli:
+            return None
+        return Placement(t, file, True)
+    file = t.path(False, cwd)
+    return Placement(t, file, False, cwd) if file is not None else None
 
 
 def to_record(p: Placement) -> dict:
-    return {"agent": p.target.agent, "file": p.label}
+    """Lock record: the agent, plus a portable (project-relative) file for display."""
+    if p.file is None:
+        shown = CLAUDE_CLI
+    elif p.root is not None:
+        shown = os.path.relpath(p.file, p.root)
+    else:
+        shown = str(p.file)
+    return {"agent": p.target.agent, "file": Path(shown).as_posix()}
 
 
 # Legacy lock entries (before per-agent MCP) were Claude Code only
 def legacy_placements(global_: bool, cwd: Path) -> list[Placement]:
     t = TARGETS["claude-code"]
-    return [Placement(t, None if global_ else cwd / ".mcp.json", global_)]
+    return [Placement(t, None if global_ else cwd / ".mcp.json", global_, None if global_ else cwd)]

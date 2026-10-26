@@ -13,10 +13,11 @@ tracked separately in `skillin-lock.json` inside the Claude config directory
 """
 
 import hashlib
-import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+
+from skillin.safeio import ConfigFileError, read_json_object, write_json_atomic
 
 GLOBAL_LOCK_VERSION = 3
 LOCAL_LOCK_VERSION = 1
@@ -57,24 +58,37 @@ def lock_path(global_: bool, cwd: Path | None = None) -> Path:
     return global_lock_path() if global_ else local_lock_path(cwd)
 
 
+def _read_lock_file(path: Path, key: str) -> dict | None:
+    """
+    Parsed lock file, None if absent; raise if it exists but is unusable.
+
+    A damaged lock file (e.g. a merge conflict) is never silently replaced:
+    that would drop entries written by other tools such as npx skills.
+    """
+    data = read_json_object(path)  # ConfigFileError on invalid JSON / non-object
+    if not data:
+        return None
+    if key in data and not isinstance(data[key], dict):
+        raise ConfigFileError(f"{path}: '{key}' is not an object; fix or move the file aside")
+    return data
+
+
 def read_lock(global_: bool, cwd: Path | None = None) -> dict:
-    """Read a lock file, returning an empty structure if missing or invalid."""
+    """Read a skills lock file (empty structure if missing; raises if damaged)."""
     version = GLOBAL_LOCK_VERSION if global_ else LOCAL_LOCK_VERSION
-    try:
-        data = json.loads(lock_path(global_, cwd).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    data = _read_lock_file(lock_path(global_, cwd), "skills")
+    if data is None:
         return {"version": version, "skills": {}}
-    if not isinstance(data, dict) or not isinstance(data.get("skills"), dict):
-        return {"version": version, "skills": {}}
+    data.setdefault("version", version)
+    data.setdefault("skills", {})
     return data
 
 
 def write_lock(data: dict, global_: bool, cwd: Path | None = None) -> None:
-    path = lock_path(global_, cwd)
-    path.parent.mkdir(parents=True, exist_ok=True)
     if not global_:
         data["skills"] = dict(sorted(data["skills"].items()))
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    confine = None if global_ else (cwd or Path.cwd())
+    write_json_atomic(lock_path(global_, cwd), data, backup=False, confine=confine)
 
 
 def _now() -> str:
@@ -159,25 +173,24 @@ def extras_lock_path(claude_dir: Path) -> Path:
 
 
 def read_extras_lock(claude_dir: Path) -> dict:
-    """Read the commands/hooks/subagents lock, returning an empty one if absent."""
-    try:
-        data = json.loads(extras_lock_path(claude_dir).read_text(encoding="utf-8"))
-        if not isinstance(data, dict):
-            raise ValueError
-    except (OSError, ValueError):
-        data = {"version": EXTRAS_LOCK_VERSION}
+    """Read the commands/hooks/subagents/MCP lock (empty if missing; raises if damaged)."""
+    data = read_json_object(extras_lock_path(claude_dir)) or {"version": EXTRAS_LOCK_VERSION}
     for kind in EXTRA_KINDS:
-        if not isinstance(data.get(kind), dict):
-            data[kind] = {}
+        if kind in data and not isinstance(data[kind], dict):
+            raise ConfigFileError(f"{extras_lock_path(claude_dir)}: '{kind}' is not an object")
+        data.setdefault(kind, {})
     return data
 
 
 def write_extras_lock(data: dict, claude_dir: Path) -> None:
-    path = extras_lock_path(claude_dir)
-    path.parent.mkdir(parents=True, exist_ok=True)
     for kind in EXTRA_KINDS:
         data[kind] = dict(sorted(data[kind].items()))
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    # a project's .claude/ lock must not be redirected outside the project
+    from skillin.agents_registry import _claude_home
+
+    is_global = os.path.realpath(claude_dir) == os.path.realpath(_claude_home())
+    confine = None if is_global else claude_dir.parent
+    write_json_atomic(extras_lock_path(claude_dir), data, backup=False, confine=confine)
 
 
 def record_extra(kind: str, name: str, entry: dict, claude_dir: Path) -> None:

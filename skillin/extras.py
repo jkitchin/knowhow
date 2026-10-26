@@ -185,6 +185,9 @@ def discover_extras(
             warn(f"Skipping unreadable MCP file {f}: {e}")
             continue
         servers = data.get("mcpServers") if isinstance(data, dict) else None
+        if servers is not None and not isinstance(servers, dict):
+            warn(f"Skipping {f}: 'mcpServers' must be an object")
+            continue
         for name, cfg in (servers or {}).items():
             if not _SAFE_NAME.match(str(name)) or not _valid_mcp_config(cfg):
                 warn(f"Skipping invalid MCP server '{name}' in {f}")
@@ -270,7 +273,7 @@ def mcp_placements_for(entry: dict | None, global_: bool, cwd: Path) -> list:
     """Where a recorded MCP server was written (legacy entries: Claude Code only)."""
     records = (entry or {}).get("targets")
     if isinstance(records, list) and records:
-        places = [mcp_targets.placement_from_record(r, global_) for r in records]
+        places = [mcp_targets.placement_from_record(r, global_, cwd) for r in records]
         return [p for p in places if p is not None]
     return mcp_targets.legacy_placements(global_, cwd)
 
@@ -317,6 +320,10 @@ def install_extra(
     if extra.kind in ("command", "subagent"):
         _copy_file(extra.path, dest, source_root)
     elif extra.kind == "hook":
+        from skillin.commands.hooks import check_settings_file
+
+        # fail before copying anything if settings.json can't be updated
+        check_settings_file(claude_dir(global_, cwd) / "settings.json", None if global_ else cwd)
         copy_skill_tree(extra.path, dest, source_root)
         for script in list(dest.glob("*.py")) + list(dest.glob("*.sh")):
             os.chmod(script, 0o755)
@@ -337,7 +344,10 @@ def uninstall_extra(kind: str, name: str, global_: bool = False, cwd: Path | Non
 
     cwd = cwd or Path.cwd()
     base = claude_dir(global_, cwd)
-    if not _SAFE_NAME.match(name):
+    # commands are stored under their own name; subagents and hooks under the
+    # sanitized install_dir_name (so display names like "Code Reviewer" work)
+    stored = name if kind == "command" else install_dir_name(name)
+    if not _SAFE_NAME.match(stored):
         raise ExtraError(f"Invalid {kind} name: {name!r}")
     if kind == "command":
         p = base / "commands" / f"{name}.md"

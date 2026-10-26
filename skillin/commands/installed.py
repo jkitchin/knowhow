@@ -110,14 +110,22 @@ def _untracked(global_, cwd, registry, lock, extras_lock) -> list[Item]:
     for p in sorted(hooks_dir.iterdir()) if hooks_dir.is_dir() else []:
         if p.is_dir() and p.name not in tracked_hooks:
             items.append(Item(scope, "hook", p.name, "", "untracked", [str(p)]))
-    if not global_:
+    # MCP servers in every agent's config (Claude's ~/.claude.json is not read)
+    seen_files = set()
+    for t in mcp_targets.TARGETS.values():
+        if global_ and t.global_via_cli:
+            continue
+        p = mcp_targets.Placement(t, t.path(global_, cwd), global_, None if global_ else cwd)
+        if p.file is None or not p.file.exists() or (str(p.file), t.key) in seen_files:
+            continue
+        seen_files.add((str(p.file), t.key))
         try:
-            servers = json.loads((cwd / ".mcp.json").read_text()).get("mcpServers", {})
-        except (OSError, ValueError, AttributeError):
-            servers = {}
-        for n in sorted(servers):
+            names = mcp_targets.server_names(p)
+        except (ConfigFileError, mcp_targets.McpTargetError):
+            continue
+        for n in sorted(names):
             if n not in extras_lock["mcp"]:
-                items.append(Item(scope, "mcp", n, "", "untracked", [str(cwd / ".mcp.json")]))
+                items.append(Item(scope, "mcp", n, "", "untracked", [f"{t.display}: {p.file}"]))
     return items
 
 
