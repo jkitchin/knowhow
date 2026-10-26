@@ -127,7 +127,10 @@ skills (npx-skills search order, name from frontmatter), copies each to `.agents
 upstream changes, `upgrade` applies them, `remove` uninstalls, `find` searches skills.sh / GitHub.
 `skillin/extras.py` also installs commands (`--command`), subagents (`--subagent`), hooks (`--hook`)
 and MCP servers (`--mcp`, from `.mcp.json` / `mcp/*.json`) for Claude Code, tracked in
-`.claude/skillin-lock.json`. Hooks and MCP servers are previewed and need confirmation or `-y`. Aliases:
+`.claude/skillin-lock.json`. Hooks and MCP servers are previewed and need confirmation or `-y`.
+`skillin validate [PATH]` (`skillin/spec.py`) checks skills against the Agent Skills spec (agentskills.io)
+plus installability (hidden/duplicate skills, broken links, excluded files, LFS); author guide is
+`docs/publishing-skills.md`. Aliases:
 `skillin config set alias.NAME owner/repo`. See `docs/publishing-skills.md`.
 
 ## Install --all Feature

@@ -92,9 +92,10 @@ ruff format .
    Detailed instructions for Claude...
    ```
 
-3. Check that it is discovered and installs (warnings point at frontmatter problems):
+3. Validate it and check that it installs (see [docs/publishing-skills.md](docs/publishing-skills.md)
+   for what makes a good skill):
    ```bash
-   skillin add . --list
+   skillin validate .
    skillin add . --skill skill-name --dry-run
    ```
    CI (`.github/workflows/validate-skills.yml`) also runs the strict `SkillValidator`

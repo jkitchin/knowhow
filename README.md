@@ -51,8 +51,9 @@ Until `skillin` is published on PyPI, use
   happens under `~/`.
 - **Tracked:** installs are recorded in `skills-lock.json` (commit it) and
   `.claude/skillin-lock.json`. `check` and `upgrade` use these to find upstream changes.
-- **Publish your own:** any git repo with `SKILL.md` files works.
-  See [docs/publishing-skills.md](docs/publishing-skills.md).
+- **Publish your own:** any git repo with `SKILL.md` files works. Follow the
+  [guide to creating compatible skill repositories](docs/publishing-skills.md) and
+  check your repo with `uvx skillin validate .`.
 - **Shortcuts:** `skillin config set alias.kitchin jkitchin/skillz` lets you write
   `skillin add kitchin -s pycse`.
 
@@ -64,7 +65,7 @@ The `skillz` command still works as an alias of `skillin`.
 - **Updates**: `check` and `upgrade` against lock files; `remove` by name or by source
 - **Search**: `find` searches skills.sh and GitHub; `search` searches a local skills repository
 - **Create**: interactive wizard or AI-assisted creation of skills, commands, hooks and agents
-- **Validate**: check skills, commands, hooks and agents against format requirements
+- **Validate**: `skillin validate` checks a repo against the Agent Skills spec and how installers will see it (CI-friendly exit codes)
 - **Multi-agent**: Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf
 - **Hooks**: lifecycle hooks for Claude Code (formatting, logging, security, notifications)
 - **Skill evolution**: harvest, optimize, A/B test and merge skills (see [docs/cascade.md](docs/cascade.md))
