@@ -334,13 +334,13 @@ python scripts/timeline_visualizer.py timeline.json --style calendar
 
 ```bash
 # Install to personal directory
-skillpack install planning
+knowhow install planning
 
 # Install to project
-skillpack install planning --target project
+knowhow install planning --target project
 
 # View detailed info
-skillpack info planning
+knowhow info planning
 ```
 
 ## Usage Examples
@@ -421,11 +421,11 @@ Based on established project management methodologies including:
 
 ## License
 
-This skill is part of the skillpack repository and follows the repository's MIT license.
+This skill is part of the knowhow repository and follows the repository's MIT license.
 
 ## Support
 
 For issues, suggestions, or contributions:
-- Repository: https://github.com/jkitchin/skillpack
-- Issues: https://github.com/jkitchin/skillpack/issues
+- Repository: https://github.com/jkitchin/knowhow
+- Issues: https://github.com/jkitchin/knowhow/issues
 - Category: productivity/planning

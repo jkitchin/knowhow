@@ -1,65 +1,65 @@
 # CASCADE-Inspired Skill Evolution
 
-Skillpack includes a suite of tools for autonomous skill improvement, inspired by the
+Knowhow includes a suite of tools for autonomous skill improvement, inspired by the
 **CASCADE** framework (Cumulative Agentic Skill Creation through Autonomous Development
 and Evolution) described in [arxiv:2512.23880](https://arxiv.org/abs/2512.23880).
 
 CASCADE demonstrates that AI agents can autonomously create, accumulate, select, and
-evolve reusable skills over time, leading to measurably better performance. Skillpack
+evolve reusable skills over time, leading to measurably better performance. Knowhow
 implements these concepts through five commands:
 
-| CASCADE Phase | Skillpack Command | What It Does |
+| CASCADE Phase | Knowhow Command | What It Does |
 |---------------|----------------|--------------|
-| **Creation** | `skillpack harvest` | Extract skills from session transcripts |
-| **Evolution** | `skillpack optimize` | Improve descriptions via eval feedback |
-| **Selection** | `skillpack ab-test` | Compare description variants, pick the best |
-| **Quality Metrics** | `skillpack stats` | Track usage frequency and identify gaps |
-| **Composition** | `skillpack merge` | Detect overlaps and combine skills |
+| **Creation** | `knowhow harvest` | Extract skills from session transcripts |
+| **Evolution** | `knowhow optimize` | Improve descriptions via eval feedback |
+| **Selection** | `knowhow ab-test` | Compare description variants, pick the best |
+| **Quality Metrics** | `knowhow stats` | Track usage frequency and identify gaps |
+| **Composition** | `knowhow merge` | Detect overlaps and combine skills |
 
 ## Quick Start
 
 ```bash
 # See what skills you have and how they're used
-skillpack stats --scan
+knowhow stats --scan
 
 # Improve a skill's triggering accuracy
-skillpack optimize python-jax
+knowhow optimize python-jax
 
 # Compare multiple description variants
-skillpack ab-test python-jax
+knowhow ab-test python-jax
 
 # Extract new skills from your work sessions
-skillpack harvest
+knowhow harvest
 
 # Find and fix redundant skills
-skillpack merge
+knowhow merge
 ```
 
 ## Commands
 
-### `skillpack harvest` - Skill Creation from Sessions
+### `knowhow harvest` - Skill Creation from Sessions
 
 Analyzes Claude Code session transcripts to identify reusable patterns that could
 become new skills. This implements CASCADE's **creation and accumulation** phase.
 
 ```bash
 # Analyze 5 most recent sessions (default)
-skillpack harvest
+knowhow harvest
 
 # Analyze a specific transcript
-skillpack harvest -t ~/.claude/projects/.../session.jsonl
+knowhow harvest -t ~/.claude/projects/.../session.jsonl
 
 # Analyze more sessions
-skillpack harvest -r 10
+knowhow harvest -r 10
 
 # Generate SKILL.md files for proposals
-skillpack harvest --generate
+knowhow harvest --generate
 
 # Preview without creating files
-skillpack harvest --generate --dry-run
+knowhow harvest --generate --dry-run
 
 # Output to specific directory
-skillpack harvest --generate -o ./my-skills/
+knowhow harvest --generate -o ./my-skills/
 ```
 
 **How it works:**
@@ -80,26 +80,26 @@ skillpack harvest --generate -o ./my-skills/
 
 ---
 
-### `skillpack optimize` - Skill Evolution
+### `knowhow optimize` - Skill Evolution
 
 Improves a skill's description for better triggering accuracy. This implements
 CASCADE's **evolution** phase where skills are refined through feedback.
 
 ```bash
 # Optimize a single skill
-skillpack optimize python-jax
+knowhow optimize python-jax
 
 # Optimize all skills in the repository (batch mode)
-skillpack optimize --all
+knowhow optimize --all
 
 # Preview without saving
-skillpack optimize python-jax --dry-run
+knowhow optimize python-jax --dry-run
 
 # Generate eval queries only (useful for debugging)
-skillpack optimize python-jax --evals-only
+knowhow optimize python-jax --evals-only
 
 # Batch mode, dry run
-skillpack optimize --all --dry-run
+knowhow optimize --all --dry-run
 ```
 
 **How it works:**
@@ -124,20 +124,20 @@ skillpack optimize --all --dry-run
 
 ---
 
-### `skillpack ab-test` - Quality-Based Selection
+### `knowhow ab-test` - Quality-Based Selection
 
 Generates multiple description variants and scores each against evaluation queries
 to find the best performer. This implements CASCADE's **selection** phase.
 
 ```bash
 # Test 3 variants (default)
-skillpack ab-test python-jax
+knowhow ab-test python-jax
 
 # Test more variants for higher confidence
-skillpack ab-test python-jax -n 5
+knowhow ab-test python-jax -n 5
 
 # Preview without saving
-skillpack ab-test python-jax --dry-run
+knowhow ab-test python-jax --dry-run
 ```
 
 **How it works:**
@@ -161,37 +161,37 @@ skillpack ab-test python-jax --dry-run
 - Use more variants (`-n 5` or `-n 7`) for important skills
 - If the current description wins, it's already well-optimized
 - Variants with different emphases may reveal blind spots
-- Combine with `skillpack stats` to prioritize which skills to A/B test
+- Combine with `knowhow stats` to prioritize which skills to A/B test
 
 ---
 
-### `skillpack stats` - Usage Tracking & Quality Metrics
+### `knowhow stats` - Usage Tracking & Quality Metrics
 
 Tracks which skills are used, how often, and identifies unused skills that may need
 optimization or removal. This implements CASCADE's **quality metrics** for selection.
 
 ```bash
 # Show usage statistics
-skillpack stats
+knowhow stats
 
 # Scan transcripts for skill mentions (more accurate)
-skillpack stats --scan
+knowhow stats --scan
 
 # Show only unused skills
-skillpack stats --unused
+knowhow stats --unused
 
 # Show top 10 most-used skills
-skillpack stats --top 10
+knowhow stats --top 10
 
 # Sort by name or size instead of usage
-skillpack stats --sort name
-skillpack stats --sort size
+knowhow stats --sort name
+knowhow stats --sort size
 
 # Manually log a skill usage event
-skillpack stats --log python-jax
+knowhow stats --log python-jax
 
 # Reset all statistics
-skillpack stats --reset
+knowhow stats --reset
 ```
 
 **How it works:**
@@ -206,30 +206,30 @@ skillpack stats --reset
 3. **Hook integration:** (future) Automatically log via Claude Code hooks
 
 **Tips:**
-- Run `skillpack stats --scan` periodically to get usage estimates
+- Run `knowhow stats --scan` periodically to get usage estimates
 - Use `--unused` to find skills that may need better descriptions
 - Skills with zero usage are candidates for optimization or removal
 - High usage + large size = skills worth investing in quality
 
 ---
 
-### `skillpack merge` - Skill Composition
+### `knowhow merge` - Skill Composition
 
 Detects overlapping skills and proposes merges or reorganizations. This implements
 CASCADE's **composition** phase where skills are combined and deduplicated.
 
 ```bash
 # Detect overlaps across all skills
-skillpack merge
+knowhow merge
 
 # Preview only (no changes)
-skillpack merge --dry-run
+knowhow merge --dry-run
 
 # Merge two specific skills
-skillpack merge --execute python-jax python-numpy --merged-name python-array-computing
+knowhow merge --execute python-jax python-numpy --merged-name python-array-computing
 
 # Merge with dry run
-skillpack merge --execute skill-a skill-b --dry-run
+knowhow merge --execute skill-a skill-b --dry-run
 ```
 
 **How it works:**
@@ -253,7 +253,7 @@ skillpack merge --execute skill-a skill-b --dry-run
 - Run detection first to see what Claude recommends
 - Not all overlaps need merging — complementary skills can coexist
 - Always review merged content before accepting
-- After merging, run `skillpack optimize` on the merged skill
+- After merging, run `knowhow optimize` on the merged skill
 - Consider hierarchy (subskills) as an alternative to full merges
 
 ---
@@ -284,11 +284,11 @@ These five commands form a complete skill lifecycle:
 **Typical workflow:**
 
 1. **Work normally** with Claude Code — sessions are recorded as transcripts
-2. **Harvest** new skills from sessions: `skillpack harvest`
-3. **Track** which skills get used: `skillpack stats --scan`
-4. **Optimize** underperforming skills: `skillpack optimize --all`
-5. **A/B test** important skills: `skillpack ab-test python-jax`
-6. **Merge** redundant skills: `skillpack merge`
+2. **Harvest** new skills from sessions: `knowhow harvest`
+3. **Track** which skills get used: `knowhow stats --scan`
+4. **Optimize** underperforming skills: `knowhow optimize --all`
+5. **A/B test** important skills: `knowhow ab-test python-jax`
+6. **Merge** redundant skills: `knowhow merge`
 7. Repeat — skills improve over time through this evolutionary cycle
 
 ## Prerequisites
@@ -305,4 +305,4 @@ command and options.
 - **CASCADE Paper:** Chen, Y. et al. (2024). "CASCADE: Cumulative Agentic Skill
   Creation through Autonomous Development and Evolution."
   [arxiv:2512.23880](https://arxiv.org/abs/2512.23880)
-- **Skillpack Repository:** https://github.com/jkitchin/skillpack
+- **Knowhow Repository:** https://github.com/jkitchin/knowhow

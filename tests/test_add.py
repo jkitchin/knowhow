@@ -1,4 +1,4 @@
-"""End-to-end tests for `skillpack add/remove/check/upgrade` using local git repos."""
+"""End-to-end tests for `knowhow add/remove/check/upgrade` using local git repos."""
 
 import json
 import shutil
@@ -7,8 +7,8 @@ import subprocess
 import pytest
 from click.testing import CliRunner
 
-from skillpack.lock import compute_folder_hash
-from skillpack.main import cli
+from knowhow.lock import compute_folder_hash
+from knowhow.main import cli
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 

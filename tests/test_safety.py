@@ -8,10 +8,10 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from skillpack.extras import Extra, discover_extras, preview
-from skillpack.installer import copy_skill_tree
-from skillpack.main import cli
-from skillpack.safeio import strip_controls
+from knowhow.extras import Extra, discover_extras, preview
+from knowhow.installer import copy_skill_tree
+from knowhow.main import cli
+from knowhow.safeio import strip_controls
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 
@@ -102,10 +102,10 @@ def test_remove_refuses_unmanaged_and_needs_y_without_terminal(env):
     mine.mkdir(parents=True)
     (mine / "SKILL.md").write_text(skill_md("mine"))
     r = run("remove", "mine", "-y", ok=False)
-    assert r.exit_code != 0 and "Not installed by skillpack" in r.output
+    assert r.exit_code != 0 and "Not installed by knowhow" in r.output
     assert mine.exists()
     r = run("remove", "--command", "deploy", "-y", ok=False)
-    assert "Not installed by skillpack" in r.output
+    assert "Not installed by knowhow" in r.output
 
     run("add", str(env["repo"]), "-s", "foo", "-y")
     r = run("remove", "foo", ok=False)  # CliRunner has no tty
@@ -250,7 +250,7 @@ def test_failed_copy_keeps_previous_install(tmp_path, monkeypatch):
     with pytest.raises(OSError):
         copy_skill_tree(src, dst, tmp_path)
     assert (dst / "SKILL.md").read_text() == "old"
-    assert not list(tmp_path.glob(".dst.skillpack-tmp*"))
+    assert not list(tmp_path.glob(".dst.knowhow-tmp*"))
 
 
 # M7 / L3 -------------------------------------------------------------------
@@ -288,7 +288,7 @@ def test_invalid_mcp_configs_are_skipped(tmp_path):
 def test_hook_commands_are_shell_safe_and_portable(env, tmp_path, monkeypatch):
     import shlex
 
-    from skillpack.commands.hooks import _add_hook_to_settings, _remove_hook_from_settings
+    from knowhow.commands.hooks import _add_hook_to_settings, _remove_hook_from_settings
 
     spaced = tmp_path / "my project" / ".claude" / "hooks" / "h1"
     spaced.mkdir(parents=True)
@@ -327,7 +327,7 @@ def test_prompt_hooks_are_refused(env):
 
 
 def test_project_hash_uses_npx_file_order(tmp_path):
-    from skillpack.lock import _collation_key, compute_folder_hash
+    from knowhow.lock import _collation_key, compute_folder_hash
 
     names = [
         "README.md",
@@ -361,8 +361,8 @@ def test_project_hash_uses_npx_file_order(tmp_path):
     assert compute_folder_hash(tmp_path) != compute_folder_hash(tmp_path, npx_order=False)
 
 
-def test_check_accepts_hash_from_older_skillpack(env):
-    from skillpack.lock import compute_folder_hash
+def test_check_accepts_hash_from_older_knowhow(env):
+    from knowhow.lock import compute_folder_hash
 
     (env["repo"] / "skills" / "foo" / "assets").mkdir()
     (env["repo"] / "skills" / "foo" / "assets" / "a.txt").write_text("a")
@@ -404,5 +404,5 @@ def test_legacy_uninstall_rejects_traversal_and_defers_to_remove(env):
 
     run("add", str(env["repo"]), "-s", "foo", "-g", "-a", "claude-code", "-y")
     r = run("uninstall", "foo", "--force", ok=False)
-    assert "skillpack remove foo -g" in " ".join(r.output.split())
+    assert "knowhow remove foo -g" in " ".join(r.output.split())
     assert (env["home"] / ".agents" / "skills" / "foo" / "SKILL.md").exists()

@@ -1,4 +1,4 @@
-"""Tests for commands, subagents, hooks and MCP servers via `skillpack add` (phase 2)."""
+"""Tests for commands, subagents, hooks and MCP servers via `knowhow add` (phase 2)."""
 
 import json
 import os
@@ -8,10 +8,10 @@ import subprocess
 import pytest
 from click.testing import CliRunner
 
-from skillpack.commands import add as add_module
-from skillpack.extras import discover_extras
-from skillpack.main import cli
-from skillpack.utils import find_skill_directories
+from knowhow.commands import add as add_module
+from knowhow.extras import discover_extras
+from knowhow.main import cli
+from knowhow.utils import find_skill_directories
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 
@@ -115,7 +115,7 @@ def test_install_command_subagent_hook(env):
     # portable: works for anyone who checks out the project
     assert commands == ['"$CLAUDE_PROJECT_DIR"/.claude/hooks/fmt/hook.py']
 
-    lock = json.loads((claude / "skillpack-lock.json").read_text())
+    lock = json.loads((claude / "knowhow-lock.json").read_text())
     assert set(lock["commands"]) == {"commit"}
     assert lock["hooks"]["fmt"]["path"] == "hooks/fmt"
     # no skills were requested, so none were installed
@@ -125,7 +125,7 @@ def test_install_command_subagent_hook(env):
     assert r.exit_code == 0
     assert not (claude / "hooks" / "fmt").exists()
     assert json.loads((claude / "settings.json").read_text()).get("hooks", {}) == {}
-    assert json.loads((claude / "skillpack-lock.json").read_text())["commands"] == {}
+    assert json.loads((claude / "knowhow-lock.json").read_text())["commands"] == {}
 
 
 def test_hook_requires_confirmation_noninteractive(env):
@@ -228,7 +228,7 @@ def test_find_uses_skills_sh_then_github(monkeypatch):
 
     monkeypatch.setattr(add_module, "_get_json", fake_get)
     out = run("find", "plot").output
-    assert "skillpack add o/r@x" in out
+    assert "knowhow add o/r@x" in out
 
     def fake_get_fail(url, headers=None):
         if "skills.sh" in url:

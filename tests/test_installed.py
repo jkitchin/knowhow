@@ -1,4 +1,4 @@
-"""`skillpack installed` inventory and `skillpack remove --all`."""
+"""`knowhow installed` inventory and `knowhow remove --all`."""
 
 import json
 import shutil
@@ -6,7 +6,7 @@ import shutil
 import pytest
 from click.testing import CliRunner
 
-from skillpack.main import cli
+from knowhow.main import cli
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 
@@ -70,7 +70,7 @@ def test_inventory_reports_missing_broken_and_untracked(env):
     assert status == {"alpha": "broken", "beta": "missing", "mine": "untracked"}
 
 
-def test_remove_all_removes_only_what_skillpack_installed(env):
+def test_remove_all_removes_only_what_knowhow_installed(env):
     run("add", str(env["repo"]), "-s", "alpha", "--command", "commit", "--mcp", "fs", "-y")
     run("add", str(env["repo"]), "-s", "beta", "-g", "-y")
     mine = env["proj"] / ".claude" / "skills" / "mine"
@@ -83,7 +83,7 @@ def test_remove_all_removes_only_what_skillpack_installed(env):
 
     run("remove", "--all", "-y")
     assert inventory("-p") == []
-    assert mine.exists()  # not installed by skillpack
+    assert mine.exists()  # not installed by knowhow
     assert json.loads(mcp.read_text())["mcpServers"] == {"users-own": {"command": "y"}}
     assert [i["name"] for i in inventory("-g")] == ["beta"]  # other scope untouched
 

@@ -142,7 +142,7 @@ Message: Claude is waiting for your input
 ## Installation
 
 ```bash
-skillpack hooks install notify-done
+knowhow hooks install notify-done
 ```
 
 ## Notes
@@ -194,8 +194,8 @@ The notify-done hook works well with:
 - **bash-logger**: Notification alerts you to check the command log
 
 ```bash
-skillpack hooks install notify-done
-skillpack hooks install lab-notebook
+knowhow hooks install notify-done
+knowhow hooks install lab-notebook
 ```
 
 ## Advanced Usage

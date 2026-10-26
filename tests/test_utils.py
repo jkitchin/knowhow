@@ -1,6 +1,6 @@
 """Tests for utils module."""
 
-from skillpack.utils import (
+from knowhow.utils import (
     copy_directory,
     copy_file,
     find_command_files,

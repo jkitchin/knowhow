@@ -2,40 +2,40 @@
 
 import pytest
 
-from skillpack.sources import SourceError, parse_source
+from knowhow.sources import SourceError, parse_source
 
 
 @pytest.mark.parametrize(
     "spec,type_,url,ref,subpath,skill",
     [
         (
-            "jkitchin/skillpack",
+            "jkitchin/knowhow",
             "github",
-            "https://github.com/jkitchin/skillpack.git",
+            "https://github.com/jkitchin/knowhow.git",
             None,
             None,
             None,
         ),
         (
-            "jkitchin/skillpack/skills/programming",
+            "jkitchin/knowhow/skills/programming",
             "github",
-            "https://github.com/jkitchin/skillpack.git",
+            "https://github.com/jkitchin/knowhow.git",
             None,
             "skills/programming",
             None,
         ),
         (
-            "jkitchin/skillpack@fairchem",
+            "jkitchin/knowhow@fairchem",
             "github",
-            "https://github.com/jkitchin/skillpack.git",
+            "https://github.com/jkitchin/knowhow.git",
             None,
             None,
             "fairchem",
         ),
         (
-            "jkitchin/skillpack#dev@fairchem",
+            "jkitchin/knowhow#dev@fairchem",
             "github",
-            "https://github.com/jkitchin/skillpack.git",
+            "https://github.com/jkitchin/knowhow.git",
             "dev",
             None,
             "fairchem",
@@ -81,8 +81,8 @@ def test_local_paths(tmp_path, monkeypatch):
 
 
 def test_alias():
-    s = parse_source("kitchin@pycse", aliases={"kitchin": "jkitchin/skillpack"})
-    assert s.owner_repo == "jkitchin/skillpack"
+    s = parse_source("kitchin@pycse", aliases={"kitchin": "jkitchin/knowhow"})
+    assert s.owner_repo == "jkitchin/knowhow"
     assert s.skill_filter == "pycse"
 
 

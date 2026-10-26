@@ -415,4 +415,4 @@ To improve this skill:
 
 ## License
 
-This skill is part of the skillpack project and follows the same license.
+This skill is part of the knowhow project and follows the same license.

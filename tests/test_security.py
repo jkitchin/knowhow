@@ -1,9 +1,9 @@
-"""Security tests for skillpack."""
+"""Security tests for knowhow."""
 
 import pytest
 
-from skillpack.config import VALID_PLATFORMS, InvalidPlatformError, validate_platform
-from skillpack.utils import PathTraversalError, safe_path_join
+from knowhow.config import VALID_PLATFORMS, InvalidPlatformError, validate_platform
+from knowhow.utils import PathTraversalError, safe_path_join
 
 
 class TestSafePathJoin:
@@ -115,26 +115,26 @@ class TestInputValidation:
         """Test names with null bytes are handled."""
         # Null bytes in filenames are generally not allowed
         # This tests robustness of the validation
-        from skillpack.utils import validate_name
+        from knowhow.utils import validate_name
 
         assert not validate_name("skill\x00name")
 
     def test_name_with_newline(self):
         """Test names with newlines are rejected."""
-        from skillpack.utils import validate_name
+        from knowhow.utils import validate_name
 
         assert not validate_name("skill\nname")
 
     def test_name_with_unicode(self):
         """Test names with unicode are rejected (lowercase-hyphens only)."""
-        from skillpack.utils import validate_name
+        from knowhow.utils import validate_name
 
         assert not validate_name("skíll-name")
         assert not validate_name("skill-名前")
 
     def test_valid_name_patterns(self):
         """Test valid name patterns are accepted."""
-        from skillpack.utils import validate_name
+        from knowhow.utils import validate_name
 
         assert validate_name("my-skill")
         assert validate_name("skill123")
@@ -143,7 +143,7 @@ class TestInputValidation:
 
     def test_invalid_name_patterns(self):
         """Test invalid name patterns are rejected."""
-        from skillpack.utils import validate_name
+        from knowhow.utils import validate_name
 
         assert not validate_name("My-Skill")  # uppercase
         assert not validate_name("my skill")  # space

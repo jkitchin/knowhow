@@ -72,14 +72,14 @@ Ralph Wiggum mode creates an external loop that:
 ### Install the Skill
 
 ```bash
-skillpack install ralph-wiggum
+knowhow install ralph-wiggum
 ```
 
 ### Install Safety Hooks (Recommended)
 
 ```bash
-skillpack hooks install ralph-safety-check
-skillpack hooks install ralph-cost-monitor
+knowhow hooks install ralph-safety-check
+knowhow hooks install ralph-cost-monitor
 ```
 
 ### Prerequisites
@@ -313,7 +313,7 @@ cat .ralph-costs.json | jq '.summary'
 
 **Fix:**
 1. Set iteration limits: `./ralph-sandbox.sh . 20`
-2. Install cost monitor: `skillpack hooks install ralph-cost-monitor`
+2. Install cost monitor: `knowhow hooks install ralph-cost-monitor`
 3. Set budget: `export RALPH_COST_LIMIT=25.00`
 
 ### Docker Build Fails
@@ -334,7 +334,7 @@ docker build -t ralph-sandbox -f Dockerfile.ralph .
 
 ## License
 
-This skill is part of the skillpack project and follows its license.
+This skill is part of the knowhow project and follows its license.
 
 ---
 

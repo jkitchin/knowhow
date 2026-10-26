@@ -454,4 +454,4 @@ If you have suggestions for improving this skill:
 
 ## License
 
-This skill documentation is part of the skillpack project (MIT License).
+This skill documentation is part of the knowhow project (MIT License).

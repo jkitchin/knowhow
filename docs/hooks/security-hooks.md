@@ -111,10 +111,10 @@ Set PROTECT_SECRETS_ALLOW=".env" to allow this file.
 
 ```bash
 # Recommended: install to project for team-wide protection
-skillpack hooks install protect-secrets --target project
+knowhow hooks install protect-secrets --target project
 
 # Or install personally
-skillpack hooks install protect-secrets
+knowhow hooks install protect-secrets
 ```
 
 ---
@@ -227,7 +227,7 @@ The hook automatically rotates logs:
 ### Installation
 
 ```bash
-skillpack hooks install bash-logger
+knowhow hooks install bash-logger
 ```
 
 ### Analyzing Logs
@@ -253,8 +253,8 @@ grep "session:abc123" ~/.claude/logs/bash-commands.log
 For comprehensive security, install both hooks:
 
 ```bash
-skillpack hooks install protect-secrets --target project
-skillpack hooks install bash-logger
+knowhow hooks install protect-secrets --target project
+knowhow hooks install bash-logger
 ```
 
 This gives you:

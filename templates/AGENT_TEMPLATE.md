@@ -200,7 +200,7 @@ Provide a structured review:
 
 1. **Install the agent:**
    ```bash
-   skillpack agents install my-agent
+   knowhow agents install my-agent
    ```
 
 2. **Invoke directly:**

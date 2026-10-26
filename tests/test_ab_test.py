@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from skillpack.commands.ab_test import (
+from knowhow.commands.ab_test import (
     _score_description,
     ab_test,
 )
@@ -41,7 +41,7 @@ class TestScoreDescription:
             "TOTAL_SCORE: 13/15\n"
             "WEAKNESSES: Missing edge cases"
         )
-        with patch("skillpack.commands.ab_test._run_claude_cli", return_value=mock_result):
+        with patch("knowhow.commands.ab_test._run_claude_cli", return_value=mock_result):
             scores = _score_description("test", "desc", "evals")
         assert scores["trigger"] == "8/10"
         assert scores["no_trigger"] == "5/5"
@@ -49,13 +49,13 @@ class TestScoreDescription:
         assert "edge cases" in scores["weaknesses"]
 
     def test_returns_none_on_failure(self):
-        with patch("skillpack.commands.ab_test._run_claude_cli", return_value=None):
+        with patch("knowhow.commands.ab_test._run_claude_cli", return_value=None):
             scores = _score_description("test", "desc", "evals")
         assert scores is None
 
     def test_returns_none_on_unparseable(self):
         with patch(
-            "skillpack.commands.ab_test._run_claude_cli", return_value="Random text with no scores"
+            "knowhow.commands.ab_test._run_claude_cli", return_value="Random text with no scores"
         ):
             scores = _score_description("test", "desc", "evals")
         assert scores is None
@@ -64,15 +64,15 @@ class TestScoreDescription:
 class TestAbTestCommand:
     def test_skill_not_found(self, temp_dir):
         runner = CliRunner()
-        with patch("skillpack.commands.ab_test._find_skill_path", return_value=None):
+        with patch("knowhow.commands.ab_test._find_skill_path", return_value=None):
             result = runner.invoke(ab_test, ["no-such-skill"])
         assert result.exit_code != 0
         assert "not found" in result.output
 
     def test_evals_generation_failure(self, skill_dir):
         runner = CliRunner()
-        with patch("skillpack.commands.ab_test._find_skill_path", return_value=skill_dir):
-            with patch("skillpack.commands.ab_test._generate_evals", return_value=None):
+        with patch("knowhow.commands.ab_test._find_skill_path", return_value=skill_dir):
+            with patch("knowhow.commands.ab_test._generate_evals", return_value=None):
                 result = runner.invoke(ab_test, ["test-skill"])
         assert result.exit_code != 0
 
@@ -94,9 +94,9 @@ class TestAbTestCommand:
                 return mock_variant
             return mock_score
 
-        with patch("skillpack.commands.ab_test._find_skill_path", return_value=skill_dir):
-            with patch("skillpack.commands.ab_test._generate_evals", return_value=mock_evals):
-                with patch("skillpack.commands.ab_test._run_claude_cli", side_effect=mock_claude):
+        with patch("knowhow.commands.ab_test._find_skill_path", return_value=skill_dir):
+            with patch("knowhow.commands.ab_test._generate_evals", return_value=mock_evals):
+                with patch("knowhow.commands.ab_test._run_claude_cli", side_effect=mock_claude):
                     result = runner.invoke(ab_test, ["test-skill", "--dry-run", "-n", "1"])
         assert result.exit_code == 0
 
@@ -126,8 +126,8 @@ class TestAbTestCommand:
                 return best_score
             return worse_score
 
-        with patch("skillpack.commands.ab_test._find_skill_path", return_value=skill_dir):
-            with patch("skillpack.commands.ab_test._generate_evals", return_value=mock_evals):
-                with patch("skillpack.commands.ab_test._run_claude_cli", side_effect=mock_claude):
+        with patch("knowhow.commands.ab_test._find_skill_path", return_value=skill_dir):
+            with patch("knowhow.commands.ab_test._generate_evals", return_value=mock_evals):
+                with patch("knowhow.commands.ab_test._run_claude_cli", side_effect=mock_claude):
                     result = runner.invoke(ab_test, ["test-skill", "-n", "1", "--dry-run"])
         assert result.exit_code == 0

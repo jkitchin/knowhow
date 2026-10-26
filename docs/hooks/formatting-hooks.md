@@ -77,7 +77,7 @@ It also respects `.prettierignore` files.
 ### Installation
 
 ```bash
-skillpack hooks install prettier-on-save
+knowhow hooks install prettier-on-save
 ```
 
 ---
@@ -155,7 +155,7 @@ exclude = '''
 ### Installation
 
 ```bash
-skillpack hooks install black-on-save
+knowhow hooks install black-on-save
 ```
 
 ---
@@ -165,8 +165,8 @@ skillpack hooks install black-on-save
 You can install both formatting hooks for full-stack projects:
 
 ```bash
-skillpack hooks install prettier-on-save
-skillpack hooks install black-on-save
+knowhow hooks install prettier-on-save
+knowhow hooks install black-on-save
 ```
 
 Each hook only triggers for its respective file types, so there's no conflict.

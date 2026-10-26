@@ -9,27 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - 2026-10-26
 
-First release on PyPI, as `skillpack`.
+First release on PyPI, as `knowhow`.
 
 ### Changed
 - **Breaking:** an unknown `--platform` name is now an error listing the valid ones. Previously it silently installed into the Claude directories (#6).
-- `--platform` defaults to `default_platform` from the config, which was previously ignored. `skillpack add` uses it too when it's set to something other than `claude`; otherwise `add` still auto-detects agents (#6).
-- Renamed the tool to **skillpack**, because the name `skillz` on PyPI belongs to an unrelated project. (Development builds were briefly called `skillin`; their `.claude/skillin-lock.json` files are read and migrated automatically.) The Python package `cli` is now `skillpack`. The `skillz` command remains as an alias, and the config path `~/.config/skillz` is unchanged.
+- `--platform` defaults to `default_platform` from the config, which was previously ignored. `knowhow add` uses it too when it's set to something other than `claude`; otherwise `add` still auto-detects agents (#6).
+- Renamed the tool to **knowhow**, because the name `skillz` on PyPI belongs to an unrelated project. (Development builds were briefly called `skillin`; their `.claude/skillin-lock.json` files are read and migrated automatically.) The Python package `cli` is now `knowhow`. The `skillz` command remains as an alias, and the config path `~/.config/skillz` is unchanged.
 
 ### Added
-- MCP servers install across agents: Claude Code, VS Code, Cursor, Codex, Gemini CLI, OpenCode, Copilot CLI and Windsurf (`skillpack/mcp_targets.py`).
+- MCP servers install across agents: Claude Code, VS Code, Cursor, Codex, Gemini CLI, OpenCode, Copilot CLI and Windsurf (`knowhow/mcp_targets.py`).
   - Each agent gets its own format and file, and `${VAR}` placeholders are translated per agent; Codex uses `env_vars` and `bearer_token_env_var`.
   - Files are edited only if they parse cleanly. JSONC files are skipped with a paste-able snippet. Codex TOML is edited by appending or removing only the server's own table, preserving comments.
   - The lock records every file written, so `remove`, `upgrade` and `installed` cover all of them. Older Claude-only lock entries keep working.
-- `skillpack installed`: an offline inventory of everything skillpack installed (skills, commands, subagents, hooks, MCP servers), for the project and the user, checked against disk (`ok` / `missing` / `broken`). `--untracked` audits agent folders for items skillpack didn't install; `--json` gives scriptable output.
-- `skillpack remove --all [-g]` removes everything skillpack installed in a scope. Items skillpack didn't install are left alone.
+- `knowhow installed`: an offline inventory of everything knowhow installed (skills, commands, subagents, hooks, MCP servers), for the project and the user, checked against disk (`ok` / `missing` / `broken`). `--untracked` audits agent folders for items knowhow didn't install; `--json` gives scriptable output.
+- `knowhow remove --all [-g]` removes everything knowhow installed in a scope. Items knowhow didn't install are left alone.
 - VS Code as a named skill target (`-a vscode`, alias `code`), detected from `~/.vscode` or the VS Code user data folder. VS Code reads `.agents/skills`, so a VS Code-only user no longer gets an unneeded `.claude/` folder.
-- Custom platforms (#6): any name under `platforms:` in config.yaml works with `--platform` and `skillpack add -a`. `skillpack add` copies skills into its `skills_dir` / `project_skills_dir`. Commands that need an unconfigured directory say which key to set. Changed paths for built-in platforms override `skillpack add`'s defaults.
-- `skillpack add <source>`: install skills from GitHub/GitLab/any git URL/local path without installing skillpack (`uvx skillpack add owner/repo --skill name`). Layout, install paths (`.agents/skills` + symlinks) and lock files are compatible with `npx skills`.
+- Custom platforms (#6): any name under `platforms:` in config.yaml works with `--platform` and `knowhow add -a`. `knowhow add` copies skills into its `skills_dir` / `project_skills_dir`. Commands that need an unconfigured directory say which key to set. Changed paths for built-in platforms override `knowhow add`'s defaults.
+- `knowhow add <source>`: install skills from GitHub/GitLab/any git URL/local path without installing knowhow (`uvx knowhow add owner/repo --skill name`). Layout, install paths (`.agents/skills` + symlinks) and lock files are compatible with `npx skills`.
 - `--command`, `--subagent`, `--hook` and `--mcp` install slash commands, subagents, hooks and MCP servers for Claude Code. Hooks and MCP servers are previewed and must be confirmed.
-- `skillpack remove`, `check`, `upgrade` and `find` (skills.sh / GitHub search); source aliases via `skillpack config set alias.NAME SOURCE`.
-- `docs/publishing-skills.md`: a guide to creating skill repositories compatible with skillpack, `npx skills` and the Agent Skills spec. Also a PyPI publish workflow.
-- `skillpack validate [PATH]`: checks skills against the Agent Skills spec and against how installers will see the repo (hidden or duplicate skills, broken links, files dropped on install, Git LFS pointers). Exits non-zero on errors; `--strict` also fails on warnings.
+- `knowhow remove`, `check`, `upgrade` and `find` (skills.sh / GitHub search); source aliases via `knowhow config set alias.NAME SOURCE`.
+- `docs/publishing-skills.md`: a guide to creating skill repositories compatible with knowhow, `npx skills` and the Agent Skills spec. Also a PyPI publish workflow.
+- `knowhow validate [PATH]`: checks skills against the Agent Skills spec and against how installers will see the repo (hidden or duplicate skills, broken links, files dropped on install, Git LFS pointers). Exits non-zero on errors; `--strict` also fails on warnings.
 - The strict `SkillValidator` accepts the spec's space-separated `allowed-tools` string, scoped tools like `Bash(git:*)` and `mcp__*` tools.
 
 - Earlier work, before the rename (as the Claude Skills CLI / skillz):
@@ -51,7 +51,7 @@ First release on PyPI, as `skillpack`.
 
 ### Fixed
 - Follow-ups from an independent verification review:
-  - Lock files record only which agents an MCP server was installed for, never file paths. Paths are recomputed, so a committed project lock can't make skillpack write elsewhere, and the lock is portable.
+  - Lock files record only which agents an MCP server was installed for, never file paths. Paths are recomputed, so a committed project lock can't make knowhow write elsewhere, and the lock is portable.
   - Symlinked config files are updated in place, keeping dotfiles working. Project files that link outside the project are refused.
   - A damaged `settings.json` is detected before a hook's files are copied, so nothing is left half-installed.
   - Subagents with display names like "Code Reviewer" can be removed, including by `remove --all`.
@@ -68,7 +68,7 @@ First release on PyPI, as `skillpack`.
   - Project hooks are registered as `"$CLAUDE_PROJECT_DIR"/.claude/hooks/...`, so a committed `settings.json` works for everyone; global hooks use a shell-quoted path. Entries written by older versions are still cleaned up.
   - `type: prompt` hooks are skipped with a message instead of producing a malformed `settings.json` entry.
   - Project lock hashes now match npx skills' file order, so mixed-case files no longer cause spurious "update available"; older hashes are still accepted.
-  - Legacy `uninstall`, `hooks` and `agents` commands reject path-like names. `uninstall` points to `skillpack remove` for skills installed with `add`, and never follows a symlink into the shared copy.
+  - Legacy `uninstall`, `hooks` and `agents` commands reject path-like names. `uninstall` points to `knowhow remove` for skills installed with `add`, and never follows a symlink into the shared copy.
   - `add` says which agents it skipped because they aren't set up in the project. `remove -a <agent>` explains when that agent reads the shared `.agents/skills` copy.
 - Safety fixes from a pre-release review:
   - A global install no longer deletes the skill when `~/.claude/skills` is a symlink to `~/.agents/skills`.
@@ -76,7 +76,7 @@ First release on PyPI, as `skillpack`.
   - `remove` only removes lock-file entries unless given `--force`, and requires `-y` without a terminal.
   - Hook install no longer wipes an unparseable `settings.json`. Config edits are atomic and keep a `.bak`.
   - Terminal escape codes are stripped from code previews and repo-controlled text.
-  - `skillpack hooks uninstall` no longer crashes or leaves a dangling `settings.json` entry.
+  - `knowhow hooks uninstall` no longer crashes or leaves a dangling `settings.json` entry.
   - Hooks whose event changed are re-registered once, not twice.
   - Relative file symlinks are copied, and directory symlinks (including loops) are skipped. A failed copy leaves the previous install intact.
   - Malformed `.mcp.json` files are refused rather than crashing or being rewritten.
@@ -97,6 +97,6 @@ First release on PyPI, as `skillpack`.
 - MIT License
 - Documentation (README.md, CONTRIBUTING.md)
 
-[Unreleased]: https://github.com/jkitchin/skillpack/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/jkitchin/skillpack/releases/tag/v0.2.0
-[0.1.0]: https://github.com/jkitchin/skillpack/releases/tag/v0.1.0
+[Unreleased]: https://github.com/jkitchin/knowhow/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jkitchin/knowhow/releases/tag/v0.2.0
+[0.1.0]: https://github.com/jkitchin/knowhow/releases/tag/v0.1.0
