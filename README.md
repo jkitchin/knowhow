@@ -588,7 +588,11 @@ Knowhow manages skills and commands for these AI coding assistants:
 
 ### Related Skills Projects
 
-- **[npx skills](https://github.com/vercel-labs/skills)** - Vercel's Node CLI and the [skills.sh](https://skills.sh) directory. `knowhow add` follows its layout, install paths and lock files.
+- **[npx skills](https://github.com/vercel-labs/skills)** - Vercel's Node CLI and the [skills.sh](https://skills.sh) directory. `knowhow add` was modeled on it and follows its layout, install paths and lock files, so either tool sees what the other installed. Use it if you prefer Node; knowhow adds commands, subagents, hooks and MCP servers.
+- **[Agent Skills specification](https://agentskills.io)** ([agentskills/agentskills](https://github.com/agentskills/agentskills)) - The open SKILL.md format that `knowhow validate` checks against.
+- **[anthropics/skills](https://github.com/anthropics/skills)** - Anthropic's public collection of Agent Skills; installable with `knowhow add anthropics/skills`.
+- **[skillz (MCP server)](https://github.com/intellectronica/skillz)** - An MCP server that loads skills into clients without native skill support. It owns the `skillz` name on PyPI, which is why this tool is published as knowhow.
+- **[skillpack-cli](https://pypi.org/project/skillpack-cli/)** - A proof-of-concept Python CLI for managing AI agent skills.
 - **[openskills](https://github.com/numman-ali/openskills)** - Another universal skills loader (I have not tried this yet).
 - **[opencode-skills](https://www.npmjs.com/package/opencode-skills)** - With OpenCode you may get better performance with this plugin (this is what I use). See also the [OpenCode feature request](https://github.com/sst/opencode/issues/3235).
 
