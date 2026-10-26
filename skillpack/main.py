@@ -28,7 +28,7 @@ console = Console()
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="skillpack")
+@click.version_option(version="0.2.0", prog_name="skillpack")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 @click.pass_context
 def cli(ctx, verbose):

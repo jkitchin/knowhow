@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-26
+
+First release on PyPI, as `skillpack`.
+
 ### Changed
 - **Breaking:** an unknown `--platform` name is now an error listing the valid ones. Previously it silently installed into the Claude directories (#6).
 - `--platform` defaults to `default_platform` from the config, which was previously ignored. `skillpack add` uses it too when it's set to something other than `claude`; otherwise `add` still auto-detects agents (#6).
@@ -93,5 +97,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT License
 - Documentation (README.md, CONTRIBUTING.md)
 
-[Unreleased]: https://github.com/jkitchin/skillpack/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jkitchin/skillpack/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jkitchin/skillpack/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jkitchin/skillpack/releases/tag/v0.1.0
