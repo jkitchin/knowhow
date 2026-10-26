@@ -123,11 +123,17 @@ Private repositories work wherever `git clone` works for you.
 ## Uninstallation
 
 ```bash
+skillin installed                       # what skillin installed, project + global
 skillin remove <skill>                  # or: skillin remove owner/repo  (everything from a source)
 skillin remove --command <name> --hook <name> --mcp <name>
+skillin remove --all                    # everything skillin installed in this project
+skillin remove --all -g                 # ... and for your user
 uv tool uninstall skillin               # or: pipx uninstall skillin
 rm -rf ~/.config/skillz                 # optional: remove configuration
 ```
+
+See [README: Seeing and removing what's installed](README.md#seeing-and-removing-whats-installed)
+for exactly what each removal deletes.
 
 ## Next Steps
 
