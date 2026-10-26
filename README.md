@@ -1,6 +1,6 @@
 # Skillpack
 
-<img src="skillpack.svg" alt="skillpack logo: SKILLPACK above a terminal running uvx skillpack add" width="300">
+<img src="https://raw.githubusercontent.com/jkitchin/skillpack/main/skillpack.svg" alt="skillpack logo: SKILLPACK above a terminal running uvx skillpack add" width="300">
 
 [![Tests](https://github.com/jkitchin/skillpack/actions/workflows/test.yml/badge.svg)](https://github.com/jkitchin/skillpack/actions/workflows/test.yml)
 [![Lint](https://github.com/jkitchin/skillpack/actions/workflows/lint.yml/badge.svg)](https://github.com/jkitchin/skillpack/actions/workflows/lint.yml)
