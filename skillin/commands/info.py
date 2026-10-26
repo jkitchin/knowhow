@@ -88,14 +88,14 @@ def _find_installed(config: Config, name: str, item_type: str):
     for target in ["personal", "project"]:
         # Try skill
         if not item_type or item_type == "skill":
-            skills_dir = config.get_skills_dir(target, "claude")
+            skills_dir = config.get_skills_dir(target)
             skill_path = skills_dir / name
             if skill_path.exists() and (skill_path / "SKILL.md").exists():
                 return skill_path, "skill"
 
         # Try command
         if not item_type or item_type == "command":
-            commands_dir = config.get_commands_dir(target, "claude")
+            commands_dir = config.get_commands_dir(target)
             cmd_path = commands_dir / f"{name}.md"
             if cmd_path.exists():
                 return cmd_path, "command"

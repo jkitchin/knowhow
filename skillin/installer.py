@@ -74,34 +74,48 @@ def _link(target: Path, link: Path) -> bool:
         return False
 
 
-def _skip_project_agent(agent: str, cwd: Path) -> bool:
+def _skip_project_agent(agent: str, cwd: Path, registry=None) -> bool:
     """Skip non-universal agents whose config dir is absent from the project (npx rule)."""
-    a = AGENTS[agent]
-    if a.is_universal or agent == "claude-code":
-        return False
+    a = (registry or AGENTS)[agent]
+    if a.is_universal or agent == "claude-code" or a.copy_only:
+        return False  # configured platforms were chosen explicitly
     return not (cwd / a.project_dir.split("/")[0]).exists()
 
 
 def planned_paths(
-    skill: DiscoveredSkill, agents: list[str], global_: bool, copy: bool, cwd: Path
-) -> tuple[Path | None, list[Path]]:
-    """Return (canonical path or None, per-agent paths) without touching disk."""
+    skill: DiscoveredSkill,
+    agents: list[str],
+    global_: bool,
+    copy: bool,
+    cwd: Path,
+    registry=None,
+) -> tuple[Path | None, list[Path], set[Path]]:
+    """
+    Return (canonical path or None, per-agent paths, paths to copy rather than link)
+    without touching disk.
+    """
+    registry = registry or AGENTS
     dirname = install_dir_name(skill.name)
+    # Only symlink agents need the canonical copy
+    if all(registry[a].copy_only for a in agents):
+        copy = True
     # install_dir_name() strips separators and leading dots, so plain joins are safe
     canon = None if copy else canonical_dir(global_, cwd) / dirname
-    targets = []
+    targets, copy_paths = [], set()
     for agent in agents:
-        a = AGENTS[agent]
+        a = registry[agent]
         if a.is_universal and not copy:
             continue  # served by the canonical dir (project or global)
-        if not global_ and _skip_project_agent(agent, cwd):
+        if not global_ and _skip_project_agent(agent, cwd, registry):
             continue
         base = canonical_dir(global_, cwd) if a.is_universal and global_ else None
-        base = base or agent_skills_dir(agent, global_, cwd)
+        base = base or agent_skills_dir(agent, global_, cwd, registry)
         path = base / dirname
+        if a.copy_only or copy:
+            copy_paths.add(path)
         if path not in targets:
             targets.append(path)
-    return canon, targets
+    return canon, targets, copy_paths
 
 
 def install_skill(
@@ -111,18 +125,21 @@ def install_skill(
     global_: bool = False,
     copy: bool = False,
     cwd: Path | None = None,
+    registry=None,
 ) -> InstallResult:
     """Install one skill for the given agents."""
     cwd = cwd or Path.cwd()
-    canon, targets = planned_paths(skill, agents, global_, copy, cwd)
+    canon, targets, copy_paths = planned_paths(skill, agents, global_, copy, cwd, registry)
     result = InstallResult(name=skill.name, canonical=canon)
-    result.skipped_agents = [a for a in agents if not global_ and _skip_project_agent(a, cwd)]
+    result.skipped_agents = [
+        a for a in agents if not global_ and _skip_project_agent(a, cwd, registry)
+    ]
 
     if canon is not None:
         copy_skill_tree(skill.path, canon, source_root)
 
     for path in targets:
-        if canon is not None and _link(canon, path):
+        if canon is not None and path not in copy_paths and _link(canon, path):
             result.linked.append(path)
         else:
             copy_skill_tree(skill.path, path, source_root)
@@ -130,11 +147,22 @@ def install_skill(
     return result
 
 
-def find_installed(name: str, global_: bool, cwd: Path | None = None) -> list[Path]:
+def _agent_bases(global_: bool, cwd: Path, registry) -> list[Path]:
+    """Skills dirs of every agent in the registry that has one for this scope."""
+    bases = []
+    for agent, a in registry.items():
+        if (global_ and a.global_dir is None) or (not global_ and a.project_dir is None):
+            continue
+        bases.append(agent_skills_dir(agent, global_, cwd, registry))
+    return bases
+
+
+def find_installed(name: str, global_: bool, cwd: Path | None = None, registry=None) -> list[Path]:
     """All places a skill directory/symlink named `name` exists for known agents."""
     cwd = cwd or Path.cwd()
+    registry = registry or AGENTS
     dirname = install_dir_name(name)
-    bases = [canonical_dir(global_, cwd)] + [agent_skills_dir(a, global_, cwd) for a in AGENTS]
+    bases = [canonical_dir(global_, cwd)] + _agent_bases(global_, cwd, registry)
     found = []
     for base in bases:
         p = base / dirname
@@ -144,21 +172,30 @@ def find_installed(name: str, global_: bool, cwd: Path | None = None) -> list[Pa
 
 
 def uninstall_skill(
-    name: str, global_: bool, agents: list[str] | None = None, cwd: Path | None = None
+    name: str,
+    global_: bool,
+    agents: list[str] | None = None,
+    cwd: Path | None = None,
+    registry=None,
 ) -> list[Path]:
     """
     Remove a skill. With `agents`, only those agents' entries are removed (and the
     canonical copy is kept unless every agent was selected). Returns removed paths.
     """
     cwd = cwd or Path.cwd()
+    registry = registry or AGENTS
     dirname = install_dir_name(name)
     if agents:
-        bases = [agent_skills_dir(a, global_, cwd) for a in agents if not AGENTS[a].is_universal]
-        if set(agents) == set(AGENTS):
+        bases = [
+            agent_skills_dir(a, global_, cwd, registry)
+            for a in agents
+            if not registry[a].is_universal
+        ]
+        if set(agents) >= set(AGENTS):
             bases.append(canonical_dir(global_, cwd))
         paths = [b / dirname for b in bases if (b / dirname).is_symlink() or (b / dirname).exists()]
     else:
-        paths = find_installed(name, global_, cwd)
+        paths = find_installed(name, global_, cwd, registry)
     for p in paths:
         remove_path(p)
     return paths

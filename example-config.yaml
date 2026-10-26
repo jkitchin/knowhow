@@ -1,7 +1,9 @@
 # Example configuration file for skillin
 # Copy this to ~/.config/skillz/config.yaml and customize
 
-# Default platform for installations (claude, opencode, codex, gemini)
+# Default platform when --platform / -a is omitted: a built-in (claude, opencode,
+# codex, gemini) or any platform defined under `platforms:` below.
+# Leave it as `claude` to let `skillin add` auto-detect installed agents.
 default_platform: claude
 
 # Personal installation directories (used when no --target specified)
@@ -17,7 +19,11 @@ default_target: personal
 
 # Path to the skillin repository (for browsing and installing skills)
 # Set this to your local clone of the repository
-repository_path: /path/to/skillin
+repository_path: /path/to/your/clone
+
+# Source aliases for `skillin add`, e.g. `skillin add kitchin -s pycse`
+aliases:
+  kitchin: jkitchin/skillz
 
 # Platform-specific directories
 # Skills will be installed to the appropriate platform's directory
@@ -37,6 +43,18 @@ platforms:
   gemini:
     skills_dir: ~/.config/gemini/skills
     commands_dir: ~/.config/gemini/commands
+
+  # A custom platform. Use it with `skillin install NAME --platform picoclaw` or
+  # `skillin add owner/repo -s NAME -a picoclaw`, or make it the default above.
+  # Names: lowercase letters, digits and hyphens. Only set the keys you use;
+  # a command that needs a missing one says which key to add.
+  # `skillin add` copies skills here (no symlinks, so Docker mounts work).
+  picoclaw:
+    skills_dir: ~/picoclaw/docker/data/workspace/skills        # global / personal
+    commands_dir: ~/picoclaw/docker/data/workspace/commands
+    project_skills_dir: .picoclaw/skills                        # --target project / add without -g
+    # project_commands_dir: .picoclaw/commands
+    # hooks_dir, agents_dir, settings_file (+ project_* forms) for hooks and subagents
 
 # Additional options (optional)
 # verbose: false

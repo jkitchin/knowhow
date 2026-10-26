@@ -90,8 +90,8 @@ Standalone markdown files for Claude Code subagents:
 
 1. Config loads from `~/.config/skillz/config.yaml` or uses defaults
 2. Config provides paths for personal (default: `~/.claude/`) and project (default: `.claude/`) installations
-3. Multi-platform support via `platforms` dict in config (claude, opencode, codex, gemini)
-4. Default platform is Claude Code, but fully supports OpenCode, Codex, and Gemini
+3. Multi-platform support via `platforms` dict in config: built-ins (claude, opencode, codex, gemini) plus any custom platform defined there (issue #6). `platform_option()` in `skillin/config.py` resolves `--platform` (default: `default_platform`) and rejects unknown names; `Config._platform_path()` raises `PlatformConfigError` naming the missing key
+4. `skillin add -a` uses `agents_registry.build_registry(config)`: built-in agents plus custom platforms (copy-only targets) and overrides of built-in paths (only values that differ from defaults count, because `save_config()` writes all defaults)
 
 ### Validation Logic
 

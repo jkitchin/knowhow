@@ -79,6 +79,11 @@ The older `skillin install --platform ...` command copies from a local repositor
 per-platform directories set in `~/.config/skillz/config.yaml` (see
 [example-config.yaml](example-config.yaml)).
 
+Other agents can be added as **custom platforms** under `platforms:` in the config, then
+used with `--platform NAME` or `-a NAME`. Set `default_platform` to use one by default.
+Skills are copied, not symlinked, into a custom platform's directories. See
+[README: Custom platforms](README.md#custom-platforms).
+
 ## Configuration
 
 Configuration lives in `~/.config/skillz/config.yaml`. The path keeps the original name so
