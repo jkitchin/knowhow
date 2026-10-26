@@ -128,6 +128,7 @@ upstream changes, `upgrade` applies them, `remove` uninstalls, `find` searches s
 `skillin/extras.py` also installs commands (`--command`), subagents (`--subagent`), hooks (`--hook`)
 and MCP servers (`--mcp`, from `.mcp.json` / `mcp/*.json`) for Claude Code, tracked in
 `.claude/skillin-lock.json`. Hooks and MCP servers are previewed and need confirmation or `-y`.
+MCP servers: `skillin/mcp_targets.py` has the per-agent table (file, key, shape, `${VAR}` translation); `extras.install_mcp`/`uninstall_mcp` write to the `Placement`s recorded as `targets` in `.claude/skillin-lock.json`.
 `skillin installed` (`commands/installed.py`) is the offline inventory from lock files; `remove --all` removes everything in a scope; `add`/`remove` refuse to touch items not in a lock file without `--force` (see `skillin/safeio.py` for safe JSON edits / output sanitizing).
 `skillin validate [PATH]` (`skillin/spec.py`) checks skills against the Agent Skills spec (agentskills.io)
 plus installability (hidden/duplicate skills, broken links, excluded files, LFS); author guide is

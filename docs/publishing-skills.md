@@ -12,7 +12,7 @@ A repository that follows this guide also works with:
 - [`npx skills`](https://github.com/vercel-labs/skills), using the same layout, install
   locations and lock files;
 - any agent that implements the [Agent Skills specification](https://agentskills.io/specification),
-  including Claude Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot.
+  including Claude Code, VS Code (GitHub Copilot), Codex, OpenCode, Gemini CLI and Cursor.
 
 There is no registry to sign up for. A public git repository is enough.
 
@@ -200,7 +200,7 @@ and copies its directory:
 | Claude Code | `.claude/skills/<name>`, a symlink to the canonical copy | `~/.claude/skills/<name>`, a symlink |
 | Lock file | `skills-lock.json` (users commit it) | `~/.agents/.skill-lock.json` |
 
-Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
+VS Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
 Users can pass `--copy` to get real copies instead of symlinks, and `-a/--agent` to choose
 which agents to install for.
 
@@ -249,15 +249,17 @@ The spec's reference validator, [skills-ref](https://github.com/agentskills/agen
 
 ## Commands, subagents, hooks and MCP servers
 
-`npx skills` only knows about skills. `skillin` can also install these items for
-Claude Code from the same repository:
+`npx skills` only knows about skills. `skillin` can also install these items from the
+same repository. Commands, subagents and hooks are installed for Claude Code. MCP
+servers are installed for every selected agent: Claude Code, VS Code, Cursor, Codex,
+Gemini CLI, OpenCode, Copilot CLI and Windsurf.
 
 | Type | Put it in | Install with | Installed to (`.claude/` or `~/.claude/` with `-g`) |
 |---|---|---|---|
 | Slash command | `commands/**/<name>.md` | `--command <name>` | `commands/<name>.md` |
 | Subagent | `agents/**/*.md` (frontmatter `name`, `description`) | `--subagent <name>` | `agents/<name>.md` |
 | Hook | `hooks/<name>/HOOK.md` + `hook.py`/`hook.sh` | `--hook <name>` | `hooks/<name>/` plus an entry in `settings.json` |
-| MCP server | `.mcp.json` or `mcp/*.json` (`{"mcpServers": {...}}`) | `--mcp <name>` | `./.mcp.json`, or `claude mcp add-json --scope user` with `-g` |
+| MCP server | `.mcp.json` or `mcp/*.json` (`{"mcpServers": {...}}`) | `--mcp <name>` | each selected agent's MCP config ([table](../README.md#mcp-servers)) |
 
 - The same locations under `.claude/` (for example `.claude/commands/`) are searched too.
 - `README.md` and `TEMPLATE.md` files are ignored.
@@ -266,8 +268,10 @@ Claude Code from the same repository:
   (`*` is not accepted), and their scripts or config are shown for review before
   installing. Non-interactive installs need `-y`.
 
-An MCP server entry is a standard Claude Code server config. An optional `description`
-is shown in listings and stripped on install:
+Write MCP servers in the portable `.mcp.json` format, the one Claude Code uses. skillin
+converts them for each agent. Use `command`, `args` and `env` for local servers, or
+`type` (`http`/`sse`), `url` and `headers` for remote ones. An optional `description` is
+shown in listings and stripped on install:
 
 ```json
 {
@@ -282,8 +286,15 @@ is shown in listings and stripped on install:
 }
 ```
 
-Never commit secrets. Use `${VAR}` references, which Claude Code expands from the
-user's environment.
+Never commit secrets. Use `${VAR}` references; skillin rewrites them for each agent,
+for example `${env:VAR}` for VS Code and Cursor, `{env:VAR}` for OpenCode, and
+`env_vars` for Codex. The forms that translate everywhere are:
+
+- `"env": {"API_KEY": "${API_KEY}"}`, where the variable has the same name as the key;
+- `"headers": {"Authorization": "Bearer ${TOKEN}"}`;
+- a header whose whole value is `"${VAR}"`.
+
+`skillin add` warns about other uses it can't express for an agent.
 
 ## Sharing and discovery
 

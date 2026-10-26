@@ -67,11 +67,11 @@ skillin add jkitchin/skillz --list
 | Skills (canonical copy) | `.agents/skills/<name>` | `~/.agents/skills/<name>` |
 | Skills for Claude Code | `.claude/skills/<name>` (symlink) | `~/.claude/skills/<name>` (symlink) |
 | Commands / subagents / hooks | `.claude/commands`, `.claude/agents`, `.claude/hooks` | same under `~/.claude` |
-| MCP servers | `./.mcp.json` | `claude mcp add-json --scope user` |
+| MCP servers | each selected agent's project MCP file (`.mcp.json`, `.vscode/mcp.json`, ...) | each agent's global MCP file; Claude Code via `claude mcp` |
 | Lock files | `skills-lock.json`, `.claude/skillin-lock.json` | `~/.agents/.skill-lock.json`, `~/.claude/skillin-lock.json` |
 
-- Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
-- Choose agents with `-a`, for example `-a claude-code -a codex`.
+- VS Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
+- Choose agents with `-a`, for example `-a claude-code -a vscode`. Without `-a`, installed agents are detected (VS Code by `~/.vscode` or its user data folder).
 - Use `--copy` to get real copies instead of symlinks.
 - `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and `XDG_CONFIG_HOME` are respected.
 

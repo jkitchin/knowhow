@@ -9,7 +9,7 @@
 
 Install AI agent skills, slash commands, subagents, hooks and MCP servers from any git
 repository with one command. There's nothing to install first and no repository to clone.
-Works with Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot and more.
+Works with Claude Code, VS Code (GitHub Copilot), Codex, OpenCode, Gemini CLI, Cursor and more.
 
 > **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for other agents.
 
@@ -30,10 +30,12 @@ uvx skillin add jkitchin/skillz -s pycse -s python-plotting -g -y
 uvx skillin add someone/their-skills@their-skill
 uvx skillin add https://github.com/o/r/tree/main/skills/foo
 
-# Slash commands, subagents, hooks and MCP servers (installed for Claude Code)
+# Slash commands, subagents and hooks (installed for Claude Code)
 uvx skillin add jkitchin/skillz --command commit --subagent code-reviewer
 uvx skillin add jkitchin/skillz --hook black-on-save   # shows the script for review first
-uvx skillin add someone/repo --mcp their-server         # from the repo's .mcp.json
+
+# MCP servers, from the repo's .mcp.json, for every selected agent
+uvx skillin add someone/repo --mcp their-server -a claude-code -a vscode -a cursor
 
 uvx skillin find plotting   # search skills.sh / GitHub
 uvx skillin installed       # everything skillin installed (project + global)
@@ -48,8 +50,8 @@ Until `skillin` is published on PyPI, use
 
 - **Compatible with [`npx skills`](https://github.com/vercel-labs/skills):** skills use the same
   repository layout, install locations and lock files, so the two tools can be mixed. A skill
-  is copied once to `.agents/skills/<name>`, which Codex, OpenCode, Gemini CLI, Cursor and
-  Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
+  is copied once to `.agents/skills/<name>`, which VS Code, Codex, OpenCode, Gemini CLI,
+  Cursor and Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
   happens under `~/`.
 - **Tracked:** installs are recorded in `skills-lock.json` (commit it) and
   `.claude/skillin-lock.json`. `check` and `upgrade` use these to find upstream changes.
@@ -81,6 +83,35 @@ your machine. skillin is careful about what it changes:
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
 
+## MCP servers
+
+`--mcp NAME` installs an MCP server from the source repo's `.mcp.json` (or `mcp/*.json`)
+into each selected agent's own config file. Agents come from `-a`, or else from
+`default_platform` or detection. skillin translates the config to each agent's format.
+
+| Agent (`-a`) | Project file | Global file (`-g`) | `${VAR}` written as |
+|---|---|---|---|
+| `claude-code` | `.mcp.json` | via `claude mcp add-json --scope user` | `${VAR}` |
+| `vscode` | `.vscode/mcp.json` (`servers`) | VS Code user `mcp.json` | `${env:VAR}` |
+| `cursor` | `.cursor/mcp.json` | `~/.cursor/mcp.json` | `${env:VAR}` |
+| `codex` | `.codex/config.toml` | `~/.codex/config.toml` | `env_vars`, `bearer_token_env_var`, `env_http_headers` |
+| `gemini-cli` | `.gemini/settings.json` | `~/.gemini/settings.json` | `${VAR}` (not verified) |
+| `opencode` | `opencode.json(c)` (`mcp`) | `~/.config/opencode/opencode.json` | `{env:VAR}` |
+| `github-copilot` | `.mcp.json` | `~/.copilot/mcp-config.json` | `${VAR}` |
+| `windsurf` | (global only) | `~/.codeium/windsurf/mcp_config.json` | `${VAR}` (not verified) |
+
+- **Existing files are respected.** A file is only edited if it parses cleanly, and the
+  previous version is kept as `.bak`. Files with comments (JSONC) are never rewritten: that
+  agent is skipped and skillin prints the snippet to paste yourself. For Codex's TOML, skillin
+  appends or removes only the server's own table, and keeps your comments.
+- **Project files are only created for agents set up in that project.** Without `-a`, an
+  agent needs its folder (e.g. `.vscode/`) to get a project file. Name an agent with `-a` to
+  create its file anyway.
+- **Untranslatable values are flagged.** If a value can't be expressed for an agent (for
+  example `${VAR}` inside Codex `args`), you get a warning instead of a broken config.
+- **Removal reaches every place.** `remove --mcp NAME` removes the server from every file it
+  was written to. `skillin installed` shows each location and its status.
+
 ## Seeing and removing what's installed
 
 `skillin installed` lists everything skillin installed for this project and for your user.
@@ -94,7 +125,7 @@ It works offline from the lock files and checks each item is still on disk.
 | `add ... -a custom-platform` | `remove NAME [-g]` | the copy in the platform's `skills_dir` / `project_skills_dir` |
 | `add --command N` / `--subagent N` | `remove --command N` / `--subagent N` | `.claude/commands/N.md` / `.claude/agents/N.md` |
 | `add --hook N` | `remove --hook N` | `.claude/hooks/N/` and every `settings.json` entry for it |
-| `add --mcp N` | `remove --mcp N` | the `.mcp.json` entry, or the `claude mcp` user-scope server with `-g` |
+| `add --mcp N` | `remove --mcp N` | the server in every agent config it was written to (see [MCP servers](#mcp-servers)) |
 | everything from one repo | `remove owner/repo [-g]` | all of the above that came from that source |
 | everything | `remove --all [-g]` | all of the above, in one scope |
 | legacy `install` / `hooks install` / `agents install` | `uninstall` / `hooks uninstall` / `agents uninstall` | (not tracked in lock files; `remove NAME --force` also works) |
@@ -112,7 +143,7 @@ you want a clean slate.
 - **Search**: `find` searches skills.sh and GitHub; `search` searches a local skills repository
 - **Create**: interactive wizard or AI-assisted creation of skills, commands, hooks and agents
 - **Validate**: `skillin validate` checks a repo against the Agent Skills spec and how installers will see it (CI-friendly exit codes)
-- **Multi-agent**: Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf
+- **Multi-agent**: Claude Code, VS Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf, plus [custom platforms](#custom-platforms)
 - **Hooks**: lifecycle hooks for Claude Code (formatting, logging, security, notifications)
 - **Skill evolution**: harvest, optimize, A/B test and merge skills (see [docs/cascade.md](docs/cascade.md))
 
@@ -542,6 +573,7 @@ Skillin manages skills and commands for these AI coding assistants:
 - **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
 - **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal. See [OpenAI adopts "skills"](https://simonwillison.net/2025/Dec/12/openai-skills/) for details on their skills implementation.
 - **Gemini** - Google's AI assistant.
+- **VS Code** (GitHub Copilot in VS Code) reads `.agents/skills` and `~/.agents/skills`, so skills installed with `skillin add` work there out of the box; `-a vscode` targets it explicitly.
 - Cursor, GitHub Copilot, Goose and Windsurf are supported targets for `skillin add` skills.
 
 ### Related Skills Projects
