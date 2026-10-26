@@ -128,59 +128,59 @@ Documentation for the hook...
 - `Edit|Write` - Match Edit or Write
 - `Bash` - Only match Bash commands
 
-## Installing Hooks with Skillin
+## Installing Hooks with Knowhow
 
 ### List Available Hooks
 
 ```bash
 # List hooks in repository
-skillin hooks list --target repo
+knowhow hooks list --target repo
 
 # List installed hooks
-skillin hooks list --target personal
-skillin hooks list --target project
+knowhow hooks list --target personal
+knowhow hooks list --target project
 ```
 
 ### Install a Hook
 
 ```bash
 # Install to personal directory (~/.claude/)
-skillin hooks install lab-notebook
+knowhow hooks install lab-notebook
 
 # Install to project directory (.claude/)
-skillin hooks install protect-secrets --target project
+knowhow hooks install protect-secrets --target project
 
 # Preview without installing
-skillin hooks install bash-logger --dry-run
+knowhow hooks install bash-logger --dry-run
 
 # Overwrite existing
-skillin hooks install prettier-on-save --force
+knowhow hooks install prettier-on-save --force
 ```
 
 ### Uninstall a Hook
 
 ```bash
-skillin hooks uninstall lab-notebook
-skillin hooks uninstall protect-secrets --target project
+knowhow hooks uninstall lab-notebook
+knowhow hooks uninstall protect-secrets --target project
 ```
 
 ### Get Hook Information
 
 ```bash
-skillin hooks info lab-notebook
-skillin hooks search formatting
+knowhow hooks info lab-notebook
+knowhow hooks search formatting
 ```
 
-## Creating Hooks with Skillin
+## Creating Hooks with Knowhow
 
 ### Create from Template
 
 ```bash
 # Create a new hook
-skillin hooks create my-hook --event PreToolUse
+knowhow hooks create my-hook --event PreToolUse
 
 # Create in project directory
-skillin hooks create my-hook --target project --event PostToolUse
+knowhow hooks create my-hook --target project --event PostToolUse
 ```
 
 This creates:
@@ -207,11 +207,11 @@ Hooks can be installed to:
 - **Personal**: `~/.claude/hooks/` - Available in all sessions
 - **Project**: `.claude/hooks/` - Only in current project
 
-The skillin CLI also updates `settings.json` to register the hook with Claude Code.
+The knowhow CLI also updates `settings.json` to register the hook with Claude Code.
 
 ## Available Hooks
 
-The skillin repository includes several ready-to-use hooks:
+The knowhow repository includes several ready-to-use hooks:
 
 | Hook | Event | Purpose |
 |------|-------|---------|

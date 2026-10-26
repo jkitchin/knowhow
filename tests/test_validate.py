@@ -1,10 +1,10 @@
-"""Tests for `skillin validate` and the Agent Skills spec checks."""
+"""Tests for `knowhow validate` and the Agent Skills spec checks."""
 
 from click.testing import CliRunner
 
-from skillin.main import cli
-from skillin.spec import check_repo, check_skill
-from skillin.validator import SkillValidator
+from knowhow.main import cli
+from knowhow.spec import check_repo, check_skill
+from knowhow.validator import SkillValidator
 
 GOOD = """---
 name: {name}

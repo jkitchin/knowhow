@@ -16,8 +16,8 @@ This skill enables Claude Code to generate and edit images using state-of-the-ar
 ### Installation
 
 ```bash
-# Install the skill from the skillin repository
-skillin install image-generation
+# Install the skill from the knowhow repository
+knowhow install image-generation
 
 # Or copy to your project
 cp -r skills/creative/image-generation .claude/skills/
@@ -305,7 +305,7 @@ This implementation extends the original concept by:
 - Image editing workflows
 
 ### License
-This skill follows the skillin repository license. The original gemini-imagegen concept belongs to Every Inc.
+This skill follows the knowhow repository license. The original gemini-imagegen concept belongs to Every Inc.
 
 ## Resources
 
@@ -320,7 +320,7 @@ This skill follows the skillin repository license. The original gemini-imagegen 
 - [OpenAI Pricing](https://openai.com/pricing)
 
 ### Community
-- [Skillin Repository](https://github.com/your-repo/skillz)
+- [Knowhow Repository](https://github.com/jkitchin/knowhow)
 - [Every Marketplace](https://github.com/EveryInc/every-marketplace)
 
 ## Contributing
@@ -359,7 +359,7 @@ For issues or questions:
 1. Check the [examples](examples/) directory
 2. Review [prompt engineering guide](references/prompt-engineering.md)
 3. Consult model-specific documentation ([Gemini](references/gemini-models.md), [DALL-E](references/dalle-models.md))
-4. Open an issue in the skillin repository
+4. Open an issue in the knowhow repository
 
 ---
 

@@ -5,8 +5,8 @@ import shutil
 import pytest
 from click.testing import CliRunner
 
-from skillin.agents_registry import AGENTS, detect_agents, resolve_agent_names
-from skillin.main import cli
+from knowhow.agents_registry import AGENTS, detect_agents, resolve_agent_names
+from knowhow.main import cli
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 

@@ -236,13 +236,13 @@ python binary_search_helper.py
 
 ```bash
 # Install to personal directory
-skillin install troubleshooting
+knowhow install troubleshooting
 
 # Install to project
-skillin install troubleshooting --target project
+knowhow install troubleshooting --target project
 
 # View detailed info
-skillin info troubleshooting
+knowhow info troubleshooting
 ```
 
 ## Skill Structure
@@ -277,11 +277,11 @@ Based on established troubleshooting and diagnostic methodologies including:
 
 ## License
 
-This skill is part of the skillin repository and follows the repository's MIT license.
+This skill is part of the knowhow repository and follows the repository's MIT license.
 
 ## Support
 
 For issues, suggestions, or contributions:
-- Repository: https://github.com/jkitchin/skillz
-- Issues: https://github.com/jkitchin/skillz/issues
+- Repository: https://github.com/jkitchin/knowhow
+- Issues: https://github.com/jkitchin/knowhow/issues
 - Category: technical/troubleshooting

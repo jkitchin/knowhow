@@ -242,4 +242,4 @@ This skill focuses on best practices and recommended parameters. Contributions w
 
 ## License
 
-Part of the skillin repository.
+Part of the knowhow repository.

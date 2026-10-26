@@ -296,7 +296,7 @@ Before deploying your skill, verify:
 - [ ] Dependencies are listed in description
 - [ ] Tool restrictions are appropriate for the task
 - [ ] Examples demonstrate expected behavior
-- [ ] Run `skillin optimize <skill-name>` to check and improve triggering
+- [ ] Run `knowhow optimize <skill-name>` to check and improve triggering
 
 ---
 

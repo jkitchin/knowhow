@@ -1,10 +1,10 @@
-# Skillin
+# Knowhow
 
-<img src="skillin.svg" alt="skillin logo: SKILLIN' above a terminal running uvx skillin add" width="300">
+<img src="https://raw.githubusercontent.com/jkitchin/knowhow/main/knowhow.svg" alt="knowhow logo: KNOWHOW above a terminal running uvx knowhow add" width="300">
 
-[![Tests](https://github.com/jkitchin/skillz/actions/workflows/test.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/test.yml)
-[![Lint](https://github.com/jkitchin/skillz/actions/workflows/lint.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/lint.yml)
-[![codecov](https://codecov.io/gh/jkitchin/skillz/graph/badge.svg)](https://codecov.io/gh/jkitchin/skillz)
+[![Tests](https://github.com/jkitchin/knowhow/actions/workflows/test.yml/badge.svg)](https://github.com/jkitchin/knowhow/actions/workflows/test.yml)
+[![Lint](https://github.com/jkitchin/knowhow/actions/workflows/lint.yml/badge.svg)](https://github.com/jkitchin/knowhow/actions/workflows/lint.yml)
+[![codecov](https://codecov.io/gh/jkitchin/knowhow/graph/badge.svg)](https://codecov.io/gh/jkitchin/knowhow)
 
 
 Install AI agent skills, slash commands, subagents, hooks and MCP servers from any git
@@ -13,40 +13,40 @@ Works with Claude Code, VS Code (GitHub Copilot), Codex, OpenCode, Gemini CLI, C
 
 > **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for other agents.
 
-This repository is both the `skillin` tool and a collection of 44 skills, plus commands, hooks
+This repository is both the `knowhow` tool and a collection of 44 skills, plus commands, hooks
 and agents, for scientific computing, materials science, lab automation and research workflows.
 
 ## Install skills from any repo (no setup)
 
 ```bash
 # List what a repository offers, then install a skill into this project
-uvx skillin add jkitchin/skillz --list
-uvx skillin add jkitchin/skillz --skill fairchem
+uvx knowhow add jkitchin/knowhow --list
+uvx knowhow add jkitchin/knowhow --skill fairchem
 
 # Install for your user (all projects), several skills, no prompts
-uvx skillin add jkitchin/skillz -s pycse -s python-plotting -g -y
+uvx knowhow add jkitchin/knowhow -s pycse -s python-plotting -g -y
 
 # Any compatible repo, URL or local path works
-uvx skillin add someone/their-skills@their-skill
-uvx skillin add https://github.com/o/r/tree/main/skills/foo
+uvx knowhow add someone/their-skills@their-skill
+uvx knowhow add https://github.com/o/r/tree/main/skills/foo
 
 # Slash commands, subagents and hooks (installed for Claude Code)
-uvx skillin add jkitchin/skillz --command commit --subagent code-reviewer
-uvx skillin add jkitchin/skillz --hook black-on-save   # shows the script for review first
+uvx knowhow add jkitchin/knowhow --command commit --subagent code-reviewer
+uvx knowhow add jkitchin/knowhow --hook black-on-save   # shows the script for review first
 
 # MCP servers, from the repo's .mcp.json, for every selected agent
-uvx skillin add someone/repo --mcp their-server -a claude-code -a vscode -a cursor
+uvx knowhow add someone/repo --mcp their-server -a claude-code -a vscode -a cursor
 
-uvx skillin find plotting   # search skills.sh / GitHub
-uvx skillin installed       # everything skillin installed (project + global)
-uvx skillin check           # any upstream changes?
-uvx skillin upgrade         # apply them
-uvx skillin remove fairchem
-uvx skillin remove --all    # remove everything skillin installed in this project (-g: global)
+uvx knowhow find plotting   # search skills.sh / GitHub
+uvx knowhow installed       # everything knowhow installed (project + global)
+uvx knowhow check           # any upstream changes?
+uvx knowhow upgrade         # apply them
+uvx knowhow remove fairchem
+uvx knowhow remove --all    # remove everything knowhow installed in this project (-g: global)
 ```
 
-Until `skillin` is published on PyPI, use
-`uvx --from git+https://github.com/jkitchin/skillz skillin add ...`.
+Until `knowhow` is published on PyPI, use
+`uvx --from git+https://github.com/jkitchin/knowhow knowhow add ...`.
 
 - **Compatible with [`npx skills`](https://github.com/vercel-labs/skills):** skills use the same
   repository layout, install locations and lock files, so the two tools can be mixed. A skill
@@ -54,36 +54,36 @@ Until `skillin` is published on PyPI, use
   Cursor and Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
   happens under `~/`.
 - **Tracked:** installs are recorded in `skills-lock.json` (commit it) and
-  `.claude/skillin-lock.json`. `check` and `upgrade` use these to find upstream changes.
+  `.claude/knowhow-lock.json`. `check` and `upgrade` use these to find upstream changes.
 - **Publish your own:** any git repo with `SKILL.md` files works. Follow the
   [guide to creating compatible skill repositories](docs/publishing-skills.md) and
-  check your repo with `uvx skillin validate .`.
-- **Shortcuts:** `skillin config set alias.kitchin jkitchin/skillz` lets you write
-  `skillin add kitchin -s pycse`.
+  check your repo with `uvx knowhow validate .`.
+- **Shortcuts:** `knowhow config set alias.kitchin jkitchin/knowhow` lets you write
+  `knowhow add kitchin -s pycse`.
 
-The `skillz` command still works as an alias of `skillin`.
+The `skillz` command still works as an alias of `knowhow`.
 
 ### Safety
 
 Skills, hooks and MCP servers come from other people's repositories and can run code on
-your machine. skillin is careful about what it changes:
+your machine. knowhow is careful about what it changes:
 
 - **It never replaces your own files.** If a skill folder, command, subagent, hook or MCP
-  server with the same name exists and wasn't installed by skillin (or npx skills), `add`
+  server with the same name exists and wasn't installed by knowhow (or npx skills), `add`
   lists it and stops. Pass `--force` to replace it.
-- **It only removes what it installed.** `remove` refuses names that aren't in a skillin
+- **It only removes what it installed.** `remove` refuses names that aren't in a knowhow
   lock file unless you pass `--force`. Without a terminal it requires `-y`.
 - **You review code that runs.** Hooks and MCP servers must be named explicitly. Their
   scripts or config are shown, with terminal escape codes stripped, and need confirmation
   (or `-y`).
 - **It won't corrupt your config files.** `settings.json`, MCP configs and lock files are
-  only edited if they parse cleanly; a damaged file stops skillin with a message rather
+  only edited if they parse cleanly; a damaged file stops knowhow with a message rather
   than being replaced. Changes are written atomically. `<file>.bak` keeps each file as it
-  was before the most recent skillin command, so you may want `*.bak` in `.gitignore`.
+  was before the most recent knowhow command, so you may want `*.bak` in `.gitignore`.
 - **It stays inside the project.** Symlinked config files are updated in place, which
-  keeps dotfiles setups working. In a project, though, skillin refuses any file that links
+  keeps dotfiles setups working. In a project, though, knowhow refuses any file that links
   outside the project. Lock files record only which agents an MCP server went to, never
-  file paths, so a cloned repository's lock can't redirect where skillin writes.
+  file paths, so a cloned repository's lock can't redirect where knowhow writes.
 - **Files are confined to the skill.** Only files inside the skill's directory are copied.
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
@@ -94,7 +94,7 @@ your machine. skillin is careful about what it changes:
 
 `--mcp NAME` installs an MCP server from the source repo's `.mcp.json` (or `mcp/*.json`)
 into each selected agent's own config file. Agents come from `-a`, or else from
-`default_platform` or detection. skillin translates the config to each agent's format.
+`default_platform` or detection. knowhow translates the config to each agent's format.
 
 | Agent (`-a`) | Project file | Global file (`-g`) | `${VAR}` written as |
 |---|---|---|---|
@@ -109,7 +109,7 @@ into each selected agent's own config file. Agents come from `-a`, or else from
 
 - **Existing files are respected.** A file is only edited if it parses cleanly, and the
   previous version is kept as `.bak`. Files with comments (JSONC) are never rewritten: that
-  agent is skipped and skillin prints the snippet to paste yourself. For Codex's TOML, skillin
+  agent is skipped and knowhow prints the snippet to paste yourself. For Codex's TOML, knowhow
   appends or removes only the server's own table, and keeps your comments.
 - **Project files are only created for agents set up in that project.** Without `-a`, an
   agent needs its folder (e.g. `.vscode/`) to get a project file. Name an agent with `-a` to
@@ -117,13 +117,13 @@ into each selected agent's own config file. Agents come from `-a`, or else from
 - **Untranslatable values are flagged.** If a value can't be expressed for an agent (for
   example `${VAR}` inside Codex `args`), you get a warning instead of a broken config.
 - **Removal reaches every place.** `remove --mcp NAME` removes the server from every file it
-  was written to. `skillin installed` shows each location and its status.
+  was written to. `knowhow installed` shows each location and its status.
 
 ## Seeing and removing what's installed
 
-`skillin installed` lists everything skillin installed for this project and for your user.
+`knowhow installed` lists everything knowhow installed for this project and for your user.
 It works offline from the lock files and checks each item is still on disk.
-`--untracked` also shows items skillin didn't install: skills and Claude Code
+`--untracked` also shows items knowhow didn't install: skills and Claude Code
 commands, subagents and hooks in agent folders, and MCP servers in every agent's MCP
 config. Claude Code's global MCP servers live in `~/.claude.json`, managed by `claude mcp`,
 and aren't read; they show as `registered`.
@@ -142,8 +142,8 @@ and aren't read; they show as `registered`.
 
 `remove` only touches things recorded in a lock file. Pass `--force` for anything else.
 Other servers in `.mcp.json`, other hooks in `settings.json`, and your own files are left
-alone. To uninstall skillin itself, run `uv tool uninstall skillin`. Installed skills stay
-until you remove them, so run `skillin remove --all` and `skillin remove --all -g` first if
+alone. To uninstall knowhow itself, run `uv tool uninstall knowhow`. Installed skills stay
+until you remove them, so run `knowhow remove --all` and `knowhow remove --all -g` first if
 you want a clean slate.
 
 ## Features
@@ -152,19 +152,19 @@ you want a clean slate.
 - **Updates**: `check` and `upgrade` against lock files; `remove` by name or by source
 - **Search**: `find` searches skills.sh and GitHub; `search` searches a local skills repository
 - **Create**: interactive wizard or AI-assisted creation of skills, commands, hooks and agents
-- **Validate**: `skillin validate` checks a repo against the Agent Skills spec and how installers will see it (CI-friendly exit codes)
+- **Validate**: `knowhow validate` checks a repo against the Agent Skills spec and how installers will see it (CI-friendly exit codes)
 - **Multi-agent**: Claude Code, VS Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf, plus [custom platforms](#custom-platforms)
 - **Hooks**: lifecycle hooks for Claude Code (formatting, logging, security, notifications)
 - **Skill evolution**: harvest, optimize, A/B test and merge skills (see [docs/cascade.md](docs/cascade.md))
 
 ## Installation
 
-You don't need to install anything to use `uvx skillin ...`. To keep `skillin` on your PATH:
+You don't need to install anything to use `uvx knowhow ...`. To keep `knowhow` on your PATH:
 
 ```bash
-uv tool install skillin          # or: pipx install skillin
+uv tool install knowhow          # or: pipx install knowhow
 # before the PyPI release:
-uv tool install git+https://github.com/jkitchin/skillz
+uv tool install git+https://github.com/jkitchin/knowhow
 ```
 
 For development, from a clone of this repository:
@@ -176,93 +176,93 @@ uv pip install -e ".[dev]"
 ## Working with a local skills repository
 
 The commands below work from a local clone of a skills repository, such as this one. Use
-them when you are developing skills. For plain installs, `skillin add` (above) is simpler.
+them when you are developing skills. For plain installs, `knowhow add` (above) is simpler.
 
 ### Configure Repository Path
 
 ```bash
-skillin config set repository /path/to/your/clone
+knowhow config set repository /path/to/your/clone
 ```
 
 ### List Available Skills
 
 ```bash
 # List all skills and commands
-skillin list
+knowhow list
 
 # List only skills
-skillin list --type skill
+knowhow list --type skill
 
 # List only from repository
-skillin list --source repository
+knowhow list --source repository
 ```
 
 ### Install a Skill
 
 ```bash
 # Install to Claude Code (default)
-skillin install skill-name
+knowhow install skill-name
 
 # Install to OpenCode
-skillin install skill-name --platform opencode
+knowhow install skill-name --platform opencode
 
 # Install to project directory (.claude/skills/)
-skillin install skill-name --target project
+knowhow install skill-name --target project
 
 # Preview before installing
-skillin install skill-name --dry-run
+knowhow install skill-name --dry-run
 ```
 
 ### Search for Skills
 
 ```bash
-skillin search python
-skillin search "lab notebook"
+knowhow search python
+knowhow search "lab notebook"
 ```
 
 ### Create a New Skill
 
 ```bash
 # Interactive mode
-skillin create --type skill
+knowhow create --type skill
 
 # With name specified
-skillin create --type skill --name my-awesome-skill
+knowhow create --type skill --name my-awesome-skill
 
 # AI-assisted creation using Claude CLI
-skillin create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
+knowhow create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
 ```
 
 ### Uninstall a Skill
 
 ```bash
-skillin uninstall skill-name
+knowhow uninstall skill-name
 ```
 
 ### Manage Hooks
 
 ```bash
 # List available hooks
-skillin hooks list --target repo
+knowhow hooks list --target repo
 
 # Install a hook
-skillin hooks install lab-notebook
+knowhow hooks install lab-notebook
 
 # Create a hook (with AI)
-skillin hooks create my-hook --event PostToolUse --prompt "Format Python with black"
+knowhow hooks create my-hook --event PostToolUse --prompt "Format Python with black"
 ```
 
 ### Manage Agents
 
 ```bash
 # List available agents
-skillin agents list --target repo
+knowhow agents list --target repo
 
 # Install an agent
-skillin agents install code-reviewer
+knowhow agents install code-reviewer
 
 # Create an agent (with AI)
-skillin agents create my-agent --prompt "An agent that reviews security vulnerabilities"
+knowhow agents create my-agent --prompt "An agent that reviews security vulnerabilities"
 ```
 
 ## Configuration
@@ -282,15 +282,15 @@ platforms:
 ```
 
 ```bash
-skillin add jkitchin/skillz -s pycse -a picoclaw -g    # copies, never symlinks
-skillin install pycse --platform picoclaw
+knowhow add jkitchin/knowhow -s pycse -a picoclaw -g    # copies, never symlinks
+knowhow install pycse --platform picoclaw
 ```
 
 - An unknown platform name is an error. It never falls back to the Claude directories.
 - A command that needs a directory you haven't configured, such as `hooks_dir` or
   `project_skills_dir`, tells you which key to set.
 - Changing `skills_dir` or `project_skills_dir` for a built-in platform (claude, codex, ...)
-  overrides where `skillin add` installs for it.
+  overrides where `knowhow add` installs for it.
 
 See [example-config.yaml](example-config.yaml) for every key.
 
@@ -309,7 +309,7 @@ personal_commands_dir: ~/.claude/commands
 project_skills_dir: .claude/skills
 project_commands_dir: .claude/commands
 default_target: personal
-aliases: {}            # e.g. {kitchin: jkitchin/skillz} for `skillin add kitchin ...`
+aliases: {}            # e.g. {kitchin: jkitchin/knowhow} for `knowhow add kitchin ...`
 
 platforms:
   claude:
@@ -413,8 +413,8 @@ Detailed instructions for this specialized agent...
 ## Project Structure
 
 ```
-skillz/                     # repository (the tool is published as `skillin`)
-├── skillin/               # Python CLI package
+knowhow/                  # repository
+├── knowhow/               # Python CLI package
 │   ├── commands/          # CLI command implementations (add.py = add/remove/check/upgrade/find)
 │   ├── sources.py         # Parse owner/repo, URLs, local paths
 │   ├── fetch.py           # Shallow git clone / GitHub API
@@ -472,7 +472,7 @@ If any changes are made by the hooks, the commit will fail. Simply stage the cha
 pytest
 
 # Run with coverage report
-pytest --cov=skillin --cov-report=html
+pytest --cov=knowhow --cov-report=html
 ```
 
 ### Linting and Formatting
@@ -495,7 +495,7 @@ ruff format .
 
 ## Available Skills
 
-See the `skills/` directory, or run `uvx skillin add jkitchin/skillz --list`:
+See the `skills/` directory, or run `uvx knowhow add jkitchin/knowhow --list`:
 
 - **Programming & materials science**: ASE, pymatgen, VASP, FAIRChem, pycalphad, IDAES, JAX, materials properties, Python best practices, plotting, optimization (single and multiobjective), regression & statistics, Emacs Lisp, Claude-Light
 - **Laboratory automation**: Opentrons (API, gripper, heater-shaker, thermocycler, temperature module, magnetic block, absorbance reader)
@@ -570,25 +570,29 @@ MIT License - see LICENSE file for details
 
 ## Support
 
-- Report issues: https://github.com/jkitchin/skillz/issues
-- Documentation: https://github.com/jkitchin/skillz#readme
+- Report issues: https://github.com/jkitchin/knowhow/issues
+- Documentation: https://github.com/jkitchin/knowhow#readme
 
 ## Related Projects
 
 ### Supported Platforms
 
-Skillin manages skills and commands for these AI coding assistants:
+Knowhow manages skills and commands for these AI coding assistants:
 
 - **[OpenCode](https://github.com/sst/opencode)** - The AI coding agent built for the terminal. Open-source, provider-agnostic, with 30k+ GitHub stars.
 - **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
 - **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal. See [OpenAI adopts "skills"](https://simonwillison.net/2025/Dec/12/openai-skills/) for details on their skills implementation.
 - **Gemini** - Google's AI assistant.
-- **VS Code** (GitHub Copilot in VS Code) reads `.agents/skills` and `~/.agents/skills`, so skills installed with `skillin add` work there out of the box; `-a vscode` targets it explicitly.
-- Cursor, GitHub Copilot, Goose and Windsurf are supported targets for `skillin add` skills.
+- **VS Code** (GitHub Copilot in VS Code) reads `.agents/skills` and `~/.agents/skills`, so skills installed with `knowhow add` work there out of the box; `-a vscode` targets it explicitly.
+- Cursor, GitHub Copilot, Goose and Windsurf are supported targets for `knowhow add` skills.
 
 ### Related Skills Projects
 
-- **[npx skills](https://github.com/vercel-labs/skills)** - Vercel's Node CLI and the [skills.sh](https://skills.sh) directory. `skillin add` follows its layout, install paths and lock files.
+- **[npx skills](https://github.com/vercel-labs/skills)** - Vercel's Node CLI and the [skills.sh](https://skills.sh) directory. `knowhow add` was modeled on it and follows its layout, install paths and lock files, so either tool sees what the other installed. Use it if you prefer Node; knowhow adds commands, subagents, hooks and MCP servers.
+- **[Agent Skills specification](https://agentskills.io)** ([agentskills/agentskills](https://github.com/agentskills/agentskills)) - The open SKILL.md format that `knowhow validate` checks against.
+- **[anthropics/skills](https://github.com/anthropics/skills)** - Anthropic's public collection of Agent Skills; installable with `knowhow add anthropics/skills`.
+- **[skillz (MCP server)](https://github.com/intellectronica/skillz)** - An MCP server that loads skills into clients without native skill support. It owns the `skillz` name on PyPI, which is why this tool is published as knowhow.
+- **[skillpack-cli](https://pypi.org/project/skillpack-cli/)** - A proof-of-concept Python CLI for managing AI agent skills.
 - **[openskills](https://github.com/numman-ali/openskills)** - Another universal skills loader (I have not tried this yet).
 - **[opencode-skills](https://www.npmjs.com/package/opencode-skills)** - With OpenCode you may get better performance with this plugin (this is what I use). See also the [OpenCode feature request](https://github.com/sst/opencode/issues/3235).
 

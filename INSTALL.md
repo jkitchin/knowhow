@@ -12,33 +12,33 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ## Option 1: No install (uvx)
 
-Run `skillin` on demand. uv downloads and caches it:
+Run `knowhow` on demand. uv downloads and caches it:
 
 ```bash
-uvx skillin add jkitchin/skillz --list
-uvx skillin add jkitchin/skillz --skill python-ase
+uvx knowhow add jkitchin/knowhow --list
+uvx knowhow add jkitchin/knowhow --skill python-ase
 ```
 
-Before `skillin` is published on PyPI, use the git URL:
+Before `knowhow` is published on PyPI, use the git URL:
 
 ```bash
-uvx --from git+https://github.com/jkitchin/skillz skillin add jkitchin/skillz --list
+uvx --from git+https://github.com/jkitchin/knowhow knowhow add jkitchin/knowhow --list
 ```
 
 ## Option 2: Install the command
 
 ```bash
-uv tool install skillin                                   # or: pipx install skillin
-uv tool install git+https://github.com/jkitchin/skillz    # before the PyPI release
+uv tool install knowhow                                   # or: pipx install knowhow
+uv tool install git+https://github.com/jkitchin/knowhow    # before the PyPI release
 ```
 
-This installs two commands, `skillin` and its alias `skillz`.
+This installs two commands, `knowhow` and its alias `skillz`.
 
 ## Option 3: Development install
 
 ```bash
-git clone https://github.com/jkitchin/skillz.git
-cd skillz
+git clone https://github.com/jkitchin/knowhow.git
+cd knowhow
 uv pip install -e ".[dev]"       # or: pip install -e ".[dev]"
 pre-commit install
 ```
@@ -47,20 +47,20 @@ To run the local-repository commands (`list`, `install`, `search`, `info`, `upda
 `agents`, and the CASCADE commands) against your clone:
 
 ```bash
-skillin config set repository "$(pwd)"
+knowhow config set repository "$(pwd)"
 ```
 
 ## Verify
 
 ```bash
-skillin --version
-skillin --help
-skillin add jkitchin/skillz --list
+knowhow --version
+knowhow --help
+knowhow add jkitchin/knowhow --list
 ```
 
 ## Where things are installed
 
-`skillin add` installs into the current project by default, and for your user with `-g`:
+`knowhow add` installs into the current project by default, and for your user with `-g`:
 
 | | Project (default) | Global (`-g`) |
 |---|---|---|
@@ -68,14 +68,14 @@ skillin add jkitchin/skillz --list
 | Skills for Claude Code | `.claude/skills/<name>` (symlink) | `~/.claude/skills/<name>` (symlink) |
 | Commands / subagents / hooks | `.claude/commands`, `.claude/agents`, `.claude/hooks` | same under `~/.claude` |
 | MCP servers | each selected agent's project MCP file (`.mcp.json`, `.vscode/mcp.json`, ...) | each agent's global MCP file; Claude Code via `claude mcp` |
-| Lock files | `skills-lock.json`, `.claude/skillin-lock.json` | `~/.agents/.skill-lock.json`, `~/.claude/skillin-lock.json` |
+| Lock files | `skills-lock.json`, `.claude/knowhow-lock.json` | `~/.agents/.skill-lock.json`, `~/.claude/knowhow-lock.json` |
 
 - VS Code, Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
 - Choose agents with `-a`, for example `-a claude-code -a vscode`. Without `-a`, installed agents are detected (VS Code by `~/.vscode` or its user data folder).
 - Use `--copy` to get real copies instead of symlinks.
 - `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and `XDG_CONFIG_HOME` are respected.
 
-The older `skillin install --platform ...` command copies from a local repository into the
+The older `knowhow install --platform ...` command copies from a local repository into the
 per-platform directories set in `~/.config/skillz/config.yaml` (see
 [example-config.yaml](example-config.yaml)).
 
@@ -90,9 +90,9 @@ Configuration lives in `~/.config/skillz/config.yaml`. The path keeps the origin
 existing setups keep working. Everything is optional:
 
 ```bash
-skillin config set repository /path/to/clone        # for local-repository commands
-skillin config set alias.kitchin jkitchin/skillz    # then: skillin add kitchin -s pycse
-skillin config get
+knowhow config set repository /path/to/clone        # for local-repository commands
+knowhow config set alias.kitchin jkitchin/knowhow    # then: knowhow add kitchin -s pycse
+knowhow config get
 ```
 
 Set `GITHUB_TOKEN` (or `GH_TOKEN`) to raise GitHub API rate limits for `check` and `find`.
@@ -100,35 +100,35 @@ Private repositories work wherever `git clone` works for you.
 
 ## Troubleshooting
 
-- **`skillin: command not found`**: use `uvx skillin ...`, or make sure `~/.local/bin` (uv
+- **`knowhow: command not found`**: use `uvx knowhow ...`, or make sure `~/.local/bin` (uv
   tool / pipx) is on your `PATH`.
 - **`skillz` commands broke after upgrading**: the Python package was renamed from `cli`
-  to `skillin`. Reinstall your editable install with `uv pip install -e ".[dev]"`.
-- **`No skills found`**: run `skillin add <source> --list` to see what was discovered, and
+  to `knowhow`. Reinstall your editable install with `uv pip install -e ".[dev]"`.
+- **`No skills found`**: run `knowhow add <source> --list` to see what was discovered, and
   `--full-depth` to search every directory. See
   [docs/publishing-skills.md](docs/publishing-skills.md) for the layout rules.
 - **`list` shows nothing from the repository**: set the repository path with
-  `skillin config set repository /path/to/clone`.
+  `knowhow config set repository /path/to/clone`.
 - **A hook or MCP server won't install non-interactively**: these run code, so pass `-y`
   once you have reviewed them.
-- **`Refusing to replace items that skillin did not install`**: something with the same
+- **`Refusing to replace items that knowhow did not install`**: something with the same
   name already exists, for example your own `.claude/skills/<name>`. Rename or remove it,
   or pass `--force` to replace it.
-- **`Not installed by skillin`** from `remove`: the name isn't in a skillin lock file for
+- **`Not installed by knowhow`** from `remove`: the name isn't in a knowhow lock file for
   this scope. Add `-g` for global installs, or `--force` to remove it anyway.
-- **`... is not valid JSON; skillin will not overwrite it`**: fix the file mentioned
-  (often a trailing comma in `settings.json`) and retry. skillin never rewrites a file it
+- **`... is not valid JSON; knowhow will not overwrite it`**: fix the file mentioned
+  (often a trailing comma in `settings.json`) and retry. knowhow never rewrites a file it
   can't parse.
 
 ## Uninstallation
 
 ```bash
-skillin installed                       # what skillin installed, project + global
-skillin remove <skill>                  # or: skillin remove owner/repo  (everything from a source)
-skillin remove --command <name> --hook <name> --mcp <name>
-skillin remove --all                    # everything skillin installed in this project
-skillin remove --all -g                 # ... and for your user
-uv tool uninstall skillin               # or: pipx uninstall skillin
+knowhow installed                       # what knowhow installed, project + global
+knowhow remove <skill>                  # or: knowhow remove owner/repo  (everything from a source)
+knowhow remove --command <name> --hook <name> --mcp <name>
+knowhow remove --all                    # everything knowhow installed in this project
+knowhow remove --all -g                 # ... and for your user
+uv tool uninstall knowhow               # or: pipx uninstall knowhow
 rm -rf ~/.config/skillz                 # optional: remove configuration
 ```
 
@@ -144,5 +144,5 @@ for exactly what each removal deletes.
 
 ## Getting Help
 
-- Check [GitHub Issues](https://github.com/jkitchin/skillz/issues)
+- Check [GitHub Issues](https://github.com/jkitchin/knowhow/issues)
 - Contact: jkitchin@andrew.cmu.edu

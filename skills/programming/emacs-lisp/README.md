@@ -158,8 +158,8 @@ emacs-lisp/
 ### For Personal Use
 
 ```bash
-# Using skillin CLI
-skillin install emacs-lisp
+# Using knowhow CLI
+knowhow install emacs-lisp
 
 # Or manually
 mkdir -p ~/.claude/skills/emacs-lisp
@@ -169,8 +169,8 @@ cp -r . ~/.claude/skills/emacs-lisp/
 ### For Project Use
 
 ```bash
-# Using skillin CLI
-skillin install emacs-lisp --target project
+# Using knowhow CLI
+knowhow install emacs-lisp --target project
 
 # Or manually
 mkdir -p .claude/skills/emacs-lisp
@@ -424,7 +424,7 @@ To improve this skill:
 
 ## License
 
-This skill is part of the skillin repository and follows the same license.
+This skill is part of the knowhow repository and follows the same license.
 
 ## Version History
 

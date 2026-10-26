@@ -1,6 +1,6 @@
 """Tests for validator module."""
 
-from skillin.validator import CommandValidator, SkillValidator
+from knowhow.validator import CommandValidator, SkillValidator
 
 
 class TestSkillValidator:

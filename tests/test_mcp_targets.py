@@ -8,8 +8,8 @@ import sys
 import pytest
 from click.testing import CliRunner
 
-from skillin import mcp_targets as mt
-from skillin.main import cli
+from knowhow import mcp_targets as mt
+from knowhow.main import cli
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -154,7 +154,7 @@ def test_install_inventory_remove_across_agents(env):
     oc = json.loads((proj / "opencode.json").read_text())
     assert oc["theme"] == "x" and "fs" in oc["mcp"]
 
-    lock = json.loads((proj / ".claude" / "skillin-lock.json").read_text())
+    lock = json.loads((proj / ".claude" / "knowhow-lock.json").read_text())
     assert {t["agent"] for t in lock["mcp"]["fs"]["targets"]} == {
         "claude-code",
         "vscode",
@@ -209,15 +209,15 @@ def test_failed_removal_keeps_lock_target(env):
     cursor.write_text("{ broken")
     r = run("remove", "--mcp", "fs", "-y")
     assert "Could not remove" in " ".join(r.output.split())
-    lock = json.loads((env["proj"] / ".claude" / "skillin-lock.json").read_text())
+    lock = json.loads((env["proj"] / ".claude" / "knowhow-lock.json").read_text())
     assert [t["agent"] for t in lock["mcp"]["fs"]["targets"]] == ["cursor"]
     assert json.loads((env["proj"] / ".mcp.json").read_text())["mcpServers"] == {}
 
 
 def test_legacy_lock_entry_removes_from_claude(env):
     (env["proj"] / ".mcp.json").write_text(json.dumps({"mcpServers": {"fs": STDIO}}))
-    (env["proj"] / ".claude" / "skillin-lock.json").parent.mkdir(exist_ok=True)
-    (env["proj"] / ".claude" / "skillin-lock.json").write_text(
+    (env["proj"] / ".claude" / "knowhow-lock.json").parent.mkdir(exist_ok=True)
+    (env["proj"] / ".claude" / "knowhow-lock.json").write_text(
         json.dumps({"version": 1, "mcp": {"fs": {"source": "x", "sourceType": "local"}}})
     )
     run("remove", "--mcp", "fs", "-y")

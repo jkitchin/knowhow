@@ -8,9 +8,9 @@ import sys
 import pytest
 from click.testing import CliRunner
 
-from skillin import mcp_targets as mt
-from skillin import safeio
-from skillin.main import cli
+from knowhow import mcp_targets as mt
+from knowhow import safeio
+from knowhow.main import cli
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -71,7 +71,7 @@ def flat(r):
 
 def test_project_lock_cannot_redirect_mcp_writes(env):
     run("add", str(env["repo"]), "--mcp", "srv", "-a", "cursor", "-y")
-    lock_file = env["proj"] / ".claude" / "skillin-lock.json"
+    lock_file = env["proj"] / ".claude" / "knowhow-lock.json"
     lock = json.loads(lock_file.read_text())
     assert lock["mcp"]["srv"]["targets"] == [{"agent": "cursor", "file": ".cursor/mcp.json"}]
 
@@ -227,3 +227,17 @@ def test_untracked_lists_servers_in_other_agents(env):
     assert [(i["kind"], i["name"], i["status"]) for i in items] == [
         ("mcp", "users-own", "untracked")
     ]
+
+
+# pre-release `skillin-lock.json` is read and migrated ---------------------------------
+
+
+def test_legacy_skillin_lock_is_migrated(env):
+    run("add", str(env["repo"]), "--mcp", "srv", "-a", "cursor", "-y")
+    claude = env["proj"] / ".claude"
+    (claude / "knowhow-lock.json").rename(claude / "skillin-lock.json")
+    assert [i["name"] for i in json.loads(run("installed", "-p", "--json").output)] == ["srv"]
+    run("remove", "--mcp", "srv", "-y")
+    assert not (claude / "skillin-lock.json").exists()
+    assert json.loads((claude / "knowhow-lock.json").read_text())["mcp"] == {}
+    assert json.loads((env["proj"] / ".cursor" / "mcp.json").read_text())["mcpServers"] == {}

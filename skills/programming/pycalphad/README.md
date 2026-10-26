@@ -107,4 +107,4 @@ If you publish work using pycalphad, please cite:
 
 ## Contributing
 
-This skill is part of the skillin repository. To suggest improvements or report issues, please open an issue or pull request at the repository.
+This skill is part of the knowhow repository. To suggest improvements or report issues, please open an issue or pull request at the repository.

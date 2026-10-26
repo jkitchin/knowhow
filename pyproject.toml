@@ -1,6 +1,6 @@
 [project]
-name = "skillin"
-version = "0.1.0"
+name = "knowhow"
+version = "0.2.0"
 description = "Install and manage AI agent skills from any git repo (npx skills compatible) for Claude Code, Codex, OpenCode, Gemini and more"
 authors = [
     {name = "John Kitchin", email = "jkitchin@andrew.cmu.edu"}
@@ -38,28 +38,28 @@ templates = [
 ]
 
 [project.scripts]
-skillin = "skillin.main:cli"
-skillz = "skillin.main:cli"
+knowhow = "knowhow.main:cli"
+skillz = "knowhow.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/jkitchin/skillz"
-Documentation = "https://github.com/jkitchin/skillz#readme"
-Repository = "https://github.com/jkitchin/skillz"
-Issues = "https://github.com/jkitchin/skillz/issues"
+Homepage = "https://github.com/jkitchin/knowhow"
+Documentation = "https://github.com/jkitchin/knowhow#readme"
+Repository = "https://github.com/jkitchin/knowhow"
+Issues = "https://github.com/jkitchin/knowhow/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["skillin"]
+packages = ["knowhow"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=skillin --cov-report=term-missing --cov-report=html"
+addopts = "--cov=knowhow --cov-report=term-missing --cov-report=html"
 
 [tool.ruff]
 line-length = 100
@@ -77,7 +77,7 @@ ignore = []
 "skills/**/examples/*.py" = ["N803", "N806", "E722", "F841", "E402", "UP028", "F401", "I001", "F541", "UP024", "UP015"]
 
 [tool.coverage.run]
-source = ["skillin"]
+source = ["knowhow"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

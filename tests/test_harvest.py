@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from skillin.commands.harvest import (
+from knowhow.commands.harvest import (
     _find_transcripts,
     _read_transcript,
     harvest,
@@ -84,14 +84,14 @@ class TestReadTranscript:
 class TestHarvestCommand:
     def test_no_transcripts_found(self, temp_dir):
         runner = CliRunner()
-        with patch("skillin.commands.harvest._find_transcripts", return_value=[]):
+        with patch("knowhow.commands.harvest._find_transcripts", return_value=[]):
             result = runner.invoke(harvest, [])
         assert result.exit_code != 0
 
     def test_with_specific_transcript(self, transcript_file):
         runner = CliRunner()
         mock_proposals = "## Skill 1: data-pipeline\n**Name:** data-pipeline\n"
-        with patch("skillin.commands.harvest._run_claude_cli", return_value=mock_proposals):
+        with patch("knowhow.commands.harvest._run_claude_cli", return_value=mock_proposals):
             result = runner.invoke(harvest, ["-t", str(transcript_file)])
         assert result.exit_code == 0
         assert "data-pipeline" in result.output
@@ -99,7 +99,7 @@ class TestHarvestCommand:
     def test_no_skills_found(self, transcript_file):
         runner = CliRunner()
         with patch(
-            "skillin.commands.harvest._run_claude_cli",
+            "knowhow.commands.harvest._run_claude_cli",
             return_value="No reusable skills identified in this session.",
         ):
             result = runner.invoke(harvest, ["-t", str(transcript_file)])
@@ -108,7 +108,7 @@ class TestHarvestCommand:
     def test_dry_run(self, transcript_file):
         runner = CliRunner()
         mock_proposals = "## Skill 1: test-skill\n"
-        with patch("skillin.commands.harvest._run_claude_cli", return_value=mock_proposals):
+        with patch("knowhow.commands.harvest._run_claude_cli", return_value=mock_proposals):
             result = runner.invoke(harvest, ["-t", str(transcript_file), "--generate", "--dry-run"])
         assert result.exit_code == 0
         assert "Dry run" in result.output

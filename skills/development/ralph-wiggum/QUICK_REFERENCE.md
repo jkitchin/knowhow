@@ -4,9 +4,9 @@
 
 ```bash
 # Install skill and hooks
-skillin install ralph-wiggum
-skillin hooks install ralph-safety-check
-skillin hooks install ralph-cost-monitor
+knowhow install ralph-wiggum
+knowhow hooks install ralph-safety-check
+knowhow hooks install ralph-cost-monitor
 ```
 
 ## Project Setup

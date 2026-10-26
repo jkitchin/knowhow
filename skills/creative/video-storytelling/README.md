@@ -20,7 +20,7 @@ Perfect for creating educational content, children's stories, social media video
 
 ```bash
 # Install the skill
-skillin install video-storytelling
+knowhow install video-storytelling
 
 # Or copy to your project
 cp -r skills/creative/video-storytelling .claude/skills/
@@ -569,7 +569,7 @@ For issues or questions:
 1. Check the [examples](examples/) directory
 2. Review [references](references/) documentation
 3. Consult [SKILL.md](SKILL.md) for implementation
-4. Open an issue in the skillin repository
+4. Open an issue in the knowhow repository
 
 ---
 

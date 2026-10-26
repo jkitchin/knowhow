@@ -376,7 +376,7 @@ To extend this skill:
 
 ## License
 
-This skill is part of the skillin project.
+This skill is part of the knowhow project.
 
 ## Support
 
