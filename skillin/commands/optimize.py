@@ -1,4 +1,4 @@
-"""Optimize command for skillz - improve skill descriptions for better triggering.
+"""Optimize command for skillin - improve skill descriptions for better triggering.
 
 Inspired by CASCADE (arxiv:2512.23880): Cumulative Agentic Skill Creation through
 Autonomous Development and Evolution. Implements the skill evolution phase where
@@ -12,9 +12,9 @@ import click
 import yaml
 from rich.console import Console
 
-from cli.config import Config
-from cli.utils import confirm_action, find_skill_directories
-from cli.validator import SkillValidator
+from skillin.config import Config
+from skillin.utils import confirm_action, find_skill_directories
+from skillin.validator import SkillValidator
 
 console = Console()
 
@@ -251,7 +251,7 @@ def _optimize_all_skills(config, dry_run, evals_only):
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
         console.print("[red]Repository path not set or doesn't exist.[/red]")
-        console.print("[dim]Set it with: skillz config set repository /path/to/repo[/dim]")
+        console.print("[dim]Set it with: skillin config set repository /path/to/repo[/dim]")
         raise click.Abort()
 
     skills_dir = repo_path / "skills"
@@ -323,16 +323,16 @@ def optimize(ctx, skill_name, optimize_all, dry_run, evals_only):
     Examples:
 
         # Optimize a single skill
-        skillz optimize python-jax
+        skillin optimize python-jax
 
         # Optimize all skills
-        skillz optimize --all
+        skillin optimize --all
 
         # Preview without saving
-        skillz optimize python-jax --dry-run
+        skillin optimize python-jax --dry-run
 
         # Generate evals only
-        skillz optimize python-jax --evals-only
+        skillin optimize python-jax --evals-only
     """
     if not skill_name and not optimize_all:
         console.print("[red]Error: Provide a SKILL_NAME or use --all.[/red]")

@@ -72,14 +72,14 @@ Ralph Wiggum mode creates an external loop that:
 ### Install the Skill
 
 ```bash
-skillz install ralph-wiggum
+skillin install ralph-wiggum
 ```
 
 ### Install Safety Hooks (Recommended)
 
 ```bash
-skillz hooks install ralph-safety-check
-skillz hooks install ralph-cost-monitor
+skillin hooks install ralph-safety-check
+skillin hooks install ralph-cost-monitor
 ```
 
 ### Prerequisites
@@ -211,7 +211,7 @@ RALPH_I_KNOW_WHAT_IM_DOING=sandboxed ./ralph.sh
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | optional | API key (not needed with Claude Code subscription) |
-| `RALPH_MODEL` | `sonnet` | Claude model to use |
+| `RALPH_MODEL` | `opus` | Claude model to use |
 | `RALPH_COST_LIMIT` | `50.00` | Max spend in USD |
 | `RALPH_I_KNOW_WHAT_IM_DOING` | unset | Override sandbox check |
 
@@ -313,7 +313,7 @@ cat .ralph-costs.json | jq '.summary'
 
 **Fix:**
 1. Set iteration limits: `./ralph-sandbox.sh . 20`
-2. Install cost monitor: `skillz hooks install ralph-cost-monitor`
+2. Install cost monitor: `skillin hooks install ralph-cost-monitor`
 3. Set budget: `export RALPH_COST_LIMIT=25.00`
 
 ### Docker Build Fails
@@ -334,7 +334,7 @@ docker build -t ralph-sandbox -f Dockerfile.ralph .
 
 ## License
 
-This skill is part of the skillz project and follows its license.
+This skill is part of the skillin project and follows its license.
 
 ---
 

@@ -12,9 +12,9 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 
-from cli.commands.optimize import _run_claude_cli
-from cli.config import Config
-from cli.utils import confirm_action, validate_name
+from skillin.commands.optimize import _run_claude_cli
+from skillin.config import Config
+from skillin.utils import confirm_action, validate_name
 
 console = Console()
 
@@ -158,16 +158,16 @@ def harvest(ctx, transcript, recent, generate, output_dir, dry_run):
     Examples:
 
         # Analyze recent sessions
-        skillz harvest
+        skillin harvest
 
         # Analyze a specific transcript
-        skillz harvest -t ~/.claude/projects/.../session.jsonl
+        skillin harvest -t ~/.claude/projects/.../session.jsonl
 
         # Analyze and generate skill files
-        skillz harvest --generate
+        skillin harvest --generate
 
         # Preview without creating files
-        skillz harvest --generate --dry-run
+        skillin harvest --generate --dry-run
     """
     config = Config()
 

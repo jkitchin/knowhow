@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Skillz is a CLI tool for managing AI assistant skills and slash commands across multiple LLM platforms (Claude Code, OpenCode, Codex, Gemini). The tool allows users to discover, install, create, and manage reusable skills that extend LLM capabilities.
+Skillin (formerly skillz; this repo is still `jkitchin/skillz`) is a CLI tool for managing AI assistant skills and slash commands across multiple LLM platforms (Claude Code, OpenCode, Codex, Gemini, Cursor, Copilot). Its headline feature is `uvx skillin add owner/repo --skill name`: install skills (npx-skills compatible), commands, subagents, hooks and MCP servers from any git repo without installing skillin or cloning anything. The repo also hosts a collection of skills, commands, hooks and agents, plus commands to create, validate and evolve them.
 
 ## Development Commands
 
@@ -23,7 +23,7 @@ pip install -e ".[dev]"
 pytest
 
 # Run with coverage report
-pytest --cov=cli --cov-report=html
+pytest --cov=skillin --cov-report=html
 
 # Run specific test file
 pytest tests/test_validator.py
@@ -33,27 +33,28 @@ pytest tests/test_validator.py
 ```bash
 # Check code style
 ruff check .
-black --check .
+ruff format --check .
 
 # Format code
-black .
+ruff format .
 ```
 
 ### Running the CLI
 ```bash
 # Via entry point (after installation)
-skillz --help
+skillin --help
 
 # Via Python module (during development)
-python -m cli.main --help
+python -m skillin.main --help
 ```
 
 ## Architecture
 
 ### Core Components
 
-**CLI Module (`cli/`)**
+**CLI Module (`skillin/`)** — published as `skillin` (PyPI `skillz` is taken); console scripts `skillin` and `skillz`
 - `main.py` - Click-based CLI entry point with command registration
+- `sources.py`, `fetch.py`, `discovery.py`, `agents_registry.py`, `installer.py`, `lock.py` - remote install pipeline used by `add`/`remove`/`check`/`upgrade` (`commands/add.py`), compatible with `npx skills` (vercel-labs/skills) layout, install paths and lock files
 - `config.py` - Configuration management using YAML (`~/.config/skillz/config.yaml`)
 - `validator.py` - Validation logic for skills (SKILL.md) and commands (.md files)
 - `utils.py` - Shared utilities (name validation, file operations, search functions)
@@ -114,7 +115,20 @@ Standalone markdown files for Claude Code subagents:
 - **Naming**: Skills and commands use lowercase-with-hyphens naming
 - **Frontmatter**: YAML between `---` delimiters at file start
 - **Tools restriction**: `allowed-tools` field limits which Claude tools the skill/command can use
-- **Repository path**: Must be configured via `skillz config set repository /path/to/repo`
+- **Repository path**: Must be configured via `skillin config set repository /path/to/repo`
+
+## Remote Install (`skillin add`)
+
+`uvx skillin add owner/repo --skill name` clones a repo into a temp dir, discovers SKILL.md
+skills (npx-skills search order, name from frontmatter), copies each to `.agents/skills/<name>`
+(or `~/.agents/skills` with `-g`) and symlinks agent dirs like `.claude/skills/<name>` to it
+(`--copy` to copy). Installs are recorded in `skills-lock.json` / `~/.agents/.skill-lock.json`
+(npx format; global hash = git tree SHA, project hash = SHA-256 of files). `check` reports
+upstream changes, `upgrade` applies them, `remove` uninstalls, `find` searches skills.sh / GitHub.
+`skillin/extras.py` also installs commands (`--command`), subagents (`--subagent`), hooks (`--hook`)
+and MCP servers (`--mcp`, from `.mcp.json` / `mcp/*.json`) for Claude Code, tracked in
+`.claude/skillin-lock.json`. Hooks and MCP servers are previewed and need confirmation or `-y`. Aliases:
+`skillin config set alias.NAME owner/repo`. See `docs/publishing-skills.md`.
 
 ## Install --all Feature
 
@@ -127,29 +141,29 @@ The `install --all` command installs all skills and commands from the repository
 
 ## Hooks CLI Commands
 
-The `skillz hooks` command group manages Claude Code hooks:
+The `skillin hooks` command group manages Claude Code hooks:
 
 ```bash
 # List available hooks from repository
-skillz hooks list --target repo
+skillin hooks list --target repo
 
 # List installed hooks
-skillz hooks list --target personal
+skillin hooks list --target personal
 
 # Install a hook
-skillz hooks install lab-notebook
+skillin hooks install lab-notebook
 
 # Uninstall a hook
-skillz hooks uninstall lab-notebook
+skillin hooks uninstall lab-notebook
 
 # Get hook info
-skillz hooks info lab-notebook
+skillin hooks info lab-notebook
 
 # Search for hooks
-skillz hooks search "format"
+skillin hooks search "format"
 
 # Create a new hook from template
-skillz hooks create my-hook --event PostToolUse
+skillin hooks create my-hook --event PostToolUse
 ```
 
 ### Available Hooks
@@ -163,32 +177,32 @@ skillz hooks create my-hook --event PostToolUse
 
 ## Agents CLI Commands
 
-The `skillz agents` command group manages Claude Code subagents:
+The `skillin agents` command group manages Claude Code subagents:
 
 ```bash
 # List available agents from repository
-skillz agents list --target repo
+skillin agents list --target repo
 
 # List installed agents
-skillz agents list --target personal
+skillin agents list --target personal
 
 # Install an agent
-skillz agents install code-reviewer
+skillin agents install code-reviewer
 
 # Uninstall an agent
-skillz agents uninstall code-reviewer
+skillin agents uninstall code-reviewer
 
 # Get agent info
-skillz agents info code-reviewer
+skillin agents info code-reviewer
 
 # Search for agents
-skillz agents search "test"
+skillin agents search "test"
 
 # Create a new agent from template
-skillz agents create my-agent --model sonnet
+skillin agents create my-agent --model sonnet
 
 # Create an agent using AI (Claude CLI)
-skillz agents create my-agent --prompt "An agent that analyzes code complexity"
+skillin agents create my-agent --prompt "An agent that analyzes code complexity"
 ```
 
 ### Available Agents
@@ -239,50 +253,50 @@ All three types support AI-assisted creation using the Claude CLI:
 
 ```bash
 # Create a skill using AI
-skillz create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
+skillin create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
 
 # Create a hook using AI
-skillz hooks create my-hook --event PostToolUse --prompt "Format Python files with black"
+skillin hooks create my-hook --event PostToolUse --prompt "Format Python files with black"
 
 # Create an agent using AI
-skillz agents create my-agent --prompt "An agent that reviews security vulnerabilities"
+skillin agents create my-agent --prompt "An agent that reviews security vulnerabilities"
 ```
 
 ## CASCADE: Skill Evolution Commands
 
-Inspired by CASCADE (arxiv:2512.23880), skillz includes commands for autonomous skill
+Inspired by CASCADE (arxiv:2512.23880), skillin includes commands for autonomous skill
 improvement. See `docs/cascade.md` for full documentation.
 
 ```bash
 # Harvest new skills from session transcripts
-skillz harvest
-skillz harvest -t path/to/session.jsonl --generate
+skillin harvest
+skillin harvest -t path/to/session.jsonl --generate
 
 # Optimize skill descriptions (single or batch)
-skillz optimize python-jax
-skillz optimize --all --dry-run
+skillin optimize python-jax
+skillin optimize --all --dry-run
 
 # A/B test description variants
-skillz ab-test python-jax -n 5
+skillin ab-test python-jax -n 5
 
 # Track skill usage statistics
-skillz stats --scan
-skillz stats --unused
+skillin stats --scan
+skillin stats --unused
 
 # Detect and merge overlapping skills
-skillz merge
-skillz merge --execute skill-a skill-b --merged-name combined-skill
+skillin merge
+skillin merge --execute skill-a skill-b --merged-name combined-skill
 ```
 
 ## Common Patterns
 
-**Adding a new CLI command**: Create file in `cli/commands/`, implement as Click command, import and register in `cli/main.py`.
+**Adding a new CLI command**: Create file in `skillin/commands/`, implement as Click command, import and register in `skillin/main.py`.
 
-**Creating a skill**: Use `skillz create --type skill` or manually create directory with SKILL.md containing proper frontmatter.
+**Creating a skill**: Use `skillin create --type skill` or manually create directory with SKILL.md containing proper frontmatter.
 
-**Creating a hook**: Use `skillz hooks create my-hook` or manually create directory with HOOK.md and hook.py.
+**Creating a hook**: Use `skillin hooks create my-hook` or manually create directory with HOOK.md and hook.py.
 
-**Creating an agent**: Use `skillz agents create my-agent` or manually create .md file with proper frontmatter.
+**Creating an agent**: Use `skillin agents create my-agent` or manually create .md file with proper frontmatter.
 
 **Validation errors**: SkillValidator, CommandValidator, HookValidator, and AgentValidator all return `(is_valid, list_of_errors)` tuples.
 

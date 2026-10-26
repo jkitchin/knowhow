@@ -236,13 +236,13 @@ python binary_search_helper.py
 
 ```bash
 # Install to personal directory
-skillz install troubleshooting
+skillin install troubleshooting
 
 # Install to project
-skillz install troubleshooting --target project
+skillin install troubleshooting --target project
 
 # View detailed info
-skillz info troubleshooting
+skillin info troubleshooting
 ```
 
 ## Skill Structure
@@ -277,7 +277,7 @@ Based on established troubleshooting and diagnostic methodologies including:
 
 ## License
 
-This skill is part of the skillz repository and follows the repository's MIT license.
+This skill is part of the skillin repository and follows the repository's MIT license.
 
 ## Support
 

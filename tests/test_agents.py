@@ -2,7 +2,7 @@
 
 import pytest
 
-from cli.validator import AgentValidator
+from skillin.validator import AgentValidator
 
 
 @pytest.fixture
@@ -288,7 +288,7 @@ class TestAgentUtils:
 
     def test_find_agent_files(self, mock_agents_dir):
         """Test finding agent files."""
-        from cli.utils import find_agent_files
+        from skillin.utils import find_agent_files
 
         agents = find_agent_files(mock_agents_dir)
         assert len(agents) == 1
@@ -296,7 +296,7 @@ class TestAgentUtils:
 
     def test_find_agent_files_empty(self, temp_dir):
         """Test finding agents in empty directory."""
-        from cli.utils import find_agent_files
+        from skillin.utils import find_agent_files
 
         empty_dir = temp_dir / "empty"
         empty_dir.mkdir()
@@ -305,7 +305,7 @@ class TestAgentUtils:
 
     def test_find_agent_files_excludes_readme(self, temp_dir):
         """Test that README.md is excluded from agent files."""
-        from cli.utils import find_agent_files
+        from skillin.utils import find_agent_files
 
         agents_dir = temp_dir / "agents"
         agents_dir.mkdir()
@@ -329,7 +329,7 @@ description: Test agent
 
     def test_find_agent_files_multiple(self, mock_repository_with_agents):
         """Test finding multiple agent files."""
-        from cli.utils import find_agent_files
+        from skillin.utils import find_agent_files
 
         agents_dir = mock_repository_with_agents / "agents"
         agents = find_agent_files(agents_dir)

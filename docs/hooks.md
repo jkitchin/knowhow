@@ -128,59 +128,59 @@ Documentation for the hook...
 - `Edit|Write` - Match Edit or Write
 - `Bash` - Only match Bash commands
 
-## Installing Hooks with Skillz
+## Installing Hooks with Skillin
 
 ### List Available Hooks
 
 ```bash
 # List hooks in repository
-skillz hooks list --target repo
+skillin hooks list --target repo
 
 # List installed hooks
-skillz hooks list --target personal
-skillz hooks list --target project
+skillin hooks list --target personal
+skillin hooks list --target project
 ```
 
 ### Install a Hook
 
 ```bash
 # Install to personal directory (~/.claude/)
-skillz hooks install lab-notebook
+skillin hooks install lab-notebook
 
 # Install to project directory (.claude/)
-skillz hooks install protect-secrets --target project
+skillin hooks install protect-secrets --target project
 
 # Preview without installing
-skillz hooks install bash-logger --dry-run
+skillin hooks install bash-logger --dry-run
 
 # Overwrite existing
-skillz hooks install prettier-on-save --force
+skillin hooks install prettier-on-save --force
 ```
 
 ### Uninstall a Hook
 
 ```bash
-skillz hooks uninstall lab-notebook
-skillz hooks uninstall protect-secrets --target project
+skillin hooks uninstall lab-notebook
+skillin hooks uninstall protect-secrets --target project
 ```
 
 ### Get Hook Information
 
 ```bash
-skillz hooks info lab-notebook
-skillz hooks search formatting
+skillin hooks info lab-notebook
+skillin hooks search formatting
 ```
 
-## Creating Hooks with Skillz
+## Creating Hooks with Skillin
 
 ### Create from Template
 
 ```bash
 # Create a new hook
-skillz hooks create my-hook --event PreToolUse
+skillin hooks create my-hook --event PreToolUse
 
 # Create in project directory
-skillz hooks create my-hook --target project --event PostToolUse
+skillin hooks create my-hook --target project --event PostToolUse
 ```
 
 This creates:
@@ -207,11 +207,11 @@ Hooks can be installed to:
 - **Personal**: `~/.claude/hooks/` - Available in all sessions
 - **Project**: `.claude/hooks/` - Only in current project
 
-The skillz CLI also updates `settings.json` to register the hook with Claude Code.
+The skillin CLI also updates `settings.json` to register the hook with Claude Code.
 
 ## Available Hooks
 
-The skillz repository includes several ready-to-use hooks:
+The skillin repository includes several ready-to-use hooks:
 
 | Hook | Event | Purpose |
 |------|-------|---------|

@@ -232,7 +232,7 @@ Before deploying your hook:
 
 2. **Install and test with Claude Code:**
    ```bash
-   skillz hooks install your-hook-name
+   skillin hooks install your-hook-name
    claude --debug  # See hook execution in logs
    ```
 

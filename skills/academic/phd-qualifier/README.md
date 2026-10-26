@@ -454,4 +454,4 @@ If you have suggestions for improving this skill:
 
 ## License
 
-This skill documentation is part of the skillz project (MIT License).
+This skill documentation is part of the skillin project (MIT License).

@@ -2,7 +2,7 @@
 
 import pytest
 
-from cli.validator import HookValidator
+from skillin.validator import HookValidator
 
 
 @pytest.fixture
@@ -328,7 +328,7 @@ class TestHookUtils:
 
     def test_find_hook_directories(self, mock_hooks_dir):
         """Test finding hook directories."""
-        from cli.utils import find_hook_directories
+        from skillin.utils import find_hook_directories
 
         hooks = find_hook_directories(mock_hooks_dir)
         assert len(hooks) == 1
@@ -336,7 +336,7 @@ class TestHookUtils:
 
     def test_find_hook_directories_empty(self, temp_dir):
         """Test finding hooks in empty directory."""
-        from cli.utils import find_hook_directories
+        from skillin.utils import find_hook_directories
 
         empty_dir = temp_dir / "empty"
         empty_dir.mkdir()
@@ -345,7 +345,7 @@ class TestHookUtils:
 
     def test_find_hook_directories_nested(self, temp_dir):
         """Test finding nested hook directories."""
-        from cli.utils import find_hook_directories
+        from skillin.utils import find_hook_directories
 
         hooks_dir = temp_dir / "hooks"
         hooks_dir.mkdir()

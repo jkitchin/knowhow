@@ -29,9 +29,9 @@ This example demonstrates how to use Ralph Wiggum mode to autonomously convert [
 
 ```bash
 # Install Ralph Wiggum skill
-skillz install ralph-wiggum
-skillz hooks install ralph-safety-check
-skillz hooks install ralph-cost-monitor
+skillin install ralph-wiggum
+skillin hooks install ralph-safety-check
+skillin hooks install ralph-cost-monitor
 
 # Ensure Docker is installed
 docker --version
@@ -125,7 +125,7 @@ open coverage/lcov-report/index.html
 
 ## Expected Timeline
 
-With Claude Sonnet, expect roughly:
+With Claude Opus (the default), expect roughly:
 
 | Phase | Iterations | Estimated Time |
 |-------|------------|----------------|
@@ -144,11 +144,11 @@ This is ideal for an overnight run. Start Ralph at 6 PM, wake up to a working Ty
 
 **Claude Code Subscription:** Included in your subscription - no per-token costs!
 
-**API Key Users:** Rough estimate with Claude Sonnet:
+**API Key Users:** Rough estimate with Claude Opus ($5/$25 per 1M tokens):
 - ~100 iterations
 - ~50k input tokens + ~20k output tokens per iteration
-- Cost: ~$20-40 total
-- Set `RALPH_COST_LIMIT=50` to cap spending
+- Cost: ~$40-75 total (less with prompt caching)
+- Set `RALPH_COST_LIMIT=100` to cap spending
 
 ## Customization
 
@@ -171,8 +171,8 @@ This is ideal for an overnight run. Start Ralph at 6 PM, wake up to a working Ty
 # Faster, cheaper (but less capable)
 RALPH_MODEL=haiku ./ralph-sandbox.sh . 50
 
-# Most capable (expensive)
-RALPH_MODEL=opus ./ralph-sandbox.sh . 20
+# Mid-tier cost alternative to the default opus
+RALPH_MODEL=sonnet ./ralph-sandbox.sh . 30
 ```
 
 ### Enable Network for npm install

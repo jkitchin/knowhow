@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from cli.utils import validate_description, validate_name
+from skillin.utils import validate_description, validate_name
 
 
 class ValidationError(Exception):

@@ -1,4 +1,4 @@
-# Example configuration file for skillz
+# Example configuration file for skillin
 # Copy this to ~/.config/skillz/config.yaml and customize
 
 # Default platform for installations (claude, opencode, codex, gemini)
@@ -15,9 +15,9 @@ project_commands_dir: .claude/commands
 # Default installation target (personal or project)
 default_target: personal
 
-# Path to the skillz repository (for browsing and installing skills)
+# Path to the skillin repository (for browsing and installing skills)
 # Set this to your local clone of the repository
-repository_path: /path/to/skillz
+repository_path: /path/to/skillin
 
 # Platform-specific directories
 # Skills will be installed to the appropriate platform's directory

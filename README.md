@@ -1,137 +1,186 @@
-# Skillz
+# Skillin
 
-<img src="skillz.png" alt="Skillz" width="300">
+<img src="skillin.svg" alt="skillin logo: SKILLIN' above a terminal running uvx skillin add" width="300">
 
 [![Tests](https://github.com/jkitchin/skillz/actions/workflows/test.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/test.yml)
 [![Lint](https://github.com/jkitchin/skillz/actions/workflows/lint.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/gh/jkitchin/skillz/graph/badge.svg)](https://codecov.io/gh/jkitchin/skillz)
 
 
-A comprehensive CLI tool for managing AI assistant skills and slash commands for Claude Code, OpenCode, and other LLM platforms.
+Install AI agent skills, slash commands, subagents, hooks and MCP servers from any git
+repository with one command. There's nothing to install first and no repository to clone.
+Works with Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot and more.
 
-> **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for Codex and Gemini. With opencode you may have better performance with https://www.npmjs.com/package/opencode-skills (this is what I use).
+> **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for other agents.
 
-- https://github.com/numman-ali/openskills (I have not tried this yet)
-- Requested feature in opencode https://github.com/sst/opencode/issues/3235
+This repository is both the `skillin` tool and a collection of 44 skills, plus commands, hooks
+and agents, for scientific computing, materials science, lab automation and research workflows.
+
+## Install skills from any repo (no setup)
+
+```bash
+# List what a repository offers, then install a skill into this project
+uvx skillin add jkitchin/skillz --list
+uvx skillin add jkitchin/skillz --skill fairchem
+
+# Install for your user (all projects), several skills, no prompts
+uvx skillin add jkitchin/skillz -s pycse -s python-plotting -g -y
+
+# Any compatible repo, URL or local path works
+uvx skillin add someone/their-skills@their-skill
+uvx skillin add https://github.com/o/r/tree/main/skills/foo
+
+# Slash commands, subagents, hooks and MCP servers (installed for Claude Code)
+uvx skillin add jkitchin/skillz --command commit --subagent code-reviewer
+uvx skillin add jkitchin/skillz --hook black-on-save   # shows the script for review first
+uvx skillin add someone/repo --mcp their-server         # from the repo's .mcp.json
+
+uvx skillin find plotting   # search skills.sh / GitHub
+uvx skillin check           # any upstream changes?
+uvx skillin upgrade         # apply them
+uvx skillin remove fairchem
+```
+
+Until `skillin` is published on PyPI, use
+`uvx --from git+https://github.com/jkitchin/skillz skillin add ...`.
+
+- **Compatible with [`npx skills`](https://github.com/vercel-labs/skills):** skills use the same
+  repository layout, install locations and lock files, so the two tools can be mixed. A skill
+  is copied once to `.agents/skills/<name>`, which Codex, OpenCode, Gemini CLI, Cursor and
+  Copilot read directly, and symlinked into `.claude/skills/<name>`. With `-g` the same
+  happens under `~/`.
+- **Tracked:** installs are recorded in `skills-lock.json` (commit it) and
+  `.claude/skillin-lock.json`. `check` and `upgrade` use these to find upstream changes.
+- **Publish your own:** any git repo with `SKILL.md` files works.
+  See [docs/publishing-skills.md](docs/publishing-skills.md).
+- **Shortcuts:** `skillin config set alias.kitchin jkitchin/skillz` lets you write
+  `skillin add kitchin -s pycse`.
+
+The `skillz` command still works as an alias of `skillin`.
 
 ## Features
 
-- **Install/Uninstall**: Easily manage skills, commands, hooks, and agents
-- **Search**: Find skills by keywords and descriptions
-- **Create**: Interactive wizard or AI-assisted creation for new skills, commands, hooks, and agents
-- **Validate**: Ensure skills, commands, hooks, and agents meet format requirements
-- **Multi-platform**: Support for OpenCode, Claude Code, Codex, and Gemini
-- **Hooks**: Lifecycle hooks for Claude Code (formatting, logging, security, notifications)
-- **Agents**: Specialized subagents for code review, debugging, testing, and documentation
+- **Remote install**: `add` skills, commands, subagents, hooks and MCP servers from GitHub, GitLab, any git URL or a local path
+- **Updates**: `check` and `upgrade` against lock files; `remove` by name or by source
+- **Search**: `find` searches skills.sh and GitHub; `search` searches a local skills repository
+- **Create**: interactive wizard or AI-assisted creation of skills, commands, hooks and agents
+- **Validate**: check skills, commands, hooks and agents against format requirements
+- **Multi-agent**: Claude Code, Codex, OpenCode, Gemini CLI, Cursor, GitHub Copilot, Goose, Windsurf
+- **Hooks**: lifecycle hooks for Claude Code (formatting, logging, security, notifications)
+- **Skill evolution**: harvest, optimize, A/B test and merge skills (see [docs/cascade.md](docs/cascade.md))
 
 ## Installation
 
-### Using uv (recommended)
+You don't need to install anything to use `uvx skillin ...`. To keep `skillin` on your PATH:
 
 ```bash
-uv pip install -e .
+uv tool install skillin          # or: pipx install skillin
+# before the PyPI release:
+uv tool install git+https://github.com/jkitchin/skillz
 ```
 
-### Using pip
+For development, from a clone of this repository:
 
 ```bash
-pip install -e .
+uv pip install -e ".[dev]"
 ```
 
-## Quick Start
+## Working with a local skills repository
+
+The commands below work from a local clone of a skills repository, such as this one. Use
+them when you are developing skills. For plain installs, `skillin add` (above) is simpler.
 
 ### Configure Repository Path
 
-First, set up the path to your skills repository:
-
 ```bash
-skillz config set repository /path/to/skillz
+skillin config set repository /path/to/your/clone
 ```
 
 ### List Available Skills
 
 ```bash
 # List all skills and commands
-skillz list
+skillin list
 
 # List only skills
-skillz list --type skill
+skillin list --type skill
 
 # List only from repository
-skillz list --source repository
+skillin list --source repository
 ```
 
 ### Install a Skill
 
 ```bash
 # Install to Claude Code (default)
-skillz install skill-name
+skillin install skill-name
 
 # Install to OpenCode
-skillz install skill-name --platform opencode
+skillin install skill-name --platform opencode
 
 # Install to project directory (.claude/skills/)
-skillz install skill-name --target project
+skillin install skill-name --target project
 
 # Preview before installing
-skillz install skill-name --dry-run
+skillin install skill-name --dry-run
 ```
 
 ### Search for Skills
 
 ```bash
-skillz search python
-skillz search "lab notebook"
+skillin search python
+skillin search "lab notebook"
 ```
 
 ### Create a New Skill
 
 ```bash
 # Interactive mode
-skillz create --type skill
+skillin create --type skill
 
 # With name specified
-skillz create --type skill --name my-awesome-skill
+skillin create --type skill --name my-awesome-skill
 
 # AI-assisted creation using Claude CLI
-skillz create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
+skillin create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
 ```
 
 ### Uninstall a Skill
 
 ```bash
-skillz uninstall skill-name
+skillin uninstall skill-name
 ```
 
 ### Manage Hooks
 
 ```bash
 # List available hooks
-skillz hooks list --target repo
+skillin hooks list --target repo
 
 # Install a hook
-skillz hooks install lab-notebook
+skillin hooks install lab-notebook
 
 # Create a hook (with AI)
-skillz hooks create my-hook --event PostToolUse --prompt "Format Python with black"
+skillin hooks create my-hook --event PostToolUse --prompt "Format Python with black"
 ```
 
 ### Manage Agents
 
 ```bash
 # List available agents
-skillz agents list --target repo
+skillin agents list --target repo
 
 # Install an agent
-skillz agents install code-reviewer
+skillin agents install code-reviewer
 
 # Create an agent (with AI)
-skillz agents create my-agent --prompt "An agent that reviews security vulnerabilities"
+skillin agents create my-agent --prompt "An agent that reviews security vulnerabilities"
 ```
 
 ## Configuration
 
-Configuration is stored in `~/.config/skillz/config.yaml`.
+Configuration is stored in `~/.config/skillz/config.yaml` (the path keeps the original name
+so existing setups keep working).
 
 Default configuration:
 
@@ -143,6 +192,7 @@ personal_commands_dir: ~/.claude/commands
 project_skills_dir: .claude/skills
 project_commands_dir: .claude/commands
 default_target: personal
+aliases: {}            # e.g. {kitchin: jkitchin/skillz} for `skillin add kitchin ...`
 
 platforms:
   claude:
@@ -210,7 +260,7 @@ name: my-hook
 description: Brief description of what this hook does
 event: PostToolUse  # PreToolUse, PostToolUse, Stop, SessionStart, SessionEnd, etc.
 matcher: Write      # Optional: filter by tool name
-timeout: 30000      # Optional: timeout in milliseconds
+timeout: 30         # Optional: timeout in seconds
 ---
 
 # Hook Documentation
@@ -246,9 +296,16 @@ Detailed instructions for this specialized agent...
 ## Project Structure
 
 ```
-skillz/
-├── cli/                    # Python CLI tool
-│   ├── commands/          # CLI command implementations
+skillz/                     # repository (the tool is published as `skillin`)
+├── skillin/               # Python CLI package
+│   ├── commands/          # CLI command implementations (add.py = add/remove/check/upgrade/find)
+│   ├── sources.py         # Parse owner/repo, URLs, local paths
+│   ├── fetch.py           # Shallow git clone / GitHub API
+│   ├── discovery.py       # Find SKILL.md skills (npx-skills compatible)
+│   ├── extras.py          # Commands, subagents, hooks, MCP servers
+│   ├── installer.py       # Canonical copy + agent symlinks
+│   ├── lock.py            # Lock files
+│   ├── agents_registry.py # Supported agents and their paths
 │   ├── config.py          # Configuration management
 │   ├── validator.py       # Skill/command/hook/agent validation
 │   └── utils.py           # Helper functions
@@ -298,7 +355,7 @@ If any changes are made by the hooks, the commit will fail. Simply stage the cha
 pytest
 
 # Run with coverage report
-pytest --cov=cli --cov-report=html
+pytest --cov=skillin --cov-report=html
 ```
 
 ### Linting and Formatting
@@ -321,11 +378,14 @@ ruff format .
 
 ## Available Skills
 
-See the `skills/` directory for available skills organized by category:
+See the `skills/` directory, or run `uvx skillin add jkitchin/skillz --list`:
 
-- **Academic**: PhD qualifier review, proposal assistance
-- **Programming**: Python (ASE, pymatgen), Emacs Lisp
-- **Research**: Electronic lab notebook management
+- **Programming & materials science**: ASE, pymatgen, VASP, FAIRChem, pycalphad, IDAES, JAX, materials properties, Python best practices, plotting, optimization (single and multiobjective), regression & statistics, Emacs Lisp, Claude-Light
+- **Laboratory automation**: Opentrons (API, gripper, heater-shaker, thermocycler, temperature module, magnetic block, absorbance reader)
+- **Research**: literature review, scientific data extraction, scientific reviewer, materials databases, scientific workflows, electronic lab notebooks, citation verification, design of experiments, pycse
+- **Communication & creative**: scientific writing, presentations, image generation, video storytelling, ElevenLabs audio, brainstorming
+- **Development & productivity**: version control, code review, TDD, Ralph Wiggum autonomous loop, troubleshooting, planning
+- **Academic**: PhD qualifier review
 
 ## Available Hooks
 
@@ -400,14 +460,19 @@ MIT License - see LICENSE file for details
 
 ### Supported Platforms
 
-Skillz manages skills and commands for these AI coding assistants:
+Skillin manages skills and commands for these AI coding assistants:
 
 - **[OpenCode](https://github.com/sst/opencode)** - The AI coding agent built for the terminal. Open-source, provider-agnostic, with 30k+ GitHub stars.
 - **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
 - **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal. See [OpenAI adopts "skills"](https://simonwillison.net/2025/Dec/12/openai-skills/) for details on their skills implementation.
 - **Gemini** - Google's AI assistant.
+- Cursor, GitHub Copilot, Goose and Windsurf are supported targets for `skillin add` skills.
 
 ### Related Skills Projects
+
+- **[npx skills](https://github.com/vercel-labs/skills)** - Vercel's Node CLI and the [skills.sh](https://skills.sh) directory. `skillin add` follows its layout, install paths and lock files.
+- **[openskills](https://github.com/numman-ali/openskills)** - Another universal skills loader (I have not tried this yet).
+- **[opencode-skills](https://www.npmjs.com/package/opencode-skills)** - With OpenCode you may get better performance with this plugin (this is what I use). See also the [OpenCode feature request](https://github.com/sst/opencode/issues/3235).
 
 - **[Superpowers](https://github.com/obra/superpowers)** - A complete software development workflow framework for Claude Code with composable skills for design, TDD, code review, and integration. This project was an early motivation to develop this project.
 

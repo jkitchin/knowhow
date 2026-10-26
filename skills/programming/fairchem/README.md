@@ -34,17 +34,16 @@ Get production-ready code for all FAIRChem use cases:
 
 ```python
 # Example: "Help me optimize a Cu slab with CO adsorbate"
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import fcc111, add_adsorbate
 from ase.optimize import LBFGS
 
 # Load UMA model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # Create calculator for catalysis
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="oc20"  # Catalysis domain
 )
 
@@ -61,19 +60,21 @@ opt.run(fmax=0.05)
 
 FAIRChem uses task names for different chemistry domains:
 
-| Task | Domain | Use For |
-|------|--------|---------|
-| `oc20` | Catalysis | Surfaces + adsorbates |
-| `omat` | Materials | Bulk crystals, defects |
-| `omol` | Molecules | Organic chemistry |
-| `odac` | MOFs | Metal-organic frameworks |
-| `omc` | Crystals | Molecular crystals |
+| Task | Domain | Use For | Model Support |
+|------|--------|---------|---------------|
+| `oc20` | Catalysis | Surfaces + adsorbates | All |
+| `oc22` | Oxide catalysis | Oxide surfaces | uma-s-1p2 only |
+| `oc25` | Electrocatalysis | Electrochemical surfaces | uma-s-1p2 only |
+| `omat` | Materials | Bulk crystals, defects | All |
+| `omol` | Molecules | Organic chemistry, polymers | All |
+| `odac` | MOFs | Metal-organic frameworks | All |
+| `omc` | Crystals | Molecular crystals | All |
 
 ### 3. Performance Optimization
 
-- Multi-GPU scaling with `workers=N`
-- Turbo mode for maximum speed
-- Model selection guidance (small vs medium)
+- Multi-GPU scaling with `workers=N` (requires `fairchem-core[extras]`)
+- Turbo mode and `turbo_umas` for maximum speed with UMA-S models
+- Model selection guidance (uma-s-1p2 vs uma-m-1p1)
 - Memory optimization tips
 
 ### 4. Complete Workflows
@@ -82,14 +83,16 @@ FAIRChem uses task names for different chemistry domains:
 - Bulk lattice optimization
 - Molecular dynamics simulations
 - NEB reaction barriers
+- Formation energy calculations
 - High-throughput screening
 
 ## Key Features
 
 ### Universal Models (UMA)
 - **One model, many domains** - Switch domains with `task_name`
-- **`uma-s-1p1`** - Small, fast (~50M params)
-- **`uma-m-1p1`** - Medium, accurate (~300M params)
+- **`uma-s-1p2`** - Small, fastest (6.6M/290M params) — recommended for speed
+- **`uma-s-1p1`** - Small, fast (6.6M/150M params) — previous generation
+- **`uma-m-1p1`** - Medium, highest accuracy (50M/1.4B params)
 
 ### ASE Integration
 - Drop-in replacement for DFT calculators
@@ -99,11 +102,13 @@ FAIRChem uses task names for different chemistry domains:
 ### Speed
 - **100-1000× faster than DFT**
 - Multi-GPU support for large systems
-- Turbo mode for maximum performance
+- Turbo and `turbo_umas` modes for maximum performance
+- ~1 ns/day with 100k+ atom systems using multi-GPU
 
 ### Scale
 - Handle 1000s of atoms
-- Distributed inference across GPUs
+- Distributed inference across GPUs via Ray
+- LAMMPS integration for very large-scale MD
 - Efficient for high-throughput screening
 
 ## Installation Requirements
@@ -115,6 +120,9 @@ pip install fairchem-core
 # For GPU support
 pip install fairchem-core[gpu]
 
+# For multi-GPU support (Ray)
+pip install fairchem-core[extras]
+
 # Hugging Face authentication (required!)
 pip install huggingface-hub
 huggingface-cli login
@@ -122,7 +130,7 @@ huggingface-cli login
 
 **Important**: You must:
 1. Have a Hugging Face account
-2. Request access to UMA models
+2. Request access to UMA models at `facebook/UMA`
 3. Log in with your token
 
 ## Example Interactions
@@ -139,7 +147,7 @@ Claude: I'll help you set up a high-throughput screening workflow with FAIRChem.
 ```
 You: Set up a 10ps MD simulation of a 2000-atom system
 
-Claude: I'll use FAIRChem's turbo mode and multi-GPU support for fast MD...
+Claude: I'll use FAIRChem's turbo_umas mode and multi-GPU support for fast MD...
 [Provides optimized MD setup with worker configuration]
 ```
 
@@ -172,21 +180,27 @@ Claude: I'll set up a NEB calculation with FAIRChem's oc20 model...
 ## When to Use FAIRChem
 
 **Use FAIRChem for:**
-- ✓ Initial screening of many candidates
-- ✓ Long molecular dynamics simulations
-- ✓ Large systems (>500 atoms)
-- ✓ High-throughput workflows
-- ✓ Rapid prototyping
+- Initial screening of many candidates
+- Long molecular dynamics simulations
+- Large systems (>500 atoms)
+- High-throughput workflows
+- Rapid prototyping
 
 **Use DFT for:**
-- ✓ Final validation of results
-- ✓ Highest accuracy requirements
-- ✓ Novel chemistries outside training data
-- ✓ Electronic structure analysis
+- Final validation of results
+- Highest accuracy requirements
+- Novel chemistries outside training data
+- Electronic structure analysis
+
+## Important Caveats
+
+- **Energy labels**: UMA models use DFT/DFT+U total energy labels NOT compatible with Materials Project MP2020 corrections
+- **Spin/charge**: For `omol` task, set via `atoms.info.update({"spin": 1, "charge": 0})`
+- **v2 breaking change**: FAIRChem v2 is not compatible with v1 models or code
 
 ## Skill Contents
 
-- **SKILL.md** - Complete FAIRChem reference (~400 lines)
+- **SKILL.md** - Complete FAIRChem reference
   - Model loading and configuration
   - Task selection guide
   - Complete workflows for all domains
@@ -200,24 +214,23 @@ Claude: I'll set up a NEB calculation with FAIRChem's oc20 model...
   - Performance tips
 
 - **examples/** - Working example scripts
-  - `catalyst_screening.py` - High-throughput adsorption energy
-  - `bulk_optimization.py` - Lattice constant optimization
-  - `molecular_dynamics.py` - Large-scale MD simulation
+  - `catalyst_screening.py` - High-throughput adsorption energy screening
 
 ## Tips for Best Results
 
 1. **Choose the right task** - Match `task_name` to your chemistry domain
-2. **Start with turbo** - Use turbo mode for initial screening
+2. **Start with turbo_umas** - Use `turbo_umas` for UMA-S initial screening
 3. **Validate critical results** - Compare ML predictions with DFT for important cases
-4. **Use appropriate model** - Small for speed, medium for accuracy
+4. **Use appropriate model** - `uma-s-1p2` for speed, `uma-m-1p1` for accuracy
 5. **Leverage GPUs** - Use `workers=N` for large batches
 
 ## Common Questions
 
 **Q: Which model should I use?**
-- Screening/MD: `uma-s-1p1` + turbo
+- Screening/MD: `uma-s-1p2` + turbo_umas
 - Production: `uma-m-1p1`
-- Very large systems: `uma-s-1p1` + workers
+- Very large systems: `uma-s-1p2` + workers
+- Oxide/electrocatalysis: `uma-s-1p2` (only model supporting oc22/oc25)
 
 **Q: How accurate is FAIRChem?**
 - Typical error: ~0.1 eV (0.05-0.2 eV range)
@@ -225,7 +238,7 @@ Claude: I'll set up a NEB calculation with FAIRChem's oc20 model...
 - Validate critical results with DFT
 
 **Q: Can I use my own trained model?**
-- Yes, use `load_predict_unit("/path/to/checkpoint.pt")`
+- Yes, use `pretrained_mlip.get_predict_unit("/path/to/checkpoint.pt")`
 
 **Q: What about uncertainty?**
 - UMA models don't provide uncertainty estimates
@@ -239,28 +252,20 @@ Claude: I'll set up a NEB calculation with FAIRChem's oc20 model...
 - Python >= 3.9
 - CUDA >= 11.8 (for GPU)
 
-**Important**: FAIRChem v2 is a breaking change from v1. Old models and code are not compatible.
+**Important**: FAIRChem v2 is a breaking change from v1. Old models and code are not compatible. For v1: `pip install fairchem-core==1.10.0`.
 
 ## Related Skills
 
 - `python-ase` - ASE fundamentals and workflows
-- `python-pymatgen` - Materials analysis and structure manipulation
+- `pymatgen` - Materials analysis and structure manipulation
 - `eln` - Documenting computational experiments
 
 ## Resources
 
 - [FAIRChem GitHub](https://github.com/FAIR-Chem/fairchem)
 - [Official Documentation](https://fair-chem.github.io/core/)
-- [UMA Model on HuggingFace](https://huggingface.co/meta-llama)
-- [Example Colab](https://colab.research.google.com/drive/1_VrmwuujtXRxHlcXfoA2PT_3NqMLsz60)
-
-## Contributing
-
-If you find issues or have suggestions for improving this skill:
-1. Submit an issue to the skillz repository
-2. Suggest additional examples or workflows
-3. Share performance optimization tips
+- [UMA Models on HuggingFace](https://huggingface.co/facebook/UMA)
 
 ## License
 
-This skill documentation is part of the skillz project (MIT License).
+This skill documentation is part of the skillin project (MIT License).

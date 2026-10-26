@@ -26,7 +26,7 @@ description: |
   Brief description of what this agent does.
   Use proactively when [specific trigger conditions].
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: opus
 ---
 
 # Agent Name
@@ -160,7 +160,7 @@ description: |
   and maintainability. Use proactively when reviewing pull requests
   or before committing significant changes.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: opus
 ---
 
 # Code Reviewer
@@ -200,7 +200,7 @@ Provide a structured review:
 
 1. **Install the agent:**
    ```bash
-   skillz agents install my-agent
+   skillin agents install my-agent
    ```
 
 2. **Invoke directly:**

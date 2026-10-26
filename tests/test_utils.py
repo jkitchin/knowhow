@@ -1,6 +1,6 @@
 """Tests for utils module."""
 
-from cli.utils import (
+from skillin.utils import (
     copy_directory,
     copy_file,
     find_command_files,

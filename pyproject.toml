@@ -1,7 +1,7 @@
 [project]
-name = "skillz"
+name = "skillin"
 version = "0.1.0"
-description = "A CLI tool for managing AI assistant skills and slash commands for OpenCode, Claude Code, and other LLM platforms"
+description = "Install and manage AI agent skills from any git repo (npx skills compatible) for Claude Code, Codex, OpenCode, Gemini and more"
 authors = [
     {name = "John Kitchin", email = "jkitchin@andrew.cmu.edu"}
 ]
@@ -32,15 +32,13 @@ dev = [
     "ruff>=0.8.0",
     "pre-commit>=3.0.0",
 ]
-git = [
-    "gitpython>=3.1.0",
-]
 templates = [
     "jinja2>=3.0.0",
 ]
 
 [project.scripts]
-skillz = "cli.main:cli"
+skillin = "skillin.main:cli"
+skillz = "skillin.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/jkitchin/skillz"
@@ -53,14 +51,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli"]
+packages = ["skillin"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=cli --cov-report=term-missing --cov-report=html"
+addopts = "--cov=skillin --cov-report=term-missing --cov-report=html"
 
 [tool.ruff]
 line-length = 100
@@ -78,7 +76,7 @@ ignore = []
 "skills/**/examples/*.py" = ["N803", "N806", "E722", "F841", "E402", "UP028", "F401", "I001", "F541", "UP024", "UP015"]
 
 [tool.coverage.run]
-source = ["cli"]
+source = ["skillin"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

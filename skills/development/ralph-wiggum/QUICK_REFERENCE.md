@@ -4,9 +4,9 @@
 
 ```bash
 # Install skill and hooks
-skillz install ralph-wiggum
-skillz hooks install ralph-safety-check
-skillz hooks install ralph-cost-monitor
+skillin install ralph-wiggum
+skillin hooks install ralph-safety-check
+skillin hooks install ralph-cost-monitor
 ```
 
 ## Project Setup
@@ -59,7 +59,7 @@ git log --oneline -10
 
 ```bash
 export ANTHROPIC_API_KEY=...     # Optional (not needed with Claude Code subscription)
-export RALPH_MODEL=sonnet        # Model (sonnet/opus/haiku)
+export RALPH_MODEL=opus        # Model (sonnet/opus/haiku)
 export RALPH_COST_LIMIT=50.00    # Budget in USD
 ```
 

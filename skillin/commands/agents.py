@@ -1,4 +1,4 @@
-"""Agents command group for skillz."""
+"""Agents command group for skillin."""
 
 import subprocess
 from pathlib import Path
@@ -7,15 +7,15 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config, InvalidPlatformError, validate_platform
-from cli.utils import (
+from skillin.config import Config, InvalidPlatformError, validate_platform
+from skillin.utils import (
     PathTraversalError,
     confirm_action,
     copy_file,
     find_agent_files,
     safe_path_join,
 )
-from cli.validator import AgentValidator
+from skillin.validator import AgentValidator
 
 console = Console()
 
@@ -50,7 +50,7 @@ def list_agents(ctx, target, platform):
         repo_path = config.get_repository_path()
         if not repo_path or not repo_path.exists():
             console.print("[red]Error: Repository path not configured.[/red]")
-            console.print("Run: skillz config set repository <path>")
+            console.print("Run: skillin config set repository <path>")
             return
 
         agents_dir = repo_path / "agents"
@@ -131,7 +131,7 @@ def install(ctx, name, target, platform, force, dry_run):
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
         console.print("[red]Error: Repository path not configured.[/red]")
-        console.print("Run: skillz config set repository <path>")
+        console.print("Run: skillin config set repository <path>")
         raise click.Abort()
 
     # Find agent in repository
@@ -295,7 +295,7 @@ def search(ctx, query):
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
         console.print("[red]Error: Repository path not configured.[/red]")
-        console.print("Run: skillz config set repository <path>")
+        console.print("Run: skillin config set repository <path>")
         raise click.Abort()
 
     agents_dir = repo_path / "agents"
@@ -355,7 +355,7 @@ def search(ctx, query):
     "--model",
     "-m",
     type=click.Choice(["sonnet", "opus", "haiku"]),
-    default="sonnet",
+    default="opus",
     help="Model for the agent",
 )
 @click.option(
@@ -447,7 +447,7 @@ Provide results in the following format:
     console.print(f"[green]Created agent '{name}' at {agent_file}[/green]")
     if not prompt:
         console.print("\n[dim]Edit the file to customize the agent, then install it:[/dim]")
-        console.print(f"  skillz agents install {name} --target {target}")
+        console.print(f"  skillin agents install {name} --target {target}")
 
 
 # Helper functions

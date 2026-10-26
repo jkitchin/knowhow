@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Renamed the tool to **skillin**, because the name `skillz` on PyPI belongs to an unrelated project. The Python package `cli` is now `skillin`. The `skillz` command remains as an alias, and the config path `~/.config/skillz` is unchanged.
+
 ### Added
+- `skillin add <source>`: install skills from GitHub/GitLab/any git URL/local path without installing skillin (`uvx skillin add owner/repo --skill name`). Layout, install paths (`.agents/skills` + symlinks) and lock files are compatible with `npx skills`.
+- `--command`, `--subagent`, `--hook` and `--mcp` install slash commands, subagents, hooks and MCP servers for Claude Code. Hooks and MCP servers are previewed and must be confirmed.
+- `skillin remove`, `check`, `upgrade` and `find` (skills.sh / GitHub search); source aliases via `skillin config set alias.NAME SOURCE`.
+- `docs/publishing-skills.md` for third-party skill repositories; PyPI publish workflow.
+
+### Fixed
+- Skills installed as symlinks are now seen by `list`, `search`, `stats`, `optimize` and `merge`.
 - Initial release of Claude Skills CLI tool
 - Complete CLI for managing skills and commands
 - 6 initial skills:

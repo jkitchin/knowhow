@@ -142,7 +142,7 @@ Message: Claude is waiting for your input
 ## Installation
 
 ```bash
-skillz hooks install notify-done
+skillin hooks install notify-done
 ```
 
 ## Notes
@@ -194,8 +194,8 @@ The notify-done hook works well with:
 - **bash-logger**: Notification alerts you to check the command log
 
 ```bash
-skillz hooks install notify-done
-skillz hooks install lab-notebook
+skillin hooks install notify-done
+skillin hooks install lab-notebook
 ```
 
 ## Advanced Usage
