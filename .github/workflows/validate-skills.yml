@@ -29,6 +29,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
 
+    - name: Check spec compliance and installability
+      run: skillin validate .
+
     - name: Validate all skills
       run: |
         for skill_dir in skills/*/*/; do

@@ -123,12 +123,17 @@ class SkillValidator:
             tools = frontmatter["allowed-tools"]
             # Allow "*" as string or ["*"] as list to mean "all tools"
             if tools and tools != "*" and tools != ["*"]:
+                # The Agent Skills spec uses a space-separated string; lists also work
+                if isinstance(tools, str):
+                    tools = tools.split()
                 if isinstance(tools, list):
                     for tool in tools:
-                        if tool not in cls.VALID_TOOLS:
+                        # "Bash(git:*)" is a scoped Bash permission; MCP tools are mcp__*
+                        base = str(tool).split("(", 1)[0]
+                        if base not in cls.VALID_TOOLS and not base.startswith("mcp__"):
                             errors.append(f"Unknown tool: {tool}")
                 else:
-                    errors.append("allowed-tools must be a list or '*'")
+                    errors.append("allowed-tools must be a space-separated string, list or '*'")
 
         return len(errors) == 0, errors
 

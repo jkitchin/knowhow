@@ -19,6 +19,7 @@ from skillin.commands import (
     stats,
     uninstall,
     update,
+    validate,
 )
 from skillin.commands.list import list_skills
 
@@ -50,6 +51,7 @@ cli.add_command(add.remove)
 cli.add_command(add.check)
 cli.add_command(add.upgrade)
 cli.add_command(add.find)
+cli.add_command(validate.validate)
 cli.add_command(uninstall.uninstall)
 cli.add_command(list_skills)
 cli.add_command(search.search)
