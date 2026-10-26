@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Breaking:** an unknown `--platform` name is now an error listing the valid ones. Previously it silently installed into the Claude directories (#6).
+- `--platform` defaults to `default_platform` from the config, which was previously ignored. `skillin add` uses it too when it's set to something other than `claude`; otherwise `add` still auto-detects agents (#6).
 - Renamed the tool to **skillin**, because the name `skillz` on PyPI belongs to an unrelated project. The Python package `cli` is now `skillin`. The `skillz` command remains as an alias, and the config path `~/.config/skillz` is unchanged.
 
 ### Added
+- Custom platforms (#6): any name under `platforms:` in config.yaml works with `--platform` and `skillin add -a`. `skillin add` copies skills into its `skills_dir` / `project_skills_dir`. Commands that need an unconfigured directory say which key to set. Changed paths for built-in platforms override `skillin add`'s defaults.
 - `skillin add <source>`: install skills from GitHub/GitLab/any git URL/local path without installing skillin (`uvx skillin add owner/repo --skill name`). Layout, install paths (`.agents/skills` + symlinks) and lock files are compatible with `npx skills`.
 - `--command`, `--subagent`, `--hook` and `--mcp` install slash commands, subagents, hooks and MCP servers for Claude Code. Hooks and MCP servers are previewed and must be confirmed.
 - `skillin remove`, `check`, `upgrade` and `find` (skills.sh / GitHub search); source aliases via `skillin config set alias.NAME SOURCE`.

@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from skillin.config import Config
+from skillin.config import Config, platform_option
 from skillin.utils import (
     copy_directory,
     copy_file,
@@ -27,9 +27,7 @@ console = Console()
     default="personal",
     help="Target location to update",
 )
-@click.option(
-    "--platform", "-p", default="claude", help="Target platform (claude, opencode, codex, gemini)"
-)
+@platform_option("Target platform")
 @click.option("--dry-run", is_flag=True, help="Preview without making changes")
 @click.pass_context
 def update(ctx, name, update_all, target, platform, dry_run):

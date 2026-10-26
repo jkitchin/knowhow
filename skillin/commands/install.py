@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from skillin.config import Config
+from skillin.config import Config, platform_option
 from skillin.utils import (
     confirm_action,
     copy_directory,
@@ -27,12 +27,7 @@ console = Console()
     default="personal",
     help="Installation target (personal or project)",
 )
-@click.option(
-    "--platform",
-    "-p",
-    default="claude",
-    help="Target platform (claude, opencode, codex, gemini)",
-)
+@platform_option("Target platform")
 @click.option("--type", "item_type", type=click.Choice(["skill", "command"]), help="Item type")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing files")
 @click.option("--dry-run", is_flag=True, help="Preview without making changes")

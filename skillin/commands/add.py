@@ -24,7 +24,7 @@ from rich.markup import escape
 from rich.syntax import Syntax
 from rich.table import Table
 
-from skillin.agents_registry import AGENTS, detect_agents, resolve_agent_names
+from skillin.agents_registry import AGENTS, build_registry, default_agents, resolve_agent_names
 from skillin.config import Config
 from skillin.discovery import DiscoveredSkill, discover_skills, install_dir_name
 from skillin.extras import (
@@ -231,7 +231,8 @@ def _confirm_code(extra: Extra, yes: bool) -> None:
     "-a",
     "agent_names",
     multiple=True,
-    help=f"Agent(s) to install skills for ('*' = all). Known: {', '.join(AGENTS)}",
+    help=f"Agent(s) to install skills for ('*' = all). Built in: {', '.join(AGENTS)}, "
+    "plus platforms defined in config.yaml. Default: `default_platform`, else detected agents",
 )
 @click.option("--global", "-g", "global_", is_flag=True, help="Install for the user, not project")
 @click.option("--list", "-l", "list_only", is_flag=True, help="List the source's contents and exit")
@@ -276,7 +277,8 @@ def add(
       skillin add jkitchin/skillz --hook black-on-save
     """
     try:
-        src = parse_source(source, Config().get_aliases())
+        config = Config()
+        src = parse_source(source, config.get_aliases())
     except SourceError as e:
         raise click.ClickException(str(e)) from e
 
@@ -294,7 +296,12 @@ def add(
         names = ["*"]
 
     try:
-        agents = resolve_agent_names(agent_names) if agent_names else detect_agents()
+        registry = build_registry(config)
+        agents = (
+            resolve_agent_names(agent_names, registry)
+            if agent_names
+            else default_agents(config, registry)
+        )
     except ValueError as e:
         raise click.ClickException(str(e)) from e
 
@@ -349,10 +356,10 @@ def add(
             if selected:
                 console.print(
                     f"Installing {len(selected)} skill(s) to {scope} for: "
-                    f"{', '.join(AGENTS[a].display_name for a in agents)}"
+                    f"{', '.join(registry[a].display_name for a in agents)}"
                 )
             for s in selected:
-                canon, targets = planned_paths(s, agents, global_, copy, cwd)
+                canon, targets, _ = planned_paths(s, agents, global_, copy, cwd, registry)
                 where = [str(p) for p in ([canon] if canon else []) + targets]
                 console.print(f"  [green]{escape(s.name)}[/green] -> {escape(', '.join(where))}")
             for e in chosen_extras:
@@ -369,7 +376,9 @@ def add(
                 raise click.Abort()
 
             for s in selected:
-                install_skill(s, agents, checkout.root, global_=global_, copy=copy, cwd=cwd)
+                install_skill(
+                    s, agents, checkout.root, global_=global_, copy=copy, cwd=cwd, registry=registry
+                )
                 record_install(s.name, _lock_entry(src, s, checkout, global_, cwd), global_, cwd)
             for e in chosen_extras:
                 install_extra(e, checkout.root, global_, cwd)
@@ -451,7 +460,8 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
         raise click.UsageError("Give skill names, a source, or --command/--subagent/--hook/--mcp")
 
     try:
-        agents = resolve_agent_names(agent_names) if agent_names else None
+        registry = build_registry(Config())
+        agents = resolve_agent_names(agent_names, registry) if agent_names else None
     except ValueError as e:
         raise click.ClickException(str(e)) from e
 
@@ -461,8 +471,8 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
             raise click.Abort()
 
     for name in skill_targets:
-        removed = uninstall_skill(name, global_, agents, cwd)
-        if not agents or set(agents) == set(AGENTS):
+        removed = uninstall_skill(name, global_, agents, cwd, registry)
+        if not agents or set(agents) >= set(AGENTS):
             remove_entry(name, global_, cwd)
         if removed:
             console.print(f"[green]✓ Removed {escape(name)}[/green] ({len(removed)} path(s))")
@@ -586,12 +596,21 @@ def _check_skill(name, entry, skills, src, checkout, global_, apply, cwd) -> str
         return "up to date"
     if not apply:
         return "update available"
-    installed = find_installed(name, global_, cwd)
+    config = Config()
+    registry = build_registry(config)
+    installed = find_installed(name, global_, cwd, registry)
     for path in installed:
         if not path.is_symlink():
             copy_skill_tree(skill.path, path, checkout.root)
     if not installed:
-        install_skill(skill, detect_agents(), checkout.root, global_, cwd=cwd)
+        install_skill(
+            skill,
+            default_agents(config, registry),
+            checkout.root,
+            global_,
+            cwd=cwd,
+            registry=registry,
+        )
     record_install(name, _lock_entry(src, skill, checkout, global_, cwd), global_, cwd)
     return "updated"
 

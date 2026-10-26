@@ -6,7 +6,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from skillin.config import Config
+from skillin.config import Config, platform_option
 from skillin.utils import find_command_files, find_skill_directories
 from skillin.validator import CommandValidator, SkillValidator
 
@@ -22,12 +22,7 @@ console = Console()
     type=click.Choice(["personal", "project"]),
     help="Filter by installation target",
 )
-@click.option(
-    "--platform",
-    "-p",
-    default="claude",
-    help="Filter by platform (claude, opencode, codex, gemini)",
-)
+@platform_option("Filter by platform")
 @click.option("--category", "-c", help="Filter by category")
 @click.pass_context
 def list_skills(ctx, item_type, source, target, platform, category):

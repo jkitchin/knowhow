@@ -179,6 +179,35 @@ skillin agents create my-agent --prompt "An agent that reviews security vulnerab
 
 ## Configuration
 
+### Custom platforms
+
+You can add any agent that reads skills from a directory by defining it in the config
+file, then use it like a built-in:
+
+```yaml
+default_platform: picoclaw        # optional: use it when --platform / -a is omitted
+platforms:
+  picoclaw:
+    skills_dir: ~/picoclaw/docker/data/workspace/skills
+    commands_dir: ~/picoclaw/docker/data/workspace/commands
+    project_skills_dir: .picoclaw/skills
+```
+
+```bash
+skillin add jkitchin/skillz -s pycse -a picoclaw -g    # copies, never symlinks
+skillin install pycse --platform picoclaw
+```
+
+- An unknown platform name is an error. It never falls back to the Claude directories.
+- A command that needs a directory you haven't configured, such as `hooks_dir` or
+  `project_skills_dir`, tells you which key to set.
+- Changing `skills_dir` or `project_skills_dir` for a built-in platform (claude, codex, ...)
+  overrides where `skillin add` installs for it.
+
+See [example-config.yaml](example-config.yaml) for every key.
+
+### Config file
+
 Configuration is stored in `~/.config/skillz/config.yaml` (the path keeps the original name
 so existing setups keep working).
 

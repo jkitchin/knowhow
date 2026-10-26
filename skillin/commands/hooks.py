@@ -10,7 +10,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from skillin.config import Config, InvalidPlatformError, validate_platform
+from skillin.config import Config, platform_option
 from skillin.utils import (
     PathTraversalError,
     confirm_action,
@@ -37,12 +37,7 @@ def hooks():
     default="personal",
     help="Which hooks to list",
 )
-@click.option(
-    "--platform",
-    "-p",
-    default="claude",
-    help="Target platform (claude, opencode, codex, gemini)",
-)
+@platform_option("Target platform")
 @click.pass_context
 def list_hooks(ctx, target, platform):
     """List installed hooks or available hooks in repository."""
@@ -106,12 +101,7 @@ def list_hooks(ctx, target, platform):
     default="personal",
     help="Installation target",
 )
-@click.option(
-    "--platform",
-    "-p",
-    default="claude",
-    help="Target platform (claude, opencode, codex, gemini)",
-)
+@platform_option("Target platform")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing hook")
 @click.option("--dry-run", is_flag=True, help="Preview without making changes")
 @click.option("--yes", "-y", is_flag=True, help="Skip script preview confirmation")
@@ -121,12 +111,7 @@ def install(ctx, name, target, platform, force, dry_run, yes):
     config = Config()
     verbose = ctx.obj.get("verbose", False) if ctx.obj else False
 
-    # Validate platform (security: prevent arbitrary paths)
-    try:
-        platform = validate_platform(platform)
-    except InvalidPlatformError as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise click.Abort()
+    # Platform was validated by platform_option (built-in or configured)
 
     # Get repository path
     repo_path = config.get_repository_path()
@@ -234,12 +219,7 @@ def install(ctx, name, target, platform, force, dry_run, yes):
     default="personal",
     help="Uninstall target",
 )
-@click.option(
-    "--platform",
-    "-p",
-    default="claude",
-    help="Target platform",
-)
+@platform_option("Target platform")
 @click.option("--force", "-f", is_flag=True, help="Skip confirmation")
 @click.pass_context
 def uninstall(ctx, name, target, platform, force):
@@ -285,7 +265,7 @@ def uninstall(ctx, name, target, platform, force):
     default="repo",
     help="Where to look for the hook",
 )
-@click.option("--platform", "-p", default="claude", help="Target platform")
+@platform_option("Target platform")
 @click.pass_context
 def info(ctx, name, target, platform):
     """Show detailed information about a hook."""
@@ -396,7 +376,7 @@ def search(ctx, query):
     default="personal",
     help="Where to create the hook",
 )
-@click.option("--platform", "-p", default="claude", help="Target platform")
+@platform_option("Target platform")
 @click.option(
     "--event",
     "-e",
