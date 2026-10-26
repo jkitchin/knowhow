@@ -11,6 +11,7 @@ from skillin.config import Config, platform_option
 from skillin.safeio import safe
 from skillin.utils import (
     PathTraversalError,
+    check_name_arg,
     confirm_action,
     copy_file,
     find_agent_files,
@@ -94,7 +95,7 @@ def list_agents(ctx, target, platform):
 
 
 @agents.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -170,7 +171,7 @@ def install(ctx, name, target, platform, force, dry_run):
 
 
 @agents.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -212,7 +213,7 @@ def uninstall(ctx, name, target, platform, force):
 
 
 @agents.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -328,7 +329,7 @@ def search(ctx, query):
 
 
 @agents.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",

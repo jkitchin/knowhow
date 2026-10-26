@@ -158,6 +158,9 @@ def discover_extras(
             if not valid:
                 warn(f"Skipping invalid hook {hook_dir}: {'; '.join(errors)}")
                 continue
+            if meta.get("type", "command") != "command":
+                warn(f"Skipping hook {hook_dir}: only `type: command` hooks can be installed")
+                continue
             name = str(meta.get("name") or hook_dir.name)
             add(
                 Extra(
@@ -317,7 +320,12 @@ def install_extra(
         copy_skill_tree(extra.path, dest, source_root)
         for script in list(dest.glob("*.py")) + list(dest.glob("*.sh")):
             os.chmod(script, 0o755)
-        _add_hook_to_settings(claude_dir(global_, cwd) / "settings.json", dest, extra.config)
+        _add_hook_to_settings(
+            claude_dir(global_, cwd) / "settings.json",
+            dest,
+            extra.config,
+            None if global_ else cwd,
+        )
     else:
         raise ValueError("use install_mcp for MCP servers")
     return dest
@@ -338,7 +346,7 @@ def uninstall_extra(kind: str, name: str, global_: bool = False, cwd: Path | Non
     elif kind == "hook":
         p = base / "hooks" / install_dir_name(name)
         # unregister even if the directory is already gone
-        _remove_hook_from_settings(base / "settings.json", p)
+        _remove_hook_from_settings(base / "settings.json", p, project_root=None if global_ else cwd)
     else:
         raise ValueError("use uninstall_mcp for MCP servers")
     if p.exists() or p.is_symlink():

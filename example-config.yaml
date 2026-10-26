@@ -56,6 +56,3 @@ platforms:
     # project_commands_dir: .picoclaw/commands
     # hooks_dir, agents_dir, settings_file (+ project_* forms) for hooks and subagents
 
-# Additional options (optional)
-# verbose: false
-# auto_update: false

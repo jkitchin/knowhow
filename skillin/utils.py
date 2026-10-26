@@ -239,3 +239,17 @@ def find_agent_files(base_path: Path) -> list[Path]:
         agents.append(item)
 
     return sorted(agents)
+
+
+_ITEM_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
+
+
+def check_name_arg(ctx, param, value):
+    """Click callback: an item name must be a single safe path component."""
+    if value is None:
+        return value
+    if not _ITEM_NAME_RE.match(value) or ".." in value:
+        import click
+
+        raise click.BadParameter(f"invalid name {value!r} (letters, digits, '.', '_', '-')")
+    return value

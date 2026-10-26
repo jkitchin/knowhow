@@ -6,13 +6,16 @@ import click
 from rich.console import Console
 
 from skillin.config import Config, platform_option
-from skillin.utils import confirm_action
+from skillin.discovery import install_dir_name
+from skillin.extras import _SAFE_NAME
+from skillin.lock import read_lock
+from skillin.utils import check_name_arg, confirm_action
 
 console = Console()
 
 
 @click.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -37,10 +40,14 @@ def uninstall(ctx, name, target, platform, item_type, force, dry_run):
     # Try to find the item
     found_items = []
 
+    # Names are single path components; never let one walk out of the install dirs
+    if not _SAFE_NAME.match(name) or ".." in name:
+        raise click.ClickException(f"Invalid name: {name!r}")
+
     if not item_type or item_type == "skill":
         skills_dir = config.get_skills_dir(target, platform)
         skill_path = skills_dir / name
-        if skill_path.exists() and (skill_path / "SKILL.md").exists():
+        if (skill_path / "SKILL.md").exists() or skill_path.is_symlink():
             found_items.append(("skill", skill_path))
 
     if not item_type or item_type == "command":
@@ -77,12 +84,26 @@ def uninstall(ctx, name, target, platform, item_type, force, dry_run):
         return
 
     # Uninstall
+    if item_type == "skill" and _installed_by_add(name, target):
+        console.print(
+            f"[yellow]'{name}' was installed with `skillin add`; use `skillin remove {name}"
+            f"{' -g' if target == 'personal' else ''}` so its other links and lock entry "
+            "are cleaned up too.[/yellow]"
+        )
+        raise click.Abort()
+
     try:
-        if item_path.is_dir():
-            shutil.rmtree(item_path)
+        if item_path.is_symlink() or item_path.is_file():
+            item_path.unlink()  # never follow a link into the shared copy
         else:
-            item_path.unlink()
+            shutil.rmtree(item_path)
         console.print(f"[green]Successfully uninstalled {item_type} '{name}'[/green]")
     except Exception as e:
         console.print(f"[red]Error uninstalling {item_type}: {e}[/red]")
         raise click.Abort()
+
+
+def _installed_by_add(name: str, target: str) -> bool:
+    """True if a skill with this (install dir) name is in a skills lock file."""
+    lock = read_lock(target == "personal")
+    return any(install_dir_name(n) == install_dir_name(name) for n in lock["skills"])

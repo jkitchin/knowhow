@@ -28,7 +28,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `skillin validate [PATH]`: checks skills against the Agent Skills spec and against how installers will see the repo (hidden or duplicate skills, broken links, files dropped on install, Git LFS pointers). Exits non-zero on errors; `--strict` also fails on warnings.
 - The strict `SkillValidator` accepts the spec's space-separated `allowed-tools` string, scoped tools like `Bash(git:*)` and `mcp__*` tools.
 
+- Earlier work, before the rename (as the Claude Skills CLI / skillz):
+  - Initial release of Claude Skills CLI tool
+  - Complete CLI for managing skills and commands
+  - 6 initial skills:
+    - `python-ase`: Atomic Simulation Environment helper
+    - `python-best-practices`: Python coding standards
+    - `emacs-lisp`: Emacs Lisp development assistant
+    - `fairchem`: Fair chemistry tools
+    - `eln`: Electronic lab notebook management
+    - `phd-qualifier`: PhD qualifier review
+  - Commands: install, uninstall, list, search, info, update, create
+  - Validation system for skills and commands
+  - Multi-platform support (Claude, Codex, Gemini)
+  - Configuration management
+  - Template system for creating new skills/commands
+  - Comprehensive test suite (44 tests)
+
 ### Fixed
+- More review follow-ups:
+  - `upgrade` lists added, changed and removed files per skill. It asks before applying new or changed scripts and executables, and skips them without a terminal unless `-y` is given.
+  - Project hooks are registered as `"$CLAUDE_PROJECT_DIR"/.claude/hooks/...`, so a committed `settings.json` works for everyone; global hooks use a shell-quoted path. Entries written by older versions are still cleaned up.
+  - `type: prompt` hooks are skipped with a message instead of producing a malformed `settings.json` entry.
+  - Project lock hashes now match npx skills' file order, so mixed-case files no longer cause spurious "update available"; older hashes are still accepted.
+  - Legacy `uninstall`, `hooks` and `agents` commands reject path-like names. `uninstall` points to `skillin remove` for skills installed with `add`, and never follows a symlink into the shared copy.
+  - `add` says which agents it skipped because they aren't set up in the project. `remove -a <agent>` explains when that agent reads the shared `.agents/skills` copy.
 - Safety fixes from a pre-release review:
   - A global install no longer deletes the skill when `~/.claude/skills` is a symlink to `~/.agents/skills`.
   - `add` refuses to replace skills, commands, subagents, hooks or MCP servers it didn't install. Use `--force` to override.
@@ -43,21 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `remove` rejects path-like names.
   - Removing a skill by its folder name now clears its lock entry.
 - Skills installed as symlinks are now seen by `list`, `search`, `stats`, `optimize` and `merge`.
-- Initial release of Claude Skills CLI tool
-- Complete CLI for managing skills and commands
-- 6 initial skills:
-  - `python-ase`: Atomic Simulation Environment helper
-  - `python-best-practices`: Python coding standards
-  - `emacs-lisp`: Emacs Lisp development assistant
-  - `fairchem`: Fair chemistry tools
-  - `eln`: Electronic lab notebook management
-  - `phd-qualifier`: PhD qualifier review
-- Commands: install, uninstall, list, search, info, update, create
-- Validation system for skills and commands
-- Multi-platform support (Claude, Codex, Gemini)
-- Configuration management
-- Template system for creating new skills/commands
-- Comprehensive test suite (44 tests)
 
 ## [0.1.0] - 2024-11-05
 

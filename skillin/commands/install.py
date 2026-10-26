@@ -7,6 +7,7 @@ from rich.console import Console
 
 from skillin.config import Config, platform_option
 from skillin.utils import (
+    check_name_arg,
     confirm_action,
     copy_directory,
     copy_file,
@@ -19,7 +20,7 @@ console = Console()
 
 
 @click.command()
-@click.argument("name", required=False)
+@click.argument("name", required=False, callback=check_name_arg)
 @click.option(
     "--target",
     "-t",

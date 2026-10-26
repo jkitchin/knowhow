@@ -9,13 +9,14 @@ from rich.panel import Panel
 from rich.table import Table
 
 from skillin.config import Config
+from skillin.utils import check_name_arg
 from skillin.validator import CommandValidator, SkillValidator
 
 console = Console()
 
 
 @click.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option("--type", "item_type", type=click.Choice(["skill", "command"]), help="Item type")
 @click.option(
     "--source",
