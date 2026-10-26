@@ -25,34 +25,57 @@ class InstallResult:
     skipped_agents: list[str] = field(default_factory=list)
 
 
+def _inside(p: Path, boundary: Path) -> bool:
+    try:
+        Path(os.path.realpath(p)).relative_to(boundary)
+        return True
+    except ValueError:
+        return False
+
+
+def _copy_dir(src: Path, dst: Path, boundary: Path) -> None:
+    """Copy src into a new directory dst (see copy_skill_tree for the rules)."""
+    dst.mkdir()
+    shutil.copystat(src, dst, follow_symlinks=False)
+    for entry in sorted(os.scandir(src), key=lambda e: e.name):
+        if entry.name in EXCLUDE_NAMES:
+            continue
+        path, out = Path(entry.path), dst / entry.name
+        if entry.is_symlink():
+            # A symlink resolves relative to its own directory. Copy the file it
+            # points to if that is inside the source checkout; skip directory
+            # symlinks (loops) and anything pointing elsewhere on the machine.
+            real = Path(os.path.realpath(path))
+            if _inside(real, boundary) and real.is_file():
+                shutil.copy2(real, out)
+        elif entry.is_dir(follow_symlinks=False):
+            _copy_dir(path, out, boundary)
+        elif entry.is_file(follow_symlinks=False):
+            shutil.copy2(path, out)
+        # sockets, FIFOs and devices are skipped
+
+
 def copy_skill_tree(src: Path, dst: Path, boundary: Path) -> None:
     """
     Copy a skill directory, replacing dst.
 
-    Symlinks are dereferenced only if they resolve inside `boundary` (the source
-    checkout); others are skipped so a skill cannot pull in files from elsewhere
-    on the machine.
+    Files symlinked from inside `boundary` (the source checkout) are copied as
+    real files; directory symlinks and symlinks pointing outside it are skipped,
+    so a skill cannot pull in files from elsewhere on the machine. The copy is
+    built next to dst and swapped in at the end, so a failure leaves the
+    previous install untouched.
     """
-    boundary = boundary.resolve()
-
-    def inside(p: Path) -> bool:
-        try:
-            p.resolve().relative_to(boundary)
-            return True
-        except (ValueError, OSError):
-            return False
-
-    def ignore(directory, names):
-        skipped = set()
-        for n in names:
-            p = Path(directory) / n
-            if n in EXCLUDE_NAMES or (p.is_symlink() and not inside(p)):
-                skipped.add(n)
-        return skipped
-
-    remove_path(dst)
+    boundary = Path(os.path.realpath(boundary))
     dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(src, dst, symlinks=False, ignore=ignore, ignore_dangling_symlinks=True)
+    tmp = dst.parent / f".{dst.name}.skillin-tmp"
+    remove_path(tmp)
+    try:
+        _copy_dir(src, tmp, boundary)
+        remove_path(dst)
+        os.replace(tmp, dst)
+    except BaseException:
+        remove_path(tmp)
+        raise
 
 
 def remove_path(p: Path) -> None:
@@ -62,12 +85,21 @@ def remove_path(p: Path) -> None:
         shutil.rmtree(p)
 
 
+def same_location(a: Path, b: Path) -> bool:
+    """True if a and b are the same directory once symlinks are resolved."""
+    return os.path.realpath(a) == os.path.realpath(b)
+
+
 def _link(target: Path, link: Path) -> bool:
     """Create a relative symlink link -> target. Returns False on failure."""
+    # e.g. ~/.claude/skills itself symlinked to ~/.agents/skills: the "link" path
+    # already is the target, and removing it would delete the installed copy.
+    if (link.exists() or link.is_symlink()) and same_location(link, target):
+        return True
     try:
         remove_path(link)
         link.parent.mkdir(parents=True, exist_ok=True)
-        rel = os.path.relpath(target, link.parent.resolve())
+        rel = os.path.relpath(target, os.path.realpath(link.parent))
         link.symlink_to(rel, target_is_directory=True)
         return True
     except OSError:
@@ -139,12 +171,44 @@ def install_skill(
         copy_skill_tree(skill.path, canon, source_root)
 
     for path in targets:
+        if canon is not None and same_location(path, canon):
+            continue  # agent dir is (a symlink to) the canonical dir
         if canon is not None and path not in copy_paths and _link(canon, path):
             result.linked.append(path)
         else:
             copy_skill_tree(skill.path, path, source_root)
             result.copied.append(path)
     return result
+
+
+def install_conflicts(
+    skill: DiscoveredSkill,
+    agents: list[str],
+    global_: bool,
+    copy: bool,
+    cwd: Path,
+    managed: bool,
+    registry=None,
+) -> list[Path]:
+    """
+    Existing paths an install would replace that skillin does not manage.
+
+    `managed` is True when the skill name is recorded in the lock file for this
+    scope (installed by skillin or npx skills); then everything is replaceable.
+    A symlink already pointing at the canonical copy is never a conflict.
+    """
+    if managed:
+        return []
+    canon, targets, _ = planned_paths(skill, agents, global_, copy, cwd, registry)
+    conflicts = []
+    for path in ([canon] if canon else []) + targets:
+        if not (path.exists() or path.is_symlink()):
+            continue
+        if canon is not None and path != canon and same_location(path, canon):
+            continue  # symlink to (or through) the canonical copy; canon itself is checked
+        if path not in conflicts:
+            conflicts.append(path)
+    return conflicts
 
 
 def _agent_bases(global_: bool, cwd: Path, registry) -> list[Path]:

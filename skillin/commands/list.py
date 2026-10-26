@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.table import Table
 
 from skillin.config import Config, platform_option
+from skillin.safeio import safe
 from skillin.utils import find_command_files, find_skill_directories
 from skillin.validator import CommandValidator, SkillValidator
 
@@ -70,9 +71,9 @@ def list_skills(ctx, item_type, source, target, platform, category):
     for item in items:
         table.add_row(
             item["type"],
-            item["name"],
-            item["location"],
-            item.get("description", "")[:80],
+            safe(item["name"]),
+            safe(item["location"]),
+            safe(item.get("description", ""), 80),
         )
 
     console.print(table)

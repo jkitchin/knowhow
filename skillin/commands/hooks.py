@@ -1,6 +1,5 @@
 """Hooks command group for skillin."""
 
-import json
 import os
 import shutil
 import subprocess
@@ -9,8 +8,16 @@ from pathlib import Path
 import click
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 from skillin.config import Config, platform_option
+from skillin.safeio import (
+    ConfigFileError,
+    read_json_object,
+    safe,
+    strip_controls,
+    write_json_atomic,
+)
 from skillin.utils import (
     PathTraversalError,
     confirm_action,
@@ -81,13 +88,13 @@ def list_hooks(ctx, target, platform):
         metadata = HookValidator.get_hook_metadata(hook_path)
         if metadata:
             table.add_row(
-                metadata.get("name", hook_path.name),
-                metadata.get("event", "-"),
-                metadata.get("matcher", "*"),
-                _truncate(metadata.get("description", ""), 40),
+                safe(metadata.get("name", hook_path.name)),
+                safe(metadata.get("event", "-")),
+                safe(metadata.get("matcher", "*")),
+                safe(_truncate(str(metadata.get("description", "")), 40)),
             )
         else:
-            table.add_row(hook_path.name, "-", "-", "[dim]Invalid hook[/dim]")
+            table.add_row(safe(hook_path.name), "-", "-", "[dim]Invalid hook[/dim]")
 
     console.print(table)
 
@@ -161,12 +168,13 @@ def install(ctx, name, target, platform, force, dry_run, yes):
 
         # Show script contents
         for script in list(source_path.glob("*.py")) + list(source_path.glob("*.sh")):
-            console.print(f"[bold cyan]── {script.name} ──[/bold cyan]")
-            content = script.read_text()
-            # Show first 50 lines or entire file if smaller
+            console.print(f"[bold cyan]── {safe(script.name)} ──[/bold cyan]")
+            content = script.read_text(errors="replace")
+            # Show first 50 lines or entire file if smaller. Escape sequences are
+            # stripped so a script can't rewrite the preview on screen.
             lines = content.split("\n")
             preview_lines = lines[:50]
-            console.print("\n".join(preview_lines))
+            console.print(Text(strip_controls("\n".join(preview_lines))))
             if len(lines) > 50:
                 console.print(f"[dim]... ({len(lines) - 50} more lines)[/dim]")
             console.print()
@@ -241,17 +249,17 @@ def uninstall(ctx, name, target, platform, force):
             console.print("[yellow]Uninstall cancelled[/yellow]")
             return
 
+    # Unregister first, so a failure below can't leave settings.json pointing
+    # at a deleted script
+    settings_file = config.get_settings_file(target, platform)
+    _remove_hook_from_settings(settings_file, hook_path, metadata)
+
     # Remove hook directory
     try:
         shutil.rmtree(hook_path)
     except Exception as e:
         console.print(f"[red]Error removing hook: {e}[/red]")
         raise click.Abort()
-
-    # Update settings.json
-    settings_file = config.get_settings_file(target, platform)
-    if metadata:
-        _remove_hook_from_settings(settings_file, hook_path, metadata)
 
     console.print(f"[green]Successfully uninstalled hook '{name}'[/green]")
 
@@ -293,11 +301,11 @@ def info(ctx, name, target, platform):
     console.print(f"[dim]Path: {hook_path}[/dim]\n")
 
     if metadata:
-        console.print(f"[green]Event:[/green] {metadata.get('event', '-')}")
-        console.print(f"[green]Matcher:[/green] {metadata.get('matcher', '*')}")
-        console.print(f"[green]Type:[/green] {metadata.get('type', 'command')}")
-        console.print(f"[green]Timeout:[/green] {metadata.get('timeout', 60)}s")
-        console.print(f"\n[green]Description:[/green]\n{metadata.get('description', '-')}")
+        console.print(f"[green]Event:[/green] {safe(metadata.get('event', '-'))}")
+        console.print(f"[green]Matcher:[/green] {safe(metadata.get('matcher', '*'))}")
+        console.print(f"[green]Type:[/green] {safe(metadata.get('type', 'command'))}")
+        console.print(f"[green]Timeout:[/green] {safe(metadata.get('timeout', 60))}s")
+        console.print(f"\n[green]Description:[/green]\n{safe(metadata.get('description', '-'))}")
 
     # List files
     console.print("\n[green]Files:[/green]")
@@ -359,9 +367,9 @@ def search(ctx, query):
 
     for hook_path, metadata in results:
         table.add_row(
-            metadata.get("name", hook_path.name),
-            metadata.get("event", "-"),
-            _truncate(metadata.get("description", ""), 50),
+            safe(metadata.get("name", hook_path.name)),
+            safe(metadata.get("event", "-")),
+            safe(_truncate(str(metadata.get("description", "")), 50)),
         )
 
     console.print(table)
@@ -545,107 +553,92 @@ def _get_hook_command(hook_path: Path) -> str:
         return str(py_script)
     elif sh_script.exists():
         return str(sh_script)
-    else:
+    elif hook_path.is_dir():
         # Look for any executable
-        for f in hook_path.iterdir():
+        for f in sorted(hook_path.iterdir()):
             if f.is_file() and f.suffix in (".py", ".sh"):
                 return str(f)
-        return str(hook_path / "hook.py")
+    return str(hook_path / "hook.py")
+
+
+def _is_hook_command(command, hook_path: Path) -> bool:
+    """True if a settings.json command runs a script inside hook_path."""
+    if not isinstance(command, str):
+        return False
+    prefix = str(hook_path).rstrip(os.sep) + os.sep
+    return command.startswith(prefix) or command.strip("\"'").startswith(prefix)
+
+
+def _strip_hook(settings: dict, hook_path: Path) -> bool:
+    """Remove every entry for hook_path from every event. Returns True if any removed."""
+    hooks = settings.get("hooks")
+    if not isinstance(hooks, dict):
+        return False
+    removed = False
+    for event in list(hooks):
+        entries = hooks[event]
+        if not isinstance(entries, list):
+            continue
+        kept = []
+        for entry in entries:
+            inner = entry.get("hooks") if isinstance(entry, dict) else None
+            if not isinstance(inner, list):
+                kept.append(entry)
+                continue
+            new_inner = [
+                h
+                for h in inner
+                if not (isinstance(h, dict) and _is_hook_command(h.get("command"), hook_path))
+            ]
+            removed |= len(new_inner) != len(inner)
+            if new_inner:
+                kept.append({**entry, "hooks": new_inner})
+        if kept:
+            hooks[event] = kept
+        else:
+            del hooks[event]
+    return removed
 
 
 def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: dict):
-    """Add a hook to the settings.json file."""
-    settings = {}
+    """
+    Register a hook in settings.json.
 
-    # Load existing settings
-    if settings_file.exists():
-        try:
-            with open(settings_file) as f:
-                settings = json.load(f)
-        except (json.JSONDecodeError, Exception):
-            pass
-
-    # Ensure hooks structure exists
-    if "hooks" not in settings:
+    Refuses (without writing) if the file exists but is not a valid JSON object,
+    replaces any earlier registration of this hook under any event, writes
+    atomically and keeps the previous file as settings.json.bak.
+    """
+    settings = read_json_object(settings_file)
+    _strip_hook(settings, hook_path)
+    if not isinstance(settings.get("hooks"), dict):
         settings["hooks"] = {}
 
     event = metadata.get("event", "PostToolUse")
-    matcher = metadata.get("matcher", "*")
-    hook_type = metadata.get("type", "command")
-    timeout = metadata.get("timeout", 60)
-
-    # Create hook entry
-    hook_entry = {
-        "matcher": matcher,
-        "hooks": [
-            {
-                "type": hook_type,
-                "command": _get_hook_command(hook_path),
-                "timeout": timeout,
-            }
-        ],
+    hook = {
+        "type": metadata.get("type", "command"),
+        "command": _get_hook_command(hook_path),
+        "timeout": metadata.get("timeout", 60),
     }
-
-    # Add to appropriate event
-    if event not in settings["hooks"]:
-        settings["hooks"][event] = []
-
-    # Check if hook already exists (by command path)
-    cmd_path = _get_hook_command(hook_path)
-    existing_idx = None
-    for i, entry in enumerate(settings["hooks"][event]):
-        for h in entry.get("hooks", []):
-            if h.get("command") == cmd_path:
-                existing_idx = i
-                break
-
-    if existing_idx is not None:
-        settings["hooks"][event][existing_idx] = hook_entry
-    else:
-        settings["hooks"][event].append(hook_entry)
-
-    # Save settings
-    settings_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(settings_file, "w") as f:
-        json.dump(settings, f, indent=2)
+    entry = {"matcher": metadata.get("matcher", "*"), "hooks": [hook]}
+    events = settings["hooks"].setdefault(event, [])
+    if not isinstance(events, list):
+        raise ConfigFileError(f"{settings_file}: hooks.{event} is not a list; not modifying it")
+    events.append(entry)
+    write_json_atomic(settings_file, settings)
 
 
-def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: dict):
-    """Remove a hook from the settings.json file."""
+def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: dict | None = None):
+    """
+    Remove every registration of a hook (any event) from settings.json.
+
+    Works after the hook directory has been deleted. Refuses to rewrite a file
+    that is not valid JSON.
+    """
     if not settings_file.exists():
         return
-
-    try:
-        with open(settings_file) as f:
-            settings = json.load(f)
-    except (json.JSONDecodeError, Exception):
-        return
-
-    if "hooks" not in settings:
-        return
-
-    event = metadata.get("event", "PostToolUse")
-    if event not in settings["hooks"]:
-        return
-
-    # Find and remove hook by command path
-    cmd_path = _get_hook_command(hook_path)
-    new_entries = []
-    for entry in settings["hooks"][event]:
-        new_hooks = [h for h in entry.get("hooks", []) if h.get("command") != cmd_path]
-        if new_hooks:
-            entry["hooks"] = new_hooks
-            new_entries.append(entry)
-
-    settings["hooks"][event] = new_entries
-
-    # Clean up empty events
-    if not settings["hooks"][event]:
-        del settings["hooks"][event]
-
-    # Save settings
-    with open(settings_file, "w") as f:
-        json.dump(settings, f, indent=2)
+    settings = read_json_object(settings_file)
+    if _strip_hook(settings, hook_path):
+        write_json_atomic(settings_file, settings)
 
 
 def _generate_hook_with_claude(name: str, prompt: str, event: str) -> tuple[str | None, str | None]:

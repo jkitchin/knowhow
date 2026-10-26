@@ -23,6 +23,7 @@ from skillin.agents_registry import _claude_home
 from skillin.discovery import SKIP_DIRS, install_dir_name, sanitize_text
 from skillin.installer import copy_skill_tree, remove_path
 from skillin.lock import compute_file_hash, compute_folder_hash
+from skillin.safeio import read_json_object, strip_controls, write_json_atomic
 from skillin.validator import AgentValidator, CommandValidator, HookValidator
 
 KINDS = ("command", "subagent", "hook", "mcp")
@@ -76,12 +77,30 @@ def _rel(path: Path, root: Path) -> str:
     return path.resolve().relative_to(root.resolve()).as_posix()
 
 
+def _str_map(value) -> bool:
+    return isinstance(value, dict) and all(
+        isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+    )
+
+
 def _valid_mcp_config(cfg) -> bool:
+    """A stdio ({command, args?, env?}) or remote ({type?, url, headers?}) server config."""
     if not isinstance(cfg, dict):
         return False
-    if isinstance(cfg.get("command"), str):
-        return cfg.get("type", "stdio") == "stdio"
-    return isinstance(cfg.get("url"), str) and cfg.get("type", "http") in ("http", "sse")
+    if "args" in cfg and not (
+        isinstance(cfg["args"], list) and all(isinstance(a, str) for a in cfg["args"])
+    ):
+        return False
+    for key in ("env", "headers"):
+        if key in cfg and not _str_map(cfg[key]):
+            return False
+    if isinstance(cfg.get("command"), str) and cfg["command"]:
+        return cfg.get("type", "stdio") == "stdio" and "url" not in cfg
+    return (
+        isinstance(cfg.get("url"), str)
+        and cfg["url"].startswith(("https://", "http://"))
+        and cfg.get("type", "http") in ("http", "sse")
+    )
 
 
 def discover_extras(
@@ -195,18 +214,34 @@ def target_path(extra: Extra, global_: bool, cwd: Path | None = None) -> Path:
 
 
 def preview(extra: Extra, max_lines: int = 40) -> str:
-    """Text to show before installing something that runs code."""
+    """
+    Text to show before installing something that runs code.
+
+    Escape sequences and control characters are stripped so a malicious script
+    cannot rewrite what the user sees.
+    """
+    return strip_controls(_preview(extra, max_lines))
+
+
+def _preview(extra: Extra, max_lines: int) -> str:
     if extra.kind == "mcp":
         return json.dumps({extra.name: extra.config}, indent=2)
     if extra.kind == "hook":
         parts = [f"event: {extra.config.get('event')}  matcher: {extra.config.get('matcher', '*')}"]
-        for script in sorted(extra.path.iterdir()):
-            if script.suffix in (".py", ".sh") and script.is_file():
+        scripts = sorted(p for p in extra.path.rglob("*") if p.is_file() and not p.is_symlink())
+        others = [
+            p.relative_to(extra.path).as_posix() for p in scripts if p.suffix not in (".py", ".sh")
+        ]
+        if others:
+            parts.append("other files: " + ", ".join(others))
+        for script in scripts:
+            if script.suffix in (".py", ".sh"):
                 lines = script.read_text(errors="replace").splitlines()
                 more = (
                     f"\n... ({len(lines) - max_lines} more lines)" if len(lines) > max_lines else ""
                 )
-                parts.append(f"── {script.name} ──\n" + "\n".join(lines[:max_lines]) + more)
+                rel = script.relative_to(extra.path).as_posix()
+                parts.append(f"── {rel} ──\n" + "\n".join(lines[:max_lines]) + more)
         return "\n".join(parts)
     return ""
 
@@ -222,6 +257,16 @@ def _copy_file(src: Path, dst: Path, boundary: Path) -> None:
     shutil.copyfile(src, dst)
 
 
+def _claude_mcp_exists(name: str) -> bool:
+    """True if Claude Code has a user-scope MCP server called `name`."""
+    if not shutil.which("claude"):
+        return False
+    result = subprocess.run(
+        ["claude", "mcp", "get", name], capture_output=True, text=True, timeout=60
+    )
+    return result.returncode == 0
+
+
 def _claude_cli(args: list[str]) -> None:
     if not shutil.which("claude"):
         raise ExtraError(
@@ -232,19 +277,37 @@ def _claude_cli(args: list[str]) -> None:
         raise ExtraError(result.stderr.strip() or f"claude {' '.join(args)} failed")
 
 
-def _update_mcp_json(path: Path, name: str, cfg: dict | None) -> None:
-    data = {}
-    if path.exists():
-        try:
-            data = json.loads(path.read_text())
-        except ValueError as e:
-            raise ExtraError(f"{path} is not valid JSON") from e
+def _mcp_servers(path: Path) -> tuple[dict, dict]:
+    """(whole file, its mcpServers map); refuses files it could not safely rewrite."""
+    data = read_json_object(path)
     servers = data.setdefault("mcpServers", {})
+    if not isinstance(servers, dict):
+        raise ExtraError(f"{path}: 'mcpServers' is not an object; not modifying it")
+    return data, servers
+
+
+def _update_mcp_json(path: Path, name: str, cfg: dict | None) -> bool:
+    """Set or (cfg=None) delete one server. Returns False if there was nothing to delete."""
+    data, servers = _mcp_servers(path)
     if cfg is None:
-        servers.pop(name, None)
+        if name not in servers:
+            return False
+        del servers[name]
     else:
         servers[name] = cfg
-    path.write_text(json.dumps(data, indent=2) + "\n")
+    write_json_atomic(path, data)
+    return True
+
+
+def extra_exists(extra: Extra, global_: bool, cwd: Path | None = None) -> bool:
+    """True if something with this extra's name is already installed at its target."""
+    cwd = cwd or Path.cwd()
+    if extra.kind == "mcp":
+        if global_:
+            return _claude_mcp_exists(extra.name)
+        return extra.name in _mcp_servers(cwd / ".mcp.json")[1]
+    dest = target_path(extra, global_, cwd)
+    return dest.exists() or dest.is_symlink()
 
 
 def install_extra(
@@ -281,24 +344,23 @@ def uninstall_extra(kind: str, name: str, global_: bool = False, cwd: Path | Non
 
     cwd = cwd or Path.cwd()
     base = claude_dir(global_, cwd)
+    if not _SAFE_NAME.match(name):
+        raise ExtraError(f"Invalid {kind} name: {name!r}")
     if kind == "command":
         p = base / "commands" / f"{name}.md"
     elif kind == "subagent":
         p = base / "agents" / f"{install_dir_name(name)}.md"
     elif kind == "hook":
         p = base / "hooks" / install_dir_name(name)
-        if p.is_dir():
-            meta = HookValidator.get_hook_metadata(p) or {}
-            _remove_hook_from_settings(base / "settings.json", p, meta)
+        # unregister even if the directory is already gone
+        _remove_hook_from_settings(base / "settings.json", p)
     elif global_:
+        if not _claude_mcp_exists(name):
+            return False
         _claude_cli(["mcp", "remove", "--scope", "user", name])
         return True
     else:
-        path = cwd / ".mcp.json"
-        if not path.exists() or name not in json.loads(path.read_text()).get("mcpServers", {}):
-            return False
-        _update_mcp_json(path, name, None)
-        return True
+        return _update_mcp_json(cwd / ".mcp.json", name, None)
     if p.exists() or p.is_symlink():
         remove_path(p)
         return True

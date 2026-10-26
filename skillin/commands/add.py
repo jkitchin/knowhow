@@ -33,6 +33,7 @@ from skillin.extras import (
     ExtraError,
     claude_dir,
     discover_extras,
+    extra_exists,
     install_extra,
     preview,
     target_path,
@@ -42,6 +43,7 @@ from skillin.fetch import FetchError, fetch_source, git_tree_hash, github_tree
 from skillin.installer import (
     copy_skill_tree,
     find_installed,
+    install_conflicts,
     install_skill,
     planned_paths,
     uninstall_skill,
@@ -57,6 +59,7 @@ from skillin.lock import (
     remove_extra,
     resolve_local_source,
 )
+from skillin.safeio import safe
 from skillin.sources import Source, SourceError, parse_source
 
 console = Console()
@@ -126,15 +129,13 @@ def _print_listing(skills, extras, source: Source, kinds=None) -> None:
     if kinds is None or "skill" in kinds:
         for s in skills:
             table.add_row(
-                "skill", escape(s.name), escape(s.rel_path or "."), escape(_truncate(s.description))
+                "skill", safe(s.name), safe(s.rel_path or "."), safe(_truncate(s.description))
             )
     for kind, items in extras.items():
         if kinds is not None and kind not in kinds:
             continue
         for e in items:
-            table.add_row(
-                kind, escape(e.name), escape(e.rel_path), escape(_truncate(e.description))
-            )
+            table.add_row(kind, safe(e.name), safe(e.rel_path), safe(_truncate(e.description)))
     console.print(table)
 
 
@@ -219,6 +220,35 @@ def _confirm_code(extra: Extra, yes: bool) -> None:
         raise click.Abort()
 
 
+def _is_managed_skill(name: str, lock: dict) -> bool:
+    """True if a skill with this name (or install dir name) is in the lock file."""
+    key = install_dir_name(name)
+    return any(n == name or install_dir_name(n) == key for n in lock.get("skills", {}))
+
+
+def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry) -> list[str]:
+    """Human-readable descriptions of unmanaged things an install would replace."""
+    lock = read_lock(global_, cwd)
+    extras_lock = read_extras_lock(claude_dir(global_, cwd))
+    out = []
+    for s in skills:
+        for path in install_conflicts(
+            s, agents, global_, copy, cwd, _is_managed_skill(s.name, lock), registry
+        ):
+            out.append(f"skill {s.name}: {path}")
+    for e in extras:
+        if e.name in extras_lock[LOCK_KEYS[e.kind]]:
+            continue
+        if extra_exists(e, global_, cwd):
+            where = (
+                "claude mcp (user scope)"
+                if e.kind == "mcp" and global_
+                else target_path(e, global_, cwd)
+            )
+            out.append(f"{e.kind} {e.name}: {where}")
+    return out
+
+
 @click.command()
 @click.argument("source")
 @click.option("--skill", "-s", "skill_names", multiple=True, help="Skill(s) to install ('*' = all)")
@@ -241,6 +271,11 @@ def _confirm_code(extra: Extra, yes: bool) -> None:
 @click.option("--copy", is_flag=True, help="Copy skills into each agent dir instead of symlinking")
 @click.option("--full-depth", is_flag=True, help="Search all subdirectories for skills")
 @click.option("--dry-run", is_flag=True, help="Show what would be installed")
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Replace existing files/servers that skillin did not install (normally refused)",
+)
 def add(
     source,
     skill_names,
@@ -256,6 +291,7 @@ def add(
     copy,
     full_depth,
     dry_run,
+    force,
 ):
     """
     Install skills and other items from a git repository or local directory.
@@ -321,7 +357,7 @@ def add(
             )
             extras = discover_extras(checkout.root, src.subpath, warnings)
             for w in warnings:
-                console.print(f"[yellow]Warning: {escape(w)}[/yellow]")
+                console.print(f"[yellow]Warning: {safe(w)}[/yellow]")
 
             if list_only:
                 if not skills and not any(extras.values()):
@@ -367,6 +403,20 @@ def add(
                 where = "claude mcp (user scope)" if e.kind == "mcp" and global_ else str(dest)
                 console.print(f"  [green]{e.kind} {escape(e.name)}[/green] -> {escape(where)}")
 
+            conflicts = _add_conflicts(
+                selected, chosen_extras, agents, global_, copy, cwd, registry
+            )
+            if conflicts:
+                verb = "Replacing" if force else "Refusing to replace"
+                console.print(f"[yellow]{verb} items that skillin did not install:[/yellow]")
+                for c in conflicts:
+                    console.print(f"  [yellow]{safe(c)}[/yellow]")
+                if not force and not dry_run:
+                    raise click.ClickException(
+                        "These already exist and are not in a skillin/npx lock file. "
+                        "Remove or rename them, or pass --force to replace them."
+                    )
+
             if dry_run:
                 console.print("[yellow]Dry run - nothing installed[/yellow]")
                 return
@@ -405,7 +455,14 @@ def add(
 @click.option("--global", "-g", "global_", is_flag=True, help="Remove global installs")
 @click.option("--agent", "-a", "agent_names", multiple=True, help="Only remove for these agents")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation")
-def remove(names, command_names, subagent_names, hook_names, mcp_names, global_, agent_names, yes):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Also remove items that skillin did not install (not in a lock file)",
+)
+def remove(
+    names, command_names, subagent_names, hook_names, mcp_names, global_, agent_names, yes, force
+):
     """
     Remove installed items.
 
@@ -442,6 +499,14 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
         )
         for n in _split_names(values)
     ]
+
+    def lock_key(n):
+        """The lock entry for a skill given by name or install dir name, if any."""
+        if n in lock["skills"]:
+            return n
+        key = install_dir_name(n)
+        return next((k for k in lock["skills"] if install_dir_name(k) == key), None)
+
     for n in names:
         from_source = [k for k, v in lock["skills"].items() if matches_source(v, n)]
         extras_from_source = [
@@ -454,7 +519,7 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
             skill_targets.extend(from_source)
             extra_targets.extend(extras_from_source)
         else:
-            skill_targets.append(n)
+            skill_targets.append(lock_key(n) or n)
 
     if not skill_targets and not extra_targets:
         raise click.UsageError("Give skill names, a source, or --command/--subagent/--hook/--mcp")
@@ -465,8 +530,22 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
     except ValueError as e:
         raise click.ClickException(str(e)) from e
 
+    # Only remove what skillin (or npx skills) recorded installing, unless --force
+    unmanaged = [n for n in skill_targets if n not in lock["skills"]] + [
+        f"{k} {n}" for k, n in extra_targets if n not in extras_lock[LOCK_KEYS[k]]
+    ]
+    if unmanaged and not force:
+        scope = "global" if global_ else "project"
+        raise click.ClickException(
+            f"Not installed by skillin ({scope} scope): {', '.join(unmanaged)}. "
+            "Nothing was removed. Use -g for global installs, or --force to remove "
+            "these anyway."
+        )
+
     labels = skill_targets + [f"{k} {n}" for k, n in extra_targets]
-    if not yes and sys.stdin.isatty():
+    if not yes:
+        if not sys.stdin.isatty():
+            raise click.ClickException("No terminal to confirm removal; pass -y to proceed.")
         if not click.confirm(f"Remove {', '.join(labels)}?", default=False):
             raise click.Abort()
 
@@ -475,7 +554,7 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
         if not agents or set(agents) >= set(AGENTS):
             remove_entry(name, global_, cwd)
         if removed:
-            console.print(f"[green]✓ Removed {escape(name)}[/green] ({len(removed)} path(s))")
+            console.print(f"[green]✓ Removed {safe(name)}[/green] ({len(removed)} path(s))")
         else:
             console.print(f"[yellow]{escape(name)} is not installed here[/yellow]")
 
@@ -483,7 +562,9 @@ def remove(names, command_names, subagent_names, hook_names, mcp_names, global_,
         try:
             removed = uninstall_extra(kind, name, global_, cwd)
         except ExtraError as e:
-            raise click.ClickException(str(e)) from e
+            # Still installed: keep its lock entry so it can be retried
+            console.print(f"[red]Could not remove {kind} {safe(name)}: {safe(e)}[/red]")
+            continue
         remove_extra(LOCK_KEYS[kind], name, cdir)
         if removed:
             console.print(f"[green]✓ Removed {kind} {escape(name)}[/green]")

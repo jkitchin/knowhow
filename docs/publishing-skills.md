@@ -170,7 +170,8 @@ pdf-tables/
   somewhere else.
 - **Keep everything inside the skill directory.** Installers copy only that folder, so a
   link to `../shared/thing.md` breaks once installed. Duplicate shared files into each
-  skill, or use a symlink inside the repo, which is copied as a real file.
+  skill, or symlink the individual files (not directories) from inside the repo; they are
+  copied as real files.
 - **Scripts** should be self-contained or list their dependencies. A
   [PEP 723](https://peps.python.org/pep-0723/) header plus `uv run scripts/extract.py`
   works well for Python. Print helpful errors, and commit the executable bit
@@ -185,8 +186,8 @@ and copies its directory:
   Keeping the two identical avoids confusion.
 - **Files not copied:** `.git`, `__pycache__`, `__pypackages__`, `.DS_Store` and
   `metadata.json`. Don't rely on a file called `metadata.json`.
-- **Symlinks.** A symlink pointing inside your repository is copied as the real file. A
-  symlink pointing outside it is skipped.
+- **Symlinks.** A symlink to a *file* inside your repository is copied as the real file.
+  Symlinks to directories, and symlinks pointing outside the repository, are skipped.
 - **Git LFS files are not downloaded.** Users get the small pointer file. Keep large
   binaries out of skills, or have a script download them on first use.
 - **Size.** Skills are copied for every install, so keep them small. `skillin validate`

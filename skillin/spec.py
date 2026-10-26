@@ -184,6 +184,9 @@ def check_skill(skill_dir: Path, root: Path, is_repo_root: bool = False) -> list
                     p.resolve().relative_to(root.resolve())
                 except ValueError:
                     warn("Symlink points outside the repository and is skipped on install", here)
+                    continue
+                if p.is_dir():
+                    warn("Directory symlinks are skipped on install; copy the files instead", here)
                 continue
             if not p.is_file():
                 continue
