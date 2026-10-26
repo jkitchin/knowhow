@@ -5,7 +5,7 @@ description: |
   including unit tests, integration tests, and edge cases. Use when writing
   tests for new code or improving test coverage.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
+model: opus
 ---
 
 # Test Writer

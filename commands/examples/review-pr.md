@@ -1,7 +1,7 @@
 ---
 description: Review code changes with best practices
 argument-hint: <files-or-diff>
-model: sonnet
+model: opus
 allowed-tools: ["Read", "Grep", "Glob"]
 ---
 

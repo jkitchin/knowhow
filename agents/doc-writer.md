@@ -5,7 +5,7 @@ description: |
   for code, APIs, and projects. Use when creating or improving documentation,
   writing README files, or documenting APIs.
 tools: Read, Write, Edit, Grep, Glob
-model: sonnet
+model: opus
 ---
 
 # Documentation Writer

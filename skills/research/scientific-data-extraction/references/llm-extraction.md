@@ -265,7 +265,7 @@ Text:
 Return only valid JSON. Use null for missing values."""
 
         response = self.client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-opus-5",
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -309,7 +309,7 @@ Check:
 Return corrected JSON if changes needed, otherwise return "VERIFIED"."""
 
         response = self.client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-opus-5",
             max_tokens=4096,
             messages=[{"role": "user", "content": verify_prompt}]
         )

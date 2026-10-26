@@ -26,7 +26,7 @@ Commands are markdown files with optional YAML frontmatter:
 ```markdown
 ---
 description: Brief description for /help
-model: sonnet  # Optional: sonnet, opus, or haiku
+model: opus  # Optional: sonnet, opus, or haiku
 argument-hint: <your-arg>  # Optional: autocomplete help
 allowed-tools: ["Read", "Write"]  # Optional: restrict tools
 ---
@@ -87,7 +87,7 @@ commands/
 ---
 description: Format code according to style guide
 argument-hint: <file-pattern>
-model: sonnet
+model: opus
 allowed-tools: ["Read", "Edit", "Bash"]
 ---
 

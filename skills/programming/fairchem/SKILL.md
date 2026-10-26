@@ -20,13 +20,46 @@ Use this skill when:
 - Integrating ML models with ASE workflows
 - Scaling calculations across multiple GPUs
 
+## Batch scripting vs. interactive steering (fairchem-mcp)
+
+This skill covers the **batch** workflow: write a Python script, run it, read the
+output. That is the right default for reproducible, unattended calculations.
+
+For **interactive, agent-steered** simulation, there is a companion MCP server,
+**`fairchem-mcp`** (https://github.com/jkitchin/fairchem-mcp). It keeps the model
+resident, runs relaxations/MD in the background, and lets you watch a job and
+steer it *mid-flight*. Prefer it when:
+- You want to **monitor** a long relaxation/MD and react to a `trend` verdict
+  (`decreasing` / `plateaued` / `stuck` / `diverging`).
+- You want to **change strategy mid-run** — switch optimizer when FIRE stalls,
+  tighten/loosen `fmax`, change temperature, pause or abort — without restarting.
+- You want the model **loaded once** and reused across many quick calls.
+- You want to **introspect the installed API or live objects** (`introspect`) or
+  drop to raw Python on the same live `Atoms` (`execute` / `inspect_expr`).
+
+Key tools: `attach_emt` / `load_model` / `attach_lammps` (LAMMPS classical
+potentials as the force engine), `build_structure`, `start_relaxation` /
+`start_md`, `start_neb` (reaction barriers, steer `set_climb` near convergence)
+and `start_phonons` (frequencies + imaginary-mode/stability check),
+`start_minima_search` (multiple distinct relaxed geometries via deflation/flooding
+— adsorption sites, cluster isomers, conformers),
+`start_eos_scan` (strain scan → equation-of-state fit: V0, E0, bulk modulus),
+`start_elastic_scan` (stress-vs-strain → elastic tensor C_ij, VRH moduli, Born
+stability), `start_convex_hull` (formation energies → phase stability / energy
+above hull, e.g. alloy design),
+transition-state searches `start_saddle_search` (dimer, Hessian-free),
+`start_sella_search` (Sella RFO), and `start_pounce_saddles` (enumerate saddles by
+Morse index), `get_status`, `get_results`, `steer`, `introspect`. Register it with
+`{"mcpServers": {"fairchem": {"command": "fairchem-mcp"}}}`. Use plain batch
+scripts (below) when you don't need live observation or steering.
+
 ## What is FAIRChem?
 
 FAIRChem is Meta's machine learning framework for chemistry that provides:
-- **Pretrained UMA models** (`uma-s-1p1`, `uma-m-1p1`) for universal predictions
-- **Domain-specific tasks**: catalysis (oc20), materials (omat), molecules (omol), MOFs (odac), crystals (omc)
+- **Pretrained UMA models** (`uma-s-1p2`, `uma-m-1p1`) for universal predictions
+- **Domain-specific tasks**: catalysis (oc20, oc22, oc25), materials (omat), molecules (omol), MOFs (odac), crystals (omc)
 - **ASE integration** via `FAIRChemCalculator`
-- **Multi-GPU support** for distributed inference
+- **Multi-GPU support** for distributed inference via Ray
 - **Fast predictions**: 100-1000× faster than DFT
 
 ### Key Advantage
@@ -36,14 +69,17 @@ FAIRChem allows you to use the same model across different chemistry domains by 
 
 ### 1. UMA Models
 Universal Materials Algebra models trained on diverse datasets:
-- `uma-s-1p1`: Small model (~50M parameters) - faster inference
-- `uma-m-1p1`: Medium model (~300M parameters) - higher accuracy
+- `uma-s-1p2`: Small model (6.6M/290M parameters) - fastest inference, best small model
+- `uma-s-1p1`: Small model (6.6M/150M parameters) - previous generation
+- `uma-m-1p1`: Medium model (50M/1.4B parameters) - highest accuracy
 
 ### 2. Task Names (Domains)
 Specify the chemistry domain for domain-specific predictions:
 - `oc20`: Catalysis (surfaces with adsorbates)
+- `oc22`: Oxide catalysis (uma-s-1p2 only)
+- `oc25`: Electrocatalysis (uma-s-1p2 only)
 - `omat`: Inorganic materials (crystals, bulk)
-- `omol`: Molecules (organic chemistry)
+- `omol`: Molecules (organic chemistry, polymers)
 - `odac`: Metal-organic frameworks (MOFs)
 - `omc`: Molecular crystals
 
@@ -56,9 +92,10 @@ ASE calculator interface that wraps UMA models:
 
 ### 4. Inference Settings
 Performance optimization modes:
-- `turbo`: Maximum speed, slightly reduced accuracy
-- Standard: Balanced speed and accuracy
-- Multi-GPU: Distributed inference with `workers=N`
+- `default`: Balanced speed and accuracy
+- `turbo`: Faster inference, slightly reduced accuracy
+- `turbo_umas`: Maximum speed for UMA-S models (uses triton kernels)
+- Execution modes: `general`, `umas_fast_pytorch`, `umas_fast_gpu`
 
 ## Installation
 
@@ -69,29 +106,31 @@ pip install fairchem-core
 # For GPU support
 pip install fairchem-core[gpu]
 
+# For multi-GPU support (Ray)
+pip install fairchem-core[extras]
+
 # Hugging Face login (required for UMA models)
 pip install huggingface-hub
 huggingface-cli login
 ```
 
-**Note**: You must have a Hugging Face account and request access to the UMA model repository.
+**Note**: You must have a Hugging Face account and request access to the UMA model repository at `facebook/UMA`.
 
 ## Basic Usage Pattern
 
 ### Standard Workflow
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import bulk
 from ase.optimize import LBFGS
 
 # 1. Load pretrained model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # 2. Create calculator for specific domain
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omat"  # Choose domain
 )
 
@@ -108,23 +147,35 @@ opt = LBFGS(atoms)
 opt.run(fmax=0.05)
 ```
 
+### Convenience Method
+
+```python
+from fairchem.core import FAIRChemCalculator
+
+# One-step calculator creation
+calc = FAIRChemCalculator.from_model_checkpoint(
+    "uma-m-1p1",
+    task_name="omat",
+    inference_settings="turbo"
+)
+```
+
 ## Common Workflows
 
 ### Workflow 1: Catalysis - Surface Adsorption
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import fcc111, add_adsorbate
 from ase.optimize import LBFGS
 from ase.constraints import FixAtoms
 
 # Load model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # Create calculator for catalysis
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="oc20"  # Catalysis domain
 )
 
@@ -150,18 +201,17 @@ forces = slab.get_forces()
 ### Workflow 2: Bulk Materials - Lattice Optimization
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import bulk
 from ase.optimize import FIRE
 from ase.filters import FrechetCellFilter
 
 # Load model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # Calculator for materials
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omat"  # Materials domain
 )
 
@@ -183,28 +233,27 @@ print(f"Optimized lattice constant: {optimized_lattice:.3f} Å")
 ### Workflow 3: Molecular Dynamics
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import bulk
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.langevin import Langevin
 from ase import units
 
 # Load with turbo settings for speed
-predict_unit = load_predict_unit(
-    "uma-s-1p1",  # Use small model for MD
-    inference_settings="turbo"
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",  # Use latest small model for MD
+    inference_settings="turbo_umas"  # Maximum speed for UMA-S
 )
 
-# Calculator for MD
+# Calculator for MD with multi-GPU
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omat",
     workers=4  # Multi-GPU for large systems
 )
 
 # Large system
-atoms = bulk("C", "diamond", a=3.57) * (10, 10, 10)  # Large system
+atoms = bulk("C", "diamond", a=3.57) * (10, 10, 10)
 atoms.calc = calc
 
 # Initialize velocities
@@ -228,23 +277,26 @@ dyn.run(5000)
 ### Workflow 4: Molecular Systems
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.build import molecule
 from ase.optimize import LBFGS
 
 # Load model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # Calculator for molecules
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omol"  # Molecular domain
 )
 
 # Build molecule
 mol = molecule("H2O")
 mol.center(vacuum=10.0)
+
+# Set spin and charge for omol (defaults: charge=0, spin=1)
+mol.info.update({"spin": 1, "charge": 0})
+
 mol.calc = calc
 
 # Optimize
@@ -259,18 +311,17 @@ forces = mol.get_forces()
 ### Workflow 5: NEB Calculations
 
 ```python
-from fairchem.data.ase import FAIRChemCalculator
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
 from ase.neb import NEB
 from ase.optimize import BFGS
 from ase.io import read
 
 # Load model
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # Calculator
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="oc20"
 )
 
@@ -300,30 +351,56 @@ barrier = max(energies) - energies[0]
 print(f"Barrier: {barrier:.3f} eV")
 ```
 
+### Workflow 6: Formation Energy Calculation
+
+```python
+from fairchem.core import pretrained_mlip, FAIRChemCalculator
+
+# FormationEnergyCalculator computes formation energies with optional corrections
+from fairchem.core import FormationEnergyCalculator
+
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
+calc = FormationEnergyCalculator(
+    predictor,
+    task_name="omat"
+)
+
+atoms.calc = calc
+formation_energy = atoms.get_potential_energy()
+```
+
+**Warning**: UMA models use DFT/DFT+U total energy labels that are NOT compatible with Materials Project MP2020 corrections. Do not use MP2020 corrections with OMat24-trained models.
+
 ## Model Loading Options
 
 ### Load Pretrained UMA Model
 
 ```python
-from fairchem.predict import load_predict_unit
+from fairchem.core import pretrained_mlip
 
 # Standard loading
-predict_unit = load_predict_unit("uma-m-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-m-1p1")
 
 # With turbo mode (faster, slight accuracy trade-off)
-predict_unit = load_predict_unit(
+predictor = pretrained_mlip.get_predict_unit(
     "uma-m-1p1",
     inference_settings="turbo"
 )
 
+# UMA-S specific turbo (maximum speed with triton kernels)
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",
+    inference_settings="turbo_umas"
+)
+
 # Specify device
-predict_unit = load_predict_unit(
+predictor = pretrained_mlip.get_predict_unit(
     "uma-m-1p1",
     device="cuda:0"
 )
 
 # Load local checkpoint
-predict_unit = load_predict_unit(
+predictor = pretrained_mlip.get_predict_unit(
     "/path/to/checkpoint.pt",
     device="cuda"
 )
@@ -331,47 +408,79 @@ predict_unit = load_predict_unit(
 
 ### Available Models
 
-- `uma-s-1p1`: Small, fast (~50M params)
-- `uma-m-1p1`: Medium, accurate (~300M params)
+- `uma-s-1p2`: Small, fastest, improved accuracy (6.6M/290M params) — **recommended small model**
+- `uma-s-1p1`: Small, fast (6.6M/150M params)
+- `uma-m-1p1`: Medium, highest accuracy (50M/1.4B params)
 
 ## Task Selection Guide
 
-| Domain | Task Name | Use For | Examples |
-|--------|-----------|---------|----------|
-| Catalysis | `oc20` | Surfaces + adsorbates | CO on Cu(111), O on Pt |
-| Materials | `omat` | Bulk crystals, defects | Fe lattice, Si bulk |
-| Molecules | `omol` | Organic molecules | H2O, CH4, proteins |
-| MOFs | `odac` | Metal-organic frameworks | ZIF-8, MOF-5 |
-| Crystals | `omc` | Molecular crystals | Ice, organic crystals |
+| Domain | Task Name | Use For | Model Support |
+|--------|-----------|---------|---------------|
+| Catalysis | `oc20` | Surfaces + adsorbates | All models |
+| Oxide Catalysis | `oc22` | Oxide surfaces | uma-s-1p2 only |
+| Electrocatalysis | `oc25` | Electrochemical surfaces | uma-s-1p2 only |
+| Materials | `omat` | Bulk crystals, defects | All models |
+| Molecules | `omol` | Organic molecules, polymers | All models |
+| MOFs | `odac` | Metal-organic frameworks | All models |
+| Crystals | `omc` | Molecular crystals | All models |
 
 ## Performance Optimization
 
 ### Multi-GPU Inference
 
 ```python
-# Use multiple GPUs automatically
+# Use multiple GPUs automatically (requires fairchem-core[extras])
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omat",
     workers=8  # Use 8 GPUs
 )
 
 # Achieves ~10× speedup on 8× H100 GPUs
+# ~1 ns/day with 100k+ atom systems
 ```
 
 ### Turbo Mode
 
 ```python
-# Trade slight accuracy for speed
-predict_unit = load_predict_unit(
-    "uma-s-1p1",  # Small model
+# Standard turbo
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",
     inference_settings="turbo"
+)
+
+# UMA-S specific maximum speed (triton kernels)
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",
+    inference_settings="turbo_umas"
 )
 
 # Good for:
 # - MD simulations
 # - Large systems
 # - Initial screening
+```
+
+### Higher Precision
+
+```python
+import torch
+
+# FP64 for higher precision calculations
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-m-1p1",
+    base_precision_dtype=torch.float64
+)
+```
+
+### Hessian Calculation
+
+```python
+# Enable gradient-based Hessian computation
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-m-1p1",
+    predict_untrained_hessian=True
+)
 ```
 
 ### Batch Predictions
@@ -392,17 +501,26 @@ for atoms in [atoms1, atoms2, atoms3]:
 ### 1. Task Selection
 Always choose the appropriate task for your system:
 - **Surfaces with adsorbates** → `oc20`
+- **Oxide catalysis** → `oc22` (uma-s-1p2 only)
+- **Electrocatalysis** → `oc25` (uma-s-1p2 only)
 - **Bulk materials** → `omat`
 - **Isolated molecules** → `omol`
 - **MOFs** → `odac`
 - **Molecular crystals** → `omc`
 
 ### 2. Model Selection
-- **Initial screening**: Use `uma-s-1p1` + turbo
+- **Initial screening**: Use `uma-s-1p2` + turbo_umas
 - **Production calculations**: Use `uma-m-1p1`
-- **Very large systems**: Use `uma-s-1p1` + workers
+- **Very large systems**: Use `uma-s-1p2` + workers
+- **New tasks (oc22, oc25)**: Must use `uma-s-1p2`
 
-### 3. Validation
+### 3. Spin and Charge for Molecules
+When using `omol` task, set spin and charge via `atoms.info`:
+```python
+atoms.info.update({"spin": 1, "charge": 0})  # defaults
+```
+
+### 4. Validation
 ML models have different error characteristics than DFT:
 ```python
 # Always validate critical results
@@ -413,24 +531,21 @@ dft_energy = atoms.get_potential_energy()
 error = abs(ml_energy - dft_energy)
 ```
 
-### 4. Uncertainty Quantification
-FAIRChem models provide predictions but not uncertainty:
-- Test on similar known systems first
-- Validate against DFT for critical results
-- Use ensemble of predictions if available
+### 5. Energy Label Compatibility
+UMA models trained on OMat24 use DFT/DFT+U total energy labels. These are NOT compatible with Materials Project MP2020 corrections. Do not mix.
 
-### 5. Memory Management
+### 6. Memory Management
 For large systems:
 ```python
-# Use turbo mode
-predict_unit = load_predict_unit(
-    "uma-s-1p1",
-    inference_settings="turbo"
+# Use latest small model with turbo
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",
+    inference_settings="turbo_umas"
 )
 
 # Distribute across GPUs
 calc = FAIRChemCalculator(
-    predict_unit=predict_unit,
+    predictor,
     task_name="omat",
     workers=4
 )
@@ -493,6 +608,10 @@ thermo = IdealGasThermo(...)
 eos = calculate_eos(atoms)
 ```
 
+## LAMMPS Integration
+
+For very large-scale MD simulations, FAIRChem supports LAMMPS integration with multi-GPU support. This is recommended for systems with 100k+ atoms.
+
 ## Troubleshooting
 
 ### Hugging Face Authentication
@@ -502,35 +621,36 @@ eos = calculate_eos(atoms)
 huggingface-cli login
 
 # Request access to UMA models at:
-# https://huggingface.co/fairchem-team/uma-m-1p1
+# https://huggingface.co/facebook/UMA
 ```
 
 ### GPU Memory Issues
 
 ```python
 # Use smaller model
-predict_unit = load_predict_unit("uma-s-1p1")
+predictor = pretrained_mlip.get_predict_unit("uma-s-1p2")
 
 # Use turbo mode
-predict_unit = load_predict_unit(
-    "uma-s-1p1",
-    inference_settings="turbo"
+predictor = pretrained_mlip.get_predict_unit(
+    "uma-s-1p2",
+    inference_settings="turbo_umas"
 )
 
-# Reduce batch size (if using batch predictions)
+# Distribute across GPUs
+calc = FAIRChemCalculator(predictor, task_name="omat", workers=4)
 ```
 
 ### Slow Inference
 
 ```python
 # Enable turbo mode
-inference_settings="turbo"
+inference_settings="turbo_umas"  # For UMA-S models
 
 # Use multiple GPUs
 workers=N
 
-# Use smaller model
-"uma-s-1p1"
+# Use latest small model
+"uma-s-1p2"
 ```
 
 ### Wrong Task Selection
@@ -552,6 +672,7 @@ task_name="omat"  # NOT "oc20"
 - v2 code is NOT compatible with v1 models
 - v1 code is NOT compatible with v2 models
 - UMA models require FAIRChem >= 2.0
+- For v1 compatibility: `pip install fairchem-core==1.10.0`
 
 ```python
 # Check version
@@ -589,12 +710,13 @@ print(fairchem.__version__)  # Should be >= 2.0 for UMA
 
 When suggesting FAIRChem solutions:
 - Specify correct task_name for the domain
-- Recommend appropriate model (s vs m)
-- Suggest performance optimizations (turbo, workers)
+- Recommend appropriate model (s-1p2 vs m-1p1)
+- Suggest performance optimizations (turbo_umas, workers)
 - Include validation against known results
 - Mention Hugging Face authentication requirement
 - Provide complete working examples
 - Note v2 compatibility requirements
+- Set spin/charge for omol calculations
 
 ## Example Response Pattern
 
@@ -605,4 +727,4 @@ When helping with FAIRChem:
 4. Provide complete code with imports
 5. Suggest performance optimizations if needed
 6. Recommend validation steps
-7. Note any domain-specific considerations
+7. Note any domain-specific considerations (spin/charge for omol, energy labels for omat)

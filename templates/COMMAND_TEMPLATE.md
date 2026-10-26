@@ -115,10 +115,10 @@ Copy this for commands that need a particular model:
 ```markdown
 ---
 description: Brief explanation shown in /help
-model: claude-3-7-sonnet-20250219
+model: opus
 ---
 
-This command will use Claude 3.7 Sonnet specifically.
+This command will use Claude Opus specifically.
 
 [Your prompt/instructions here]
 ```
@@ -134,7 +134,7 @@ Complete template with all available metadata:
 description: Brief one-line description for /help menu
 argument-hint: <required-arg> [optional-arg]
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob
-model: claude-3-7-sonnet-20250219
+model: opus
 disable-model-invocation: false
 ---
 
@@ -185,7 +185,7 @@ Use @filename to include file contents:
 | `description` | string | Brief explanation shown in /help | `"Deploy to production server"` |
 | `argument-hint` | string | Shows during autocomplete | `"<environment> [branch]"` |
 | `allowed-tools` | string | Comma-separated tool list | `"Read, Edit, Write, Bash"` |
-| `model` | string | Specific model to use | `"claude-3-7-sonnet-20250219"` |
+| `model` | string | Specific model to use | `"opus"` |
 | `disable-model-invocation` | boolean | Prevent SlashCommand tool use | `false` |
 
 All fields are optional. If omitted:

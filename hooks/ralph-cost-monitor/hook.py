@@ -7,13 +7,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Token pricing per 1M tokens (as of 2025)
+# Token pricing per 1M tokens (as of July 2026: Opus 5, Sonnet 4.6, Haiku 4.5)
 PRICING = {
     "sonnet": {"input": 3.00, "output": 15.00},
-    "opus": {"input": 15.00, "output": 75.00},
-    "haiku": {"input": 0.25, "output": 1.25},
+    "opus": {"input": 5.00, "output": 25.00},
+    "haiku": {"input": 1.00, "output": 5.00},
     # Fallback for unknown models
-    "default": {"input": 3.00, "output": 15.00},
+    "default": {"input": 5.00, "output": 25.00},
 }
 
 
@@ -47,7 +47,7 @@ def load_cost_file(filepath: Path) -> dict:
     return {
         "session_id": f"ralph-{int(datetime.now().timestamp())}",
         "started_at": datetime.now().isoformat(),
-        "model": os.environ.get("RALPH_MODEL", "sonnet"),
+        "model": os.environ.get("RALPH_MODEL", "opus"),
         "limit_usd": float(os.environ.get("RALPH_COST_LIMIT", "50.00")),
         "summary": {
             "total_input_tokens": 0,
@@ -72,7 +72,7 @@ def main():
     cost_limit = float(os.environ.get("RALPH_COST_LIMIT", "50.00"))
     warn_pct = float(os.environ.get("RALPH_COST_WARN_PCT", "80"))
     cost_action = os.environ.get("RALPH_COST_ACTION", "warn").lower()
-    model = os.environ.get("RALPH_MODEL", "sonnet")
+    model = os.environ.get("RALPH_MODEL", "opus")
 
     # Read input from stdin
     try:

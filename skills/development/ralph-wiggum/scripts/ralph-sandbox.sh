@@ -10,7 +10,7 @@
 #
 # Environment variables:
 #   ANTHROPIC_API_KEY  - Optional: Only needed if not using Claude Code subscription
-#   RALPH_MODEL        - Optional: Model to use (default: sonnet)
+#   RALPH_MODEL        - Optional: Model to use (default: opus)
 
 set -euo pipefail
 
@@ -111,7 +111,7 @@ DOCKER_ARGS=(
     --cap-drop ALL
     --security-opt no-new-privileges:true
     -v "$PROJECT_DIR:/workspace"
-    -e "RALPH_MODEL=${RALPH_MODEL:-sonnet}"
+    -e "RALPH_MODEL=${RALPH_MODEL:-opus}"
 )
 
 # Pass API key if set (optional - Claude Code subscription doesn't need it)

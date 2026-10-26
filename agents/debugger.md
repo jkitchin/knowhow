@@ -5,7 +5,7 @@ description: |
   and suggests fixes. Use when encountering errors, unexpected behavior,
   or when tests are failing.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: opus
 ---
 
 # Debugger
