@@ -112,7 +112,8 @@ def test_install_command_subagent_hook(env):
     assert os.access(hook_py, os.X_OK)
     settings = json.loads((claude / "settings.json").read_text())
     commands = [h["command"] for e in settings["hooks"]["PostToolUse"] for h in e["hooks"]]
-    assert str(hook_py) in commands
+    # portable: works for anyone who checks out the project
+    assert commands == ['"$CLAUDE_PROJECT_DIR"/.claude/hooks/fmt/hook.py']
 
     lock = json.loads((claude / "skillin-lock.json").read_text())
     assert set(lock["commands"]) == {"commit"}

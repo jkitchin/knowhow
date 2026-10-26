@@ -46,6 +46,7 @@ from skillin.extras import (
 )
 from skillin.fetch import FetchError, fetch_source, git_tree_hash, github_tree
 from skillin.installer import (
+    _skip_project_agent,
     copy_skill_tree,
     find_installed,
     install_conflicts,
@@ -290,7 +291,7 @@ def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry, mcp_pla
 )
 @click.option("--global", "-g", "global_", is_flag=True, help="Install for the user, not project")
 @click.option("--list", "-l", "list_only", is_flag=True, help="List the source's contents and exit")
-@click.option("--all", "all_skills", is_flag=True, help="Install every skill without prompting")
+@click.option("--all", "all_skills", is_flag=True, help="Install every skill (no selection prompt)")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts")
 @click.option("--copy", is_flag=True, help="Copy skills into each agent dir instead of symlinking")
 @click.option("--full-depth", is_flag=True, help="Search all subdirectories for skills")
@@ -450,6 +451,10 @@ def add(
                     f"Installing {len(selected)} skill(s) to {scope} for: "
                     f"{', '.join(registry[a].display_name for a in agents)}"
                 )
+            skipped = [a for a in agents if not global_ and _skip_project_agent(a, cwd, registry)]
+            if selected and skipped:
+                names = ", ".join(registry[a].display_name for a in skipped)
+                console.print(f"[dim]Skipping {names}: not set up in this project[/dim]")
             for s in selected:
                 canon, targets, _ = planned_paths(s, agents, global_, copy, cwd, registry)
                 where = [str(p) for p in ([canon] if canon else []) + targets]
@@ -649,6 +654,13 @@ def remove(
         if not click.confirm(f"Remove {', '.join(labels)}?", default=False):
             raise click.Abort()
 
+    shared = [a for a in agents or [] if registry[a].is_universal]
+    if shared and set(agents) < set(registry):
+        console.print(
+            f"[dim]{', '.join(registry[a].display_name for a in shared)} read the shared "
+            ".agents/skills copy; `skillin remove NAME` without -a removes it for all "
+            "agents.[/dim]"
+        )
     for name in skill_targets:
         removed = uninstall_skill(name, global_, agents, cwd, registry)
         if not agents or set(agents) >= set(AGENTS):
@@ -772,7 +784,7 @@ def _check_scope(global_: bool, apply: bool, only: tuple[str, ...], yes: bool):
                 for kind, name, entry in items:
                     if kind == "skill":
                         status = _check_skill(
-                            name, entry, skills, src, checkout, global_, apply, cwd
+                            name, entry, skills, src, checkout, global_, apply, cwd, yes
                         )
                     else:
                         status = _check_extra(
@@ -784,7 +796,36 @@ def _check_scope(global_: bool, apply: bool, only: tuple[str, ...], yes: bool):
     return results
 
 
-def _check_skill(name, entry, skills, src, checkout, global_, apply, cwd) -> str:
+SCRIPT_SUFFIXES = {".sh", ".bash", ".zsh", ".py", ".js", ".mjs", ".ts", ".rb", ".pl", ".ps1"}
+
+
+def _file_digests(root: Path) -> dict[str, tuple[str, bool]]:
+    """relpath -> (sha256, executable) for every regular file under root."""
+    import hashlib
+
+    out = {}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in (".git", "node_modules")]
+        for fn in filenames:
+            p = Path(dirpath) / fn
+            if p.is_file():
+                rel = p.relative_to(root).as_posix()
+                out[rel] = (hashlib.sha256(p.read_bytes()).hexdigest(), os.access(p, os.X_OK))
+    return out
+
+
+def _skill_changes(old_dir: Path | None, new_dir: Path) -> tuple[list, list, list, list]:
+    """(added, changed, removed, of which runnable) between an installed copy and upstream."""
+    old = _file_digests(old_dir) if old_dir and old_dir.is_dir() else {}
+    new = _file_digests(new_dir)
+    added = sorted(set(new) - set(old))
+    removed = sorted(set(old) - set(new))
+    changed = sorted(f for f in set(new) & set(old) if new[f] != old[f])
+    runnable = [f for f in added + changed if Path(f).suffix in SCRIPT_SUFFIXES or new[f][1]]
+    return added, changed, removed, runnable
+
+
+def _check_skill(name, entry, skills, src, checkout, global_, apply, cwd, yes=False) -> str:
     stored = entry.get("skillFolderHash") if global_ else entry.get("computedHash")
     skill = skills.get(name)
     if skill is None and entry.get("skillPath"):
@@ -796,13 +837,31 @@ def _check_skill(name, entry, skills, src, checkout, global_, apply, cwd) -> str
     current = _hash_for(skill.path, skill.rel_path, checkout, global_)
     if not stored:
         return "unknown (no hash recorded)"
-    if stored == current:
+    # project hashes written by skillin <= 0.1 used codepoint file order
+    legacy = None if global_ else compute_folder_hash(skill.path, npx_order=False)
+    if stored in (current, legacy):
         return "up to date"
     if not apply:
         return "update available"
     config = Config()
     registry = build_registry(config)
     installed = find_installed(name, global_, cwd, registry)
+    copy_now = next((p for p in installed if (p / "SKILL.md").is_file()), None)
+    added, changed, removed, runnable = _skill_changes(copy_now, skill.path)
+    summary = ", ".join(
+        f"{label} {', '.join(files)}"
+        for label, files in (("+", added), ("~", changed), ("-", removed))
+        if files
+    )
+    console.print(f"[cyan]{safe(name)}[/cyan]: {safe(summary) or 'metadata only'}")
+    if runnable and not yes:
+        console.print(
+            f"[yellow]  scripts/executables changed: {safe(', '.join(runnable))}[/yellow]"
+        )
+        if not sys.stdin.isatty():
+            return "skipped (scripts changed; rerun with -y after reviewing)"
+        if not click.confirm(f"  Update {name}?", default=False):
+            return "skipped"
     for path in installed:
         if not path.is_symlink():
             copy_skill_tree(skill.path, path, checkout.root)

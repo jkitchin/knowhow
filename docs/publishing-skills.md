@@ -263,7 +263,12 @@ Gemini CLI, OpenCode, Copilot CLI and Windsurf.
 
 - The same locations under `.claude/` (for example `.claude/commands/`) are searched too.
 - `README.md` and `TEMPLATE.md` files are ignored.
-- Hooks need `name`, `description` and a valid `event` in `HOOK.md`.
+- Commands in subfolders (`commands/git/commit.md`) are installed flat
+  (`.claude/commands/commit.md`), so give commands unique names.
+- Hooks need `name`, `description` and a valid `event` in `HOOK.md`. Only `type: command`
+  hooks are installed. In a project they are registered as
+  `"$CLAUDE_PROJECT_DIR"/.claude/hooks/<name>/hook.sh`, so a committed `settings.json`
+  works for everyone.
 - Hooks and MCP servers run code on the user's machine. They must be requested by name
   (`*` is not accepted), and their scripts or config are shown for review before
   installing. Non-interactive installs need `-y`.

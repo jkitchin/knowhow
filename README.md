@@ -82,6 +82,8 @@ your machine. skillin is careful about what it changes:
 - **Files are confined to the skill.** Only files inside the skill's directory are copied.
   Symlinks pointing outside the repository, and directory symlinks, are skipped. Skill
   scripts are never run during installation.
+- **Upgrades show what changed.** `upgrade` lists added, changed and removed files. It asks
+  before applying new or changed scripts, and needs `-y` without a terminal.
 
 ## MCP servers
 

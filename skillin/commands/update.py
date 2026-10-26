@@ -7,6 +7,7 @@ from rich.console import Console
 
 from skillin.config import Config, platform_option
 from skillin.utils import (
+    check_name_arg,
     copy_directory,
     copy_file,
     find_command_files,
@@ -18,7 +19,7 @@ console = Console()
 
 
 @click.command()
-@click.argument("name", required=False)
+@click.argument("name", required=False, callback=check_name_arg)
 @click.option("--all", "update_all", is_flag=True, help="Update all installed items")
 @click.option(
     "--target",

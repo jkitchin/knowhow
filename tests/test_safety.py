@@ -278,3 +278,129 @@ def test_invalid_mcp_configs_are_skipped(tmp_path):
         )
     )
     assert [e.name for e in discover_extras(tmp_path)["mcp"]] == ["ok"]
+
+
+# M2 / L2 -------------------------------------------------------------------
+
+
+def test_hook_commands_are_shell_safe_and_portable(env, tmp_path, monkeypatch):
+    import shlex
+
+    from skillin.commands.hooks import _add_hook_to_settings, _remove_hook_from_settings
+
+    spaced = tmp_path / "my project" / ".claude" / "hooks" / "h1"
+    spaced.mkdir(parents=True)
+    (spaced / "hook.sh").write_text("echo hi\n")
+    settings = tmp_path / "settings.json"
+    meta = {"event": "Stop"}
+
+    _add_hook_to_settings(settings, spaced, meta)  # global form: quoted absolute path
+    cmd = json.loads(settings.read_text())["hooks"]["Stop"][0]["hooks"][0]["command"]
+    assert shlex.split(cmd) == [str(spaced / "hook.sh")]
+
+    project = tmp_path / "my project"
+    _add_hook_to_settings(settings, spaced, meta, project)  # replaces, project-relative
+    entries = json.loads(settings.read_text())["hooks"]["Stop"]
+    assert len(entries) == 1
+    assert entries[0]["hooks"][0]["command"] == '"$CLAUDE_PROJECT_DIR"/.claude/hooks/h1/hook.sh'
+
+    # an entry written by an older version (unquoted absolute path) is also cleaned up
+    data = json.loads(settings.read_text())
+    data["hooks"]["Stop"].append({"hooks": [{"type": "command", "command": str(spaced / "x.py")}]})
+    settings.write_text(json.dumps(data))
+    _remove_hook_from_settings(settings, spaced, project_root=project)
+    assert json.loads(settings.read_text())["hooks"] == {}
+
+
+def test_prompt_hooks_are_refused(env):
+    (env["repo"] / "hooks" / "h1" / "HOOK.md").write_text(
+        "---\nname: h1\ndescription: d\nevent: Stop\ntype: prompt\n---\nCheck things\n"
+    )
+    r = run("add", str(env["repo"]), "--hook", "h1", "-y", ok=False)
+    assert r.exit_code != 0 and "type: command" in r.output
+    assert not (env["proj"] / ".claude").exists()  # nothing copied or registered
+
+
+# M4 ------------------------------------------------------------------------
+
+
+def test_project_hash_uses_npx_file_order(tmp_path):
+    from skillin.lock import _collation_key, compute_folder_hash
+
+    names = [
+        "README.md",
+        "assets/x.png",
+        "refs/a_b.md",
+        "refs/a-b.md",
+        "refs/a.b.md",
+        "refs/A.md",
+        "refs/10.md",
+        "refs/9.md",
+        "SKILL.md",
+        "Zeta/1.txt",
+    ]
+    # order verified against Node's String.prototype.localeCompare (what npx skills uses)
+    expected = [
+        "assets/x.png",
+        "README.md",
+        "refs/10.md",
+        "refs/9.md",
+        "refs/a_b.md",
+        "refs/a-b.md",
+        "refs/a.b.md",
+        "refs/A.md",
+        "SKILL.md",
+        "Zeta/1.txt",
+    ]
+    assert sorted(names, key=_collation_key) == expected
+    for n in names:
+        (tmp_path / n).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / n).write_text(n)
+    assert compute_folder_hash(tmp_path) != compute_folder_hash(tmp_path, npx_order=False)
+
+
+def test_check_accepts_hash_from_older_skillin(env):
+    from skillin.lock import compute_folder_hash
+
+    (env["repo"] / "skills" / "foo" / "assets").mkdir()
+    (env["repo"] / "skills" / "foo" / "assets" / "a.txt").write_text("a")
+    run("add", str(env["repo"]), "-s", "foo", "-y")
+    lock_file = env["proj"] / "skills-lock.json"
+    lock = json.loads(lock_file.read_text())
+    lock["skills"]["foo"]["computedHash"] = compute_folder_hash(
+        env["repo"] / "skills" / "foo", npx_order=False
+    )
+    lock_file.write_text(json.dumps(lock))
+    assert "up to date" in run("check", "-p").output
+
+
+# M9 ------------------------------------------------------------------------
+
+
+def test_upgrade_lists_changes_and_confirms_new_scripts(env):
+    run("add", str(env["repo"]), "-s", "foo", "-y")
+    (env["repo"] / "skills" / "foo" / "run.sh").write_text("rm -rf ~\n")
+    out = " ".join(run("upgrade", "-p").output.split())  # no tty, no -y
+    assert "+ run.sh" in out and "scripts/executables changed: run.sh" in out
+    assert "skipped" in out
+    assert not (env["proj"] / ".agents" / "skills" / "foo" / "run.sh").exists()
+    out = " ".join(run("upgrade", "-p", "-y").output.split())
+    assert "updated" in out
+    assert (env["proj"] / ".agents" / "skills" / "foo" / "run.sh").exists()
+
+
+# L4 ------------------------------------------------------------------------
+
+
+def test_legacy_uninstall_rejects_traversal_and_defers_to_remove(env):
+    victim = env["home"] / "victim"
+    victim.mkdir()
+    (victim / "SKILL.md").write_text("x")
+    r = run("uninstall", "../../victim", "--force", ok=False)
+    assert r.exit_code != 0 and "invalid name" in r.output.lower()
+    assert victim.exists()
+
+    run("add", str(env["repo"]), "-s", "foo", "-g", "-a", "claude-code", "-y")
+    r = run("uninstall", "foo", "--force", ok=False)
+    assert "skillin remove foo -g" in " ".join(r.output.split())
+    assert (env["home"] / ".agents" / "skills" / "foo" / "SKILL.md").exists()

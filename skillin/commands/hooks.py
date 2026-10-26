@@ -1,6 +1,7 @@
 """Hooks command group for skillin."""
 
 import os
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -20,6 +21,7 @@ from skillin.safeio import (
 )
 from skillin.utils import (
     PathTraversalError,
+    check_name_arg,
     confirm_action,
     copy_directory,
     find_hook_directories,
@@ -100,7 +102,7 @@ def list_hooks(ctx, target, platform):
 
 
 @hooks.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -211,7 +213,9 @@ def install(ctx, name, target, platform, force, dry_run, yes):
 
     # Update settings.json
     settings_file = config.get_settings_file(target, platform)
-    _add_hook_to_settings(settings_file, dest_path, metadata)
+    _add_hook_to_settings(
+        settings_file, dest_path, metadata, Path.cwd() if target == "project" else None
+    )
 
     console.print(f"[green]Successfully installed hook '{name}'[/green]")
     console.print(f"[dim]Hook files: {dest_path}[/dim]")
@@ -219,7 +223,7 @@ def install(ctx, name, target, platform, force, dry_run, yes):
 
 
 @hooks.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -252,7 +256,9 @@ def uninstall(ctx, name, target, platform, force):
     # Unregister first, so a failure below can't leave settings.json pointing
     # at a deleted script
     settings_file = config.get_settings_file(target, platform)
-    _remove_hook_from_settings(settings_file, hook_path, metadata)
+    _remove_hook_from_settings(
+        settings_file, hook_path, metadata, Path.cwd() if target == "project" else None
+    )
 
     # Remove hook directory
     try:
@@ -265,7 +271,7 @@ def uninstall(ctx, name, target, platform, force):
 
 
 @hooks.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -376,7 +382,7 @@ def search(ctx, query):
 
 
 @hooks.command()
-@click.argument("name")
+@click.argument("name", callback=check_name_arg)
 @click.option(
     "--target",
     "-t",
@@ -561,15 +567,40 @@ def _get_hook_command(hook_path: Path) -> str:
     return str(hook_path / "hook.py")
 
 
-def _is_hook_command(command, hook_path: Path) -> bool:
-    """True if a settings.json command runs a script inside hook_path."""
+def _hook_command(hook_path: Path, project_root: Path | None = None) -> str:
+    """
+    The settings.json command for a hook, safe to run through a shell.
+
+    Project hooks use "$CLAUDE_PROJECT_DIR"/... so a committed settings.json works
+    for everyone; global hooks use the quoted absolute path.
+    """
+    script = Path(os.path.abspath(_get_hook_command(hook_path)))
+    if project_root is not None:
+        try:
+            rel = script.relative_to(Path(os.path.abspath(project_root)))
+            return '"$CLAUDE_PROJECT_DIR"/' + shlex.quote(rel.as_posix())
+        except ValueError:
+            pass
+    return shlex.quote(str(script))
+
+
+def _is_hook_command(command, hook_path: Path, project_root: Path | None = None) -> bool:
+    """True if a settings.json command runs a script inside hook_path (any form we write)."""
     if not isinstance(command, str):
         return False
-    prefix = str(hook_path).rstrip(os.sep) + os.sep
-    return command.startswith(prefix) or command.strip("\"'").startswith(prefix)
+    plain = command.replace('"', "").replace("'", "")
+    hook_abs = os.path.abspath(hook_path)
+    prefixes = {str(hook_path).rstrip(os.sep) + os.sep, hook_abs.rstrip(os.sep) + os.sep}
+    if project_root is not None:
+        try:
+            rel = Path(hook_abs).relative_to(Path(os.path.abspath(project_root))).as_posix()
+            prefixes.add(f"$CLAUDE_PROJECT_DIR/{rel}/")
+        except ValueError:
+            pass
+    return any(plain.startswith(p) for p in prefixes)
 
 
-def _strip_hook(settings: dict, hook_path: Path) -> bool:
+def _strip_hook(settings: dict, hook_path: Path, project_root: Path | None = None) -> bool:
     """Remove every entry for hook_path from every event. Returns True if any removed."""
     hooks = settings.get("hooks")
     if not isinstance(hooks, dict):
@@ -588,7 +619,10 @@ def _strip_hook(settings: dict, hook_path: Path) -> bool:
             new_inner = [
                 h
                 for h in inner
-                if not (isinstance(h, dict) and _is_hook_command(h.get("command"), hook_path))
+                if not (
+                    isinstance(h, dict)
+                    and _is_hook_command(h.get("command"), hook_path, project_root)
+                )
             ]
             removed |= len(new_inner) != len(inner)
             if new_inner:
@@ -600,23 +634,30 @@ def _strip_hook(settings: dict, hook_path: Path) -> bool:
     return removed
 
 
-def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: dict):
+def _add_hook_to_settings(
+    settings_file: Path, hook_path: Path, metadata: dict, project_root: Path | None = None
+):
     """
     Register a hook in settings.json.
 
     Refuses (without writing) if the file exists but is not a valid JSON object,
     replaces any earlier registration of this hook under any event, writes
-    atomically and keeps the previous file as settings.json.bak.
+    atomically and keeps the previous file as settings.json.bak. With
+    `project_root`, the command is written relative to $CLAUDE_PROJECT_DIR.
     """
+    if metadata.get("type", "command") != "command":
+        raise click.ClickException(
+            f"Hook {hook_path.name}: only `type: command` hooks can be installed by skillin"
+        )
     settings = read_json_object(settings_file)
-    _strip_hook(settings, hook_path)
+    _strip_hook(settings, hook_path, project_root)
     if not isinstance(settings.get("hooks"), dict):
         settings["hooks"] = {}
 
     event = metadata.get("event", "PostToolUse")
     hook = {
-        "type": metadata.get("type", "command"),
-        "command": _get_hook_command(hook_path),
+        "type": "command",
+        "command": _hook_command(hook_path, project_root),
         "timeout": metadata.get("timeout", 60),
     }
     entry = {"matcher": metadata.get("matcher", "*"), "hooks": [hook]}
@@ -627,17 +668,22 @@ def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: dict):
     write_json_atomic(settings_file, settings)
 
 
-def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: dict | None = None):
+def _remove_hook_from_settings(
+    settings_file: Path,
+    hook_path: Path,
+    metadata: dict | None = None,
+    project_root: Path | None = None,
+):
     """
     Remove every registration of a hook (any event) from settings.json.
 
-    Works after the hook directory has been deleted. Refuses to rewrite a file
-    that is not valid JSON.
+    Works after the hook directory has been deleted, and matches commands written
+    by any skillin version. Refuses to rewrite a file that is not valid JSON.
     """
     if not settings_file.exists():
         return
     settings = read_json_object(settings_file)
-    if _strip_hook(settings, hook_path):
+    if _strip_hook(settings, hook_path, project_root):
         write_json_atomic(settings_file, settings)
 
 

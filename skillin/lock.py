@@ -102,11 +102,37 @@ def remove_entry(name: str, global_: bool, cwd: Path | None = None) -> bool:
     return True
 
 
-def compute_folder_hash(skill_dir: Path) -> str:
+# Approximates JavaScript's String.prototype.localeCompare (ICU root collation),
+# which `npx skills` uses to order files before hashing: whitespace and punctuation
+# sort before digits, digits before letters, letters case-insensitively first and
+# lowercase-before-uppercase only to break ties.
+_PUNCT_ORDER = "_-,;:!?.'\"()[]{}@*/\\&#%`^+<=>|~$"
+
+
+def _collation_key(s: str):
+    primary, tertiary = [], []
+    for ch in s:
+        if ch.isspace():
+            primary.append((0, 0, ""))
+        elif ch in _PUNCT_ORDER:
+            primary.append((1, _PUNCT_ORDER.index(ch), ""))
+        elif ch.isdigit():
+            primary.append((3, int(ch) if ch.isascii() else ord(ch), ""))
+        elif ch.isalpha():
+            primary.append((4, 0, ch.casefold()))
+        else:
+            primary.append((2, ord(ch), ""))
+        tertiary.append(1 if ch.isupper() else 0)
+    return primary, tertiary
+
+
+def compute_folder_hash(skill_dir: Path, npx_order: bool = True) -> str:
     """
     SHA-256 over sorted relative paths and contents (npx `computedHash`).
 
-    Skips `.git` and `node_modules` directories.
+    Skips `.git` and `node_modules` directories. Files are ordered like npx
+    (`localeCompare`); `npx_order=False` gives the codepoint order used by
+    skillin <= 0.1, which `check` still accepts for older lock entries.
     """
     files = []
     for dirpath, dirnames, filenames in os.walk(skill_dir):
@@ -115,8 +141,9 @@ def compute_folder_hash(skill_dir: Path) -> str:
             full = Path(dirpath) / fn
             if full.is_file() and not full.is_symlink():
                 files.append((full.relative_to(skill_dir).as_posix(), full))
+    files.sort(key=(lambda f: _collation_key(f[0])) if npx_order else (lambda f: f[0]))
     h = hashlib.sha256()
-    for rel, full in sorted(files):
+    for rel, full in files:
         h.update(rel.encode("utf-8"))
         h.update(full.read_bytes())
     return h.hexdigest()
