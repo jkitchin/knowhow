@@ -36,7 +36,7 @@ jobs:
             echo "Validating $skill_dir"
             python -c "
         from pathlib import Path
-        from cli.validator import SkillValidator
+        from skillin.validator import SkillValidator
         skill_path = Path('$skill_dir')
         is_valid, errors = SkillValidator.validate_skill_directory(skill_path)
         if not is_valid:
@@ -56,7 +56,7 @@ jobs:
             echo "Validating $cmd_file"
             python -c "
         from pathlib import Path
-        from cli.validator import CommandValidator
+        from skillin.validator import CommandValidator
         cmd_path = Path('$cmd_file')
         is_valid, errors = CommandValidator.validate_command_file(cmd_path)
         if not is_valid:

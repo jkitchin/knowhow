@@ -10,15 +10,15 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from cli.commands.optimize import (
+from skillin.commands.optimize import (
     _find_skill_path,
     _generate_evals,
     _read_skill_description,
     _run_claude_cli,
     _update_skill_description,
 )
-from cli.config import Config
-from cli.validator import SkillValidator
+from skillin.config import Config
+from skillin.validator import SkillValidator
 
 console = Console()
 
@@ -128,13 +128,13 @@ def ab_test(ctx, skill_name, variants, dry_run):
     Examples:
 
         # Test 3 variants (default)
-        skillz ab-test python-jax
+        skillin ab-test python-jax
 
         # Test 5 variants
-        skillz ab-test python-jax -n 5
+        skillin ab-test python-jax -n 5
 
         # Preview without saving
-        skillz ab-test python-jax --dry-run
+        skillin ab-test python-jax --dry-run
     """
     config = Config()
 
@@ -252,7 +252,7 @@ def ab_test(ctx, skill_name, variants, dry_run):
         console.print("[dim]Dry run: no changes saved.[/dim]")
         return
 
-    from cli.utils import confirm_action
+    from skillin.utils import confirm_action
 
     if not confirm_action(f"Apply winning description ({winner['label']})?", default=True):
         console.print("[yellow]No changes made.[/yellow]")

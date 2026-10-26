@@ -1,4 +1,4 @@
-"""List command for skillz."""
+"""List command for skillin."""
 
 from pathlib import Path
 
@@ -6,9 +6,9 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config
-from cli.utils import find_command_files, find_skill_directories
-from cli.validator import CommandValidator, SkillValidator
+from skillin.config import Config
+from skillin.utils import find_command_files, find_skill_directories
+from skillin.validator import CommandValidator, SkillValidator
 
 console = Console()
 

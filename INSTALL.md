@@ -1,243 +1,129 @@
 # Installation Guide
 
-Complete guide to installing and setting up Claude Skills CLI.
-
 ## Prerequisites
 
-- Python 3.8 or higher
-- Git (for cloning the repository)
-- `uv` (recommended) or `pip`
-
-## Installation Methods
-
-### Method 1: Using uv (Recommended)
-
-[uv](https://github.com/astral-sh/uv) is a fast Python package installer.
+- [uv](https://github.com/astral-sh/uv) (recommended), or Python 3.10+ with `pip`/`pipx`
+- Git (used to fetch skill repositories)
 
 ```bash
 # Install uv if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Clone the repository
-git clone https://github.com/jkitchin/skillz.git
-cd skillz
-
-# Install in editable mode with dependencies
-uv pip install -e .
-
-# For development, install with dev dependencies
-uv pip install -e ".[dev]"
 ```
 
-### Method 2: Using pip
+## Option 1: No install (uvx)
+
+Run `skillin` on demand. uv downloads and caches it:
 
 ```bash
-# Clone the repository
-git clone https://github.com/jkitchin/skillz.git
-cd skillz
-
-# Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install in editable mode
-pip install -e .
-
-# For development
-pip install -e ".[dev]"
+uvx skillin add jkitchin/skillz --list
+uvx skillin add jkitchin/skillz --skill python-ase
 ```
 
-### Method 3: From PyPI (Coming Soon)
-
-Once published to PyPI:
+Before `skillin` is published on PyPI, use the git URL:
 
 ```bash
-pip install skillz
-# or
-uv pip install skillz
+uvx --from git+https://github.com/jkitchin/skillz skillin add jkitchin/skillz --list
 ```
+
+## Option 2: Install the command
+
+```bash
+uv tool install skillin                                   # or: pipx install skillin
+uv tool install git+https://github.com/jkitchin/skillz    # before the PyPI release
+```
+
+This installs two commands, `skillin` and its alias `skillz`.
+
+## Option 3: Development install
+
+```bash
+git clone https://github.com/jkitchin/skillz.git
+cd skillz
+uv pip install -e ".[dev]"       # or: pip install -e ".[dev]"
+pre-commit install
+```
+
+To run the local-repository commands (`list`, `install`, `search`, `info`, `update`, `hooks`,
+`agents`, and the CASCADE commands) against your clone:
+
+```bash
+skillin config set repository "$(pwd)"
+```
+
+## Verify
+
+```bash
+skillin --version
+skillin --help
+skillin add jkitchin/skillz --list
+```
+
+## Where things are installed
+
+`skillin add` installs into the current project by default, and for your user with `-g`:
+
+| | Project (default) | Global (`-g`) |
+|---|---|---|
+| Skills (canonical copy) | `.agents/skills/<name>` | `~/.agents/skills/<name>` |
+| Skills for Claude Code | `.claude/skills/<name>` (symlink) | `~/.claude/skills/<name>` (symlink) |
+| Commands / subagents / hooks | `.claude/commands`, `.claude/agents`, `.claude/hooks` | same under `~/.claude` |
+| MCP servers | `./.mcp.json` | `claude mcp add-json --scope user` |
+| Lock files | `skills-lock.json`, `.claude/skillin-lock.json` | `~/.agents/.skill-lock.json`, `~/.claude/skillin-lock.json` |
+
+- Codex, OpenCode, Gemini CLI, Cursor and GitHub Copilot read `.agents/skills` directly.
+- Choose agents with `-a`, for example `-a claude-code -a codex`.
+- Use `--copy` to get real copies instead of symlinks.
+- `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and `XDG_CONFIG_HOME` are respected.
+
+The older `skillin install --platform ...` command copies from a local repository into the
+per-platform directories set in `~/.config/skillz/config.yaml` (see
+[example-config.yaml](example-config.yaml)).
 
 ## Configuration
 
-### 1. Configure Repository Path
-
-Set up the path to your local skillz repository:
-
-```bash
-# Create config directory
-mkdir -p ~/.config/skillz
-
-# Copy example config
-cp example-config.yaml ~/.config/skillz/config.yaml
-
-# Edit config file
-# Set repository_path to your local clone path
-```
-
-Or create the config file manually:
-
-```yaml
-repository_path: /path/to/your/skillz
-default_target: personal
-```
-
-### 2. Verify Installation
+Configuration lives in `~/.config/skillz/config.yaml`. The path keeps the original name so
+existing setups keep working. Everything is optional:
 
 ```bash
-# Check version
-python -m cli.main --version
-
-# List available skills
-python -m cli.main list
-
-# View help
-python -m cli.main --help
+skillin config set repository /path/to/clone        # for local-repository commands
+skillin config set alias.kitchin jkitchin/skillz    # then: skillin add kitchin -s pycse
+skillin config get
 ```
 
-## Quick Start
-
-### Installing Skills
-
-```bash
-# Install a skill to personal directory (~/.claude/skills/)
-python -m cli.main install python-ase
-
-# Install to project directory (.claude/skills/)
-python -m cli.main install python-ase --target project
-
-# Preview before installing
-python -m cli.main install python-ase --dry-run
-```
-
-### Searching and Browsing
-
-```bash
-# Search for skills
-python -m cli.main search python
-
-# List all skills
-python -m cli.main list --type skill
-
-# Get detailed information
-python -m cli.main info python-ase
-```
-
-### Managing Skills
-
-```bash
-# Uninstall a skill
-python -m cli.main uninstall python-ase
-
-# Update installed skills
-python -m cli.main update
-
-# Create a new skill
-python -m cli.main create --type skill
-```
-
-## Platform-Specific Setup
-
-### For Claude Code
-
-Skills are automatically detected from:
-- Personal: `~/.claude/skills/`
-- Project: `.claude/skills/` (in your project directory)
-
-Commands are detected from:
-- Personal: `~/.claude/commands/`
-- Project: `.claude/commands/`
-
-### For Other Platforms (Codex, Gemini)
-
-Configure platform-specific paths in your config file:
-
-```yaml
-platforms:
-  codex:
-    skills_dir: ~/.codex/skills
-    commands_dir: ~/.codex/commands
-```
-
-Then install with platform flag:
-
-```bash
-python -m cli.main install python-ase --platform codex
-```
+Set `GITHUB_TOKEN` (or `GH_TOKEN`) to raise GitHub API rate limits for `check` and `find`.
+Private repositories work wherever `git clone` works for you.
 
 ## Troubleshooting
 
-### Command not found
-
-If `skillz` command is not found, use the full module path:
-
-```bash
-python -m cli.main [command]
-```
-
-Or add to your PATH:
-
-```bash
-# Add to ~/.bashrc or ~/.zshrc
-export PATH="$PATH:$HOME/.local/bin"
-```
-
-### No items found
-
-If `list` shows no items, check your config:
-
-```bash
-# Verify repository path is set
-python -m cli.main config get repository_path
-
-# Set it if needed
-python -m cli.main config set repository_path /path/to/skillz
-```
-
-### Permission errors
-
-If you get permission errors:
-
-```bash
-# Install to user site-packages
-pip install --user -e .
-
-# Or use a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate
-pip install -e .
-```
-
-### Import errors
-
-Make sure you're in the right directory:
-
-```bash
-cd /path/to/skillz
-pip install -e .
-```
+- **`skillin: command not found`**: use `uvx skillin ...`, or make sure `~/.local/bin` (uv
+  tool / pipx) is on your `PATH`.
+- **`skillz` commands broke after upgrading**: the Python package was renamed from `cli`
+  to `skillin`. Reinstall your editable install with `uv pip install -e ".[dev]"`.
+- **`No skills found`**: run `skillin add <source> --list` to see what was discovered, and
+  `--full-depth` to search every directory. See
+  [docs/publishing-skills.md](docs/publishing-skills.md) for the layout rules.
+- **`list` shows nothing from the repository**: set the repository path with
+  `skillin config set repository /path/to/clone`.
+- **A hook or MCP server won't install non-interactively**: these run code, so pass `-y`
+  once you have reviewed them.
 
 ## Uninstallation
 
 ```bash
-# Remove installed skills
-python -m cli.main uninstall --all
-
-# Uninstall package
-pip uninstall skillz
-
-# Remove config (optional)
-rm -rf ~/.config/skillz
+skillin remove <skill>                  # or: skillin remove owner/repo  (everything from a source)
+skillin remove --command <name> --hook <name> --mcp <name>
+uv tool uninstall skillin               # or: pipx uninstall skillin
+rm -rf ~/.config/skillz                 # optional: remove configuration
 ```
 
 ## Next Steps
 
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) to create your own skills
-- Browse available skills in [skills/](skills/)
-- Check out example commands in [commands/examples/](commands/examples/)
-- Read the full documentation in [README.md](README.md)
+- [README.md](README.md): overview and commands
+- [docs/publishing-skills.md](docs/publishing-skills.md): make your own skill repository
+- [CONTRIBUTING.md](CONTRIBUTING.md): contribute skills to this repository
+- [docs/cascade.md](docs/cascade.md): skill evolution commands
 
 ## Getting Help
 
 - Check [GitHub Issues](https://github.com/jkitchin/skillz/issues)
-- Read the [FAQ](#) (coming soon)
 - Contact: jkitchin@andrew.cmu.edu

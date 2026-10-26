@@ -1,4 +1,4 @@
-"""Info command for skillz."""
+"""Info command for skillin."""
 
 from pathlib import Path
 
@@ -8,8 +8,8 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
 
-from cli.config import Config
-from cli.validator import CommandValidator, SkillValidator
+from skillin.config import Config
+from skillin.validator import CommandValidator, SkillValidator
 
 console = Console()
 

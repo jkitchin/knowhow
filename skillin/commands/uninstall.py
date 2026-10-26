@@ -1,12 +1,12 @@
-"""Uninstall command for skillz."""
+"""Uninstall command for skillin."""
 
 import shutil
 
 import click
 from rich.console import Console
 
-from cli.config import Config
-from cli.utils import confirm_action
+from skillin.config import Config
+from skillin.utils import confirm_action
 
 console = Console()
 

@@ -1,4 +1,4 @@
-"""Create command for skillz."""
+"""Create command for skillin."""
 
 import subprocess
 from pathlib import Path
@@ -7,8 +7,8 @@ import click
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
-from cli.config import Config
-from cli.utils import confirm_action, validate_description, validate_name
+from skillin.config import Config
+from skillin.utils import confirm_action, validate_description, validate_name
 
 console = Console()
 

@@ -11,7 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-safety-check"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-cost-monitor"))
 
-from cli.validator import HookValidator, SkillValidator  # noqa: I001
+from skillin.validator import HookValidator, SkillValidator  # noqa: I001
 
 
 class TestRalphWiggumSkill:
@@ -259,11 +259,11 @@ class TestRalphCostMonitorHook:
 
         # Test known models
         assert get_pricing("sonnet")["input"] == 3.0
-        assert get_pricing("opus")["input"] == 15.0
-        assert get_pricing("haiku")["input"] == 0.25
+        assert get_pricing("opus")["input"] == 5.0
+        assert get_pricing("haiku")["input"] == 1.0
 
-        # Test unknown model falls back to default
-        assert get_pricing("unknown-model")["input"] == 3.0
+        # Test unknown model falls back to default (opus pricing)
+        assert get_pricing("unknown-model")["input"] == 5.0
 
 
 class TestRalphCommand:

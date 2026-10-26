@@ -334,13 +334,13 @@ python scripts/timeline_visualizer.py timeline.json --style calendar
 
 ```bash
 # Install to personal directory
-skillz install planning
+skillin install planning
 
 # Install to project
-skillz install planning --target project
+skillin install planning --target project
 
 # View detailed info
-skillz info planning
+skillin info planning
 ```
 
 ## Usage Examples
@@ -421,7 +421,7 @@ Based on established project management methodologies including:
 
 ## License
 
-This skill is part of the skillz repository and follows the repository's MIT license.
+This skill is part of the skillin repository and follows the repository's MIT license.
 
 ## Support
 

@@ -1,9 +1,9 @@
-"""Configuration management command for skillz."""
+"""Configuration management command for skillin."""
 
 import click
 from rich.console import Console
 
-from cli.config import Config
+from skillin.config import Config
 
 console = Console()
 
@@ -30,6 +30,13 @@ def set(key, value):
             raise click.Abort()
         cfg.set_repository_path(repo_path)
         console.print(f"[green]Repository path set to: {repo_path}[/green]")
+    elif key.startswith("alias."):
+        name = key[len("alias.") :]
+        if not name or "/" in name or "@" in name:
+            console.print(f"[red]Error: Invalid alias name: {name}[/red]")
+            raise click.Abort()
+        cfg.set_alias(name, value)
+        console.print(f"[green]Alias {name} -> {value}[/green]")
     else:
         console.print(f"[red]Error: Unknown configuration key: {key}[/red]")
         raise click.Abort()

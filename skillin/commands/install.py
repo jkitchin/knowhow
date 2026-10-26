@@ -1,19 +1,19 @@
-"""Install command for skillz."""
+"""Install command for skillin."""
 
 from pathlib import Path
 
 import click
 from rich.console import Console
 
-from cli.config import Config
-from cli.utils import (
+from skillin.config import Config
+from skillin.utils import (
     confirm_action,
     copy_directory,
     copy_file,
     find_command_files,
     find_skill_directories,
 )
-from cli.validator import CommandValidator, SkillValidator
+from skillin.validator import CommandValidator, SkillValidator
 
 console = Console()
 
@@ -61,7 +61,7 @@ def install(ctx, name, target, platform, item_type, force, dry_run, install_all)
         repo_path = _setup_default_config(config)
         if not repo_path:
             console.print("[red]Error: Repository path not configured or does not exist.[/red]")
-            console.print("Run: skillz config set repository <path>")
+            console.print("Run: skillin config set repository <path>")
             raise click.Abort()
 
     # Handle --all flag
@@ -306,7 +306,7 @@ def _setup_default_config(config: Config) -> Path:
     """Detect and setup default config if in a valid repository.
 
     Walks up from the current working directory to find a directory
-    that looks like a skillz repository (contains both ``skills`` and
+    that looks like a skillin repository (contains both ``skills`` and
     ``commands`` subdirectories).
 
     Returns the repository path if setup was successful, None otherwise.
@@ -330,5 +330,5 @@ def _setup_default_config(config: Config) -> Path:
 
 
 def _is_valid_repo(path: Path) -> bool:
-    """Check if a directory is a valid skillz repository."""
+    """Check if a directory is a valid skillin repository."""
     return (path / "skills").exists() and (path / "commands").exists()

@@ -15,8 +15,8 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config
-from cli.utils import find_skill_directories
+from skillin.config import Config
+from skillin.utils import find_skill_directories
 
 console = Console()
 
@@ -186,22 +186,22 @@ def stats(ctx, scan, sort_by, unused, top, log_skill, reset):
     Examples:
 
         # Show usage stats
-        skillz stats
+        skillin stats
 
         # Scan transcripts for skill mentions
-        skillz stats --scan
+        skillin stats --scan
 
         # Show unused skills
-        skillz stats --unused
+        skillin stats --unused
 
         # Show top 10 most used
-        skillz stats --top 10
+        skillin stats --top 10
 
         # Manually log a skill usage
-        skillz stats --log python-jax
+        skillin stats --log python-jax
 
         # Reset all statistics
-        skillz stats --reset
+        skillin stats --reset
     """
     config = Config()
 
@@ -222,7 +222,7 @@ def stats(ctx, scan, sort_by, unused, top, log_skill, reset):
     if not metadata:
         console.print(
             "[red]No skills found. Set repository path with: "
-            "skillz config set repository /path/to/repo[/red]"
+            "skillin config set repository /path/to/repo[/red]"
         )
         return
 

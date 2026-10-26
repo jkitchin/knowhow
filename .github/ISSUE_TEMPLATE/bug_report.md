@@ -29,7 +29,7 @@ assignees: ''
 
 - OS: [e.g., macOS 13.0, Ubuntu 22.04]
 - Python Version: [e.g., 3.11.5]
-- skillz Version: [e.g., 0.1.0]
+- skillin Version: [e.g., 0.1.0]
 - Installation Method: [e.g., pip, uv, git clone]
 
 ## Additional Context

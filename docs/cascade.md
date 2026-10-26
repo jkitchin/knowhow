@@ -1,65 +1,65 @@
 # CASCADE-Inspired Skill Evolution
 
-Skillz includes a suite of tools for autonomous skill improvement, inspired by the
+Skillin includes a suite of tools for autonomous skill improvement, inspired by the
 **CASCADE** framework (Cumulative Agentic Skill Creation through Autonomous Development
 and Evolution) described in [arxiv:2512.23880](https://arxiv.org/abs/2512.23880).
 
 CASCADE demonstrates that AI agents can autonomously create, accumulate, select, and
-evolve reusable skills over time, leading to measurably better performance. Skillz
+evolve reusable skills over time, leading to measurably better performance. Skillin
 implements these concepts through five commands:
 
-| CASCADE Phase | Skillz Command | What It Does |
+| CASCADE Phase | Skillin Command | What It Does |
 |---------------|----------------|--------------|
-| **Creation** | `skillz harvest` | Extract skills from session transcripts |
-| **Evolution** | `skillz optimize` | Improve descriptions via eval feedback |
-| **Selection** | `skillz ab-test` | Compare description variants, pick the best |
-| **Quality Metrics** | `skillz stats` | Track usage frequency and identify gaps |
-| **Composition** | `skillz merge` | Detect overlaps and combine skills |
+| **Creation** | `skillin harvest` | Extract skills from session transcripts |
+| **Evolution** | `skillin optimize` | Improve descriptions via eval feedback |
+| **Selection** | `skillin ab-test` | Compare description variants, pick the best |
+| **Quality Metrics** | `skillin stats` | Track usage frequency and identify gaps |
+| **Composition** | `skillin merge` | Detect overlaps and combine skills |
 
 ## Quick Start
 
 ```bash
 # See what skills you have and how they're used
-skillz stats --scan
+skillin stats --scan
 
 # Improve a skill's triggering accuracy
-skillz optimize python-jax
+skillin optimize python-jax
 
 # Compare multiple description variants
-skillz ab-test python-jax
+skillin ab-test python-jax
 
 # Extract new skills from your work sessions
-skillz harvest
+skillin harvest
 
 # Find and fix redundant skills
-skillz merge
+skillin merge
 ```
 
 ## Commands
 
-### `skillz harvest` - Skill Creation from Sessions
+### `skillin harvest` - Skill Creation from Sessions
 
 Analyzes Claude Code session transcripts to identify reusable patterns that could
 become new skills. This implements CASCADE's **creation and accumulation** phase.
 
 ```bash
 # Analyze 5 most recent sessions (default)
-skillz harvest
+skillin harvest
 
 # Analyze a specific transcript
-skillz harvest -t ~/.claude/projects/.../session.jsonl
+skillin harvest -t ~/.claude/projects/.../session.jsonl
 
 # Analyze more sessions
-skillz harvest -r 10
+skillin harvest -r 10
 
 # Generate SKILL.md files for proposals
-skillz harvest --generate
+skillin harvest --generate
 
 # Preview without creating files
-skillz harvest --generate --dry-run
+skillin harvest --generate --dry-run
 
 # Output to specific directory
-skillz harvest --generate -o ./my-skills/
+skillin harvest --generate -o ./my-skills/
 ```
 
 **How it works:**
@@ -80,26 +80,26 @@ skillz harvest --generate -o ./my-skills/
 
 ---
 
-### `skillz optimize` - Skill Evolution
+### `skillin optimize` - Skill Evolution
 
 Improves a skill's description for better triggering accuracy. This implements
 CASCADE's **evolution** phase where skills are refined through feedback.
 
 ```bash
 # Optimize a single skill
-skillz optimize python-jax
+skillin optimize python-jax
 
 # Optimize all skills in the repository (batch mode)
-skillz optimize --all
+skillin optimize --all
 
 # Preview without saving
-skillz optimize python-jax --dry-run
+skillin optimize python-jax --dry-run
 
 # Generate eval queries only (useful for debugging)
-skillz optimize python-jax --evals-only
+skillin optimize python-jax --evals-only
 
 # Batch mode, dry run
-skillz optimize --all --dry-run
+skillin optimize --all --dry-run
 ```
 
 **How it works:**
@@ -124,20 +124,20 @@ skillz optimize --all --dry-run
 
 ---
 
-### `skillz ab-test` - Quality-Based Selection
+### `skillin ab-test` - Quality-Based Selection
 
 Generates multiple description variants and scores each against evaluation queries
 to find the best performer. This implements CASCADE's **selection** phase.
 
 ```bash
 # Test 3 variants (default)
-skillz ab-test python-jax
+skillin ab-test python-jax
 
 # Test more variants for higher confidence
-skillz ab-test python-jax -n 5
+skillin ab-test python-jax -n 5
 
 # Preview without saving
-skillz ab-test python-jax --dry-run
+skillin ab-test python-jax --dry-run
 ```
 
 **How it works:**
@@ -161,37 +161,37 @@ skillz ab-test python-jax --dry-run
 - Use more variants (`-n 5` or `-n 7`) for important skills
 - If the current description wins, it's already well-optimized
 - Variants with different emphases may reveal blind spots
-- Combine with `skillz stats` to prioritize which skills to A/B test
+- Combine with `skillin stats` to prioritize which skills to A/B test
 
 ---
 
-### `skillz stats` - Usage Tracking & Quality Metrics
+### `skillin stats` - Usage Tracking & Quality Metrics
 
 Tracks which skills are used, how often, and identifies unused skills that may need
 optimization or removal. This implements CASCADE's **quality metrics** for selection.
 
 ```bash
 # Show usage statistics
-skillz stats
+skillin stats
 
 # Scan transcripts for skill mentions (more accurate)
-skillz stats --scan
+skillin stats --scan
 
 # Show only unused skills
-skillz stats --unused
+skillin stats --unused
 
 # Show top 10 most-used skills
-skillz stats --top 10
+skillin stats --top 10
 
 # Sort by name or size instead of usage
-skillz stats --sort name
-skillz stats --sort size
+skillin stats --sort name
+skillin stats --sort size
 
 # Manually log a skill usage event
-skillz stats --log python-jax
+skillin stats --log python-jax
 
 # Reset all statistics
-skillz stats --reset
+skillin stats --reset
 ```
 
 **How it works:**
@@ -206,30 +206,30 @@ skillz stats --reset
 3. **Hook integration:** (future) Automatically log via Claude Code hooks
 
 **Tips:**
-- Run `skillz stats --scan` periodically to get usage estimates
+- Run `skillin stats --scan` periodically to get usage estimates
 - Use `--unused` to find skills that may need better descriptions
 - Skills with zero usage are candidates for optimization or removal
 - High usage + large size = skills worth investing in quality
 
 ---
 
-### `skillz merge` - Skill Composition
+### `skillin merge` - Skill Composition
 
 Detects overlapping skills and proposes merges or reorganizations. This implements
 CASCADE's **composition** phase where skills are combined and deduplicated.
 
 ```bash
 # Detect overlaps across all skills
-skillz merge
+skillin merge
 
 # Preview only (no changes)
-skillz merge --dry-run
+skillin merge --dry-run
 
 # Merge two specific skills
-skillz merge --execute python-jax python-numpy --merged-name python-array-computing
+skillin merge --execute python-jax python-numpy --merged-name python-array-computing
 
 # Merge with dry run
-skillz merge --execute skill-a skill-b --dry-run
+skillin merge --execute skill-a skill-b --dry-run
 ```
 
 **How it works:**
@@ -253,7 +253,7 @@ skillz merge --execute skill-a skill-b --dry-run
 - Run detection first to see what Claude recommends
 - Not all overlaps need merging — complementary skills can coexist
 - Always review merged content before accepting
-- After merging, run `skillz optimize` on the merged skill
+- After merging, run `skillin optimize` on the merged skill
 - Consider hierarchy (subskills) as an alternative to full merges
 
 ---
@@ -284,11 +284,11 @@ These five commands form a complete skill lifecycle:
 **Typical workflow:**
 
 1. **Work normally** with Claude Code — sessions are recorded as transcripts
-2. **Harvest** new skills from sessions: `skillz harvest`
-3. **Track** which skills get used: `skillz stats --scan`
-4. **Optimize** underperforming skills: `skillz optimize --all`
-5. **A/B test** important skills: `skillz ab-test python-jax`
-6. **Merge** redundant skills: `skillz merge`
+2. **Harvest** new skills from sessions: `skillin harvest`
+3. **Track** which skills get used: `skillin stats --scan`
+4. **Optimize** underperforming skills: `skillin optimize --all`
+5. **A/B test** important skills: `skillin ab-test python-jax`
+6. **Merge** redundant skills: `skillin merge`
 7. Repeat — skills improve over time through this evolutionary cycle
 
 ## Prerequisites
@@ -305,4 +305,4 @@ command and options.
 - **CASCADE Paper:** Chen, Y. et al. (2024). "CASCADE: Cumulative Agentic Skill
   Creation through Autonomous Development and Evolution."
   [arxiv:2512.23880](https://arxiv.org/abs/2512.23880)
-- **Skillz Repository:** https://github.com/jkitchin/skillz
+- **Skillin Repository:** https://github.com/jkitchin/skillz

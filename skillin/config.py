@@ -1,4 +1,4 @@
-"""Configuration management for skillz."""
+"""Configuration management for skillin."""
 
 import os
 from pathlib import Path
@@ -37,7 +37,7 @@ def validate_platform(platform: str) -> str:
 
 
 class Config:
-    """Configuration manager for skillz."""
+    """Configuration manager for skillin."""
 
     DEFAULT_CONFIG = {
         "personal_skills_dir": "~/.claude/skills",
@@ -51,6 +51,7 @@ class Config:
         "repository_path": None,  # Path to the local clone of skills repository
         "default_target": "personal",  # personal or project
         "default_platform": "claude",  # Default platform: claude, opencode, codex, gemini
+        "aliases": {},  # Short names for `skillin add`, e.g. {"kitchin": "jkitchin/skillz"}
         "platforms": {
             "claude": {
                 "skills_dir": "~/.claude/skills",
@@ -153,6 +154,16 @@ class Config:
     def set_repository_path(self, path: Path) -> None:
         """Set the repository path."""
         self.config["repository_path"] = str(path)
+        self.save_config()
+
+    def get_aliases(self) -> dict[str, str]:
+        """Get source aliases used by `skillin add`."""
+        aliases = self.config.get("aliases") or {}
+        return {str(k): str(v) for k, v in aliases.items()}
+
+    def set_alias(self, name: str, source: str) -> None:
+        """Set a source alias."""
+        self.config.setdefault("aliases", {})[name] = source
         self.save_config()
 
     def get_hooks_dir(self, target: str = "personal", platform: str = "claude") -> Path:

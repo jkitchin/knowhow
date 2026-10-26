@@ -1,10 +1,11 @@
-"""Main CLI entry point for skillz."""
+"""Main CLI entry point for skillin."""
 
 import click
 from rich.console import Console
 
-from cli.commands import (
+from skillin.commands import (
     ab_test,
+    add,
     agents,
     config,
     create,
@@ -19,21 +20,23 @@ from cli.commands import (
     uninstall,
     update,
 )
-from cli.commands.list import list_skills
+from skillin.commands.list import list_skills
 
 console = Console()
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="skillz")
+@click.version_option(version="0.1.0", prog_name="skillin")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 @click.pass_context
 def cli(ctx, verbose):
     """
-    Skillz - Manage AI assistant skills and slash commands.
+    Skillin - Install and manage AI agent skills from any git repository.
 
-    A CLI tool for installing, managing, and creating skills and commands
-    for Claude Code, OpenCode, and other LLM platforms.
+    Install skills (npx skills compatible), slash commands, subagents, hooks
+    and MCP servers with `skillin add owner/repo --skill NAME`, then keep them
+    current with `check` / `upgrade`. Works with Claude Code, Codex, OpenCode,
+    Gemini CLI, Cursor and more.
     """
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
@@ -42,6 +45,11 @@ def cli(ctx, verbose):
 # Register commands
 cli.add_command(config.config)
 cli.add_command(install.install)
+cli.add_command(add.add)
+cli.add_command(add.remove)
+cli.add_command(add.check)
+cli.add_command(add.upgrade)
+cli.add_command(add.find)
 cli.add_command(uninstall.uninstall)
 cli.add_command(list_skills)
 cli.add_command(search.search)

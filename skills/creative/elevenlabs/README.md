@@ -12,7 +12,7 @@ This skill enables Claude Code to generate professional-quality audio using Elev
 
 ```bash
 # Install the skill
-skillz install elevenlabs
+skillin install elevenlabs
 
 # Or copy to your project
 cp -r skills/creative/elevenlabs .claude/skills/
@@ -452,7 +452,7 @@ For issues or questions:
 1. Check the [examples](examples/) directory
 2. Review model-specific documentation
 3. Consult [ElevenLabs docs](https://elevenlabs.io/docs)
-4. Open an issue in the skillz repository
+4. Open an issue in the skillin repository
 
 ---
 

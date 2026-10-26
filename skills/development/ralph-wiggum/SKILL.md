@@ -203,7 +203,7 @@ Docker wrapper that:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `RALPH_MAX_ITERATIONS` | `0` (unlimited) | Stop after N iterations |
-| `RALPH_MODEL` | `sonnet` | Claude model to use |
+| `RALPH_MODEL` | `opus` | Claude model to use |
 | `RALPH_COST_LIMIT` | `50.00` | Max spend in USD (with cost monitor hook) |
 | `ANTHROPIC_API_KEY` | optional | API key (not needed with Claude Code subscription) |
 
@@ -260,10 +260,10 @@ Install these hooks for additional safety:
 
 ```bash
 # Block dangerous operations
-skillz hooks install ralph-safety-check
+skillin hooks install ralph-safety-check
 
 # Track API costs
-skillz hooks install ralph-cost-monitor
+skillin hooks install ralph-cost-monitor
 ```
 
 ## Troubleshooting

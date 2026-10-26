@@ -10,9 +10,9 @@ import yaml
 from rich.console import Console
 from rich.panel import Panel
 
-from cli.commands.optimize import _run_claude_cli
-from cli.config import Config
-from cli.utils import find_skill_directories
+from skillin.commands.optimize import _run_claude_cli
+from skillin.config import Config
+from skillin.utils import find_skill_directories
 
 console = Console()
 
@@ -131,13 +131,13 @@ def merge(ctx, detect, execute, merged_name, dry_run):
     Examples:
 
         # Detect overlaps across all skills
-        skillz merge
+        skillin merge
 
         # Merge two specific skills
-        skillz merge --execute python-jax python-numpy --merged-name python-array-computing
+        skillin merge --execute python-jax python-numpy --merged-name python-array-computing
 
         # Preview merge without saving
-        skillz merge --execute skill-a skill-b --dry-run
+        skillin merge --execute skill-a skill-b --dry-run
     """
     config = Config()
 
@@ -227,7 +227,7 @@ def _execute_merge(config: Config, name1: str, name2: str, merged_name: str | No
         console.print("\n[dim]Dry run: no files created.[/dim]")
         return
 
-    from cli.utils import confirm_action
+    from skillin.utils import confirm_action
 
     if not confirm_action(f"Save merged skill '{merged_name}'?", default=True):
         console.print("[yellow]Merge cancelled.[/yellow]")

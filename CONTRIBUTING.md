@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Claude Skills! This document prov
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - Git
 - `uv` (recommended) or `pip`
 
@@ -29,7 +29,7 @@ pip install -e ".[dev]"
 
 3. Configure the repository path:
 ```bash
-python -m cli.main config set repository $(pwd)
+skillin config set repository "$(pwd)"
 ```
 
 ## Development Workflow
@@ -43,7 +43,7 @@ pytest
 
 Run with coverage:
 ```bash
-pytest --cov=cli --cov-report=html
+pytest --cov=skillin --cov-report=html
 ```
 
 Run specific tests:
@@ -60,16 +60,14 @@ Before submitting a PR, ensure your code passes all checks:
 # Run tests
 pytest
 
-# Check formatting
-black --check .
-
-# Run linter
+# Lint and check formatting (or just `pre-commit run --all-files`)
 ruff check .
+ruff format --check .
 ```
 
 Auto-format your code:
 ```bash
-black .
+ruff format .
 ```
 
 ## Contributing Guidelines
@@ -94,15 +92,13 @@ black .
    Detailed instructions for Claude...
    ```
 
-3. Validate your skill:
+3. Check that it is discovered and installs (warnings point at frontmatter problems):
    ```bash
-   python -m cli.main validate skills/[category]/[skill-name]
+   skillin add . --list
+   skillin add . --skill skill-name --dry-run
    ```
-
-4. Test installation:
-   ```bash
-   python -m cli.main install skill-name --dry-run
-   ```
+   CI (`.github/workflows/validate-skills.yml`) also runs the strict `SkillValidator`
+   (lowercase hyphenated `name`, known `allowed-tools`) on every skill.
 
 ### Creating a New Command
 

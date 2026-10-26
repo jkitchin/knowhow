@@ -103,8 +103,8 @@ python-best-practices/
 ### For Personal Use
 
 ```bash
-# Using skillz CLI
-skillz install python-best-practices
+# Using skillin CLI
+skillin install python-best-practices
 
 # Or manually
 mkdir -p ~/.claude/skills/python-best-practices
@@ -114,8 +114,8 @@ cp -r . ~/.claude/skills/python-best-practices/
 ### For Project Use
 
 ```bash
-# Using skillz CLI
-skillz install python-best-practices --target project
+# Using skillin CLI
+skillin install python-best-practices --target project
 
 # Or manually
 mkdir -p .claude/skills/python-best-practices
@@ -337,12 +337,12 @@ To improve this skill:
 
 ## License
 
-This skill is part of the skillz repository and follows the same license.
+This skill is part of the skillin repository and follows the same license.
 
 ## Support
 
 For issues or suggestions:
-- Report bugs in the main skillz repository
+- Report bugs in the main skillin repository
 - Submit pull requests with improvements
 - Share your experience using this skill
 

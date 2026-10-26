@@ -1,5 +1,6 @@
 """Utility functions for claude-skills."""
 
+import os
 import re
 import shutil
 from pathlib import Path
@@ -61,12 +62,12 @@ def validate_name(name: str, max_length: int = 64) -> bool:
     Names must be lowercase, with numbers and hyphens only, max 64 chars.
     """
     pattern = r"^[a-z0-9-]+$"
-    return bool(re.match(pattern, name) and len(name) <= max_length)
+    return isinstance(name, str) and bool(re.match(pattern, name) and len(name) <= max_length)
 
 
 def validate_description(description: str, max_length: int = 1024) -> bool:
-    """Validate a description length."""
-    return len(description) <= max_length
+    """Validate a description is a string within the length limit."""
+    return isinstance(description, str) and len(description) <= max_length
 
 
 def copy_directory(src: Path, dst: Path, force: bool = False) -> bool:
@@ -141,8 +142,16 @@ def find_skill_directories(base_path: Path) -> list[Path]:
     if not base_path.exists():
         return skills
 
-    for item in base_path.rglob("SKILL.md"):
-        skills.append(item.parent)
+    # Follow symlinks: `skillin add` installs agent skills as symlinks to .agents/skills
+    seen = set()
+    for dirpath, dirnames, filenames in os.walk(base_path, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen:
+            dirnames[:] = []
+            continue
+        seen.add(real)
+        if "SKILL.md" in filenames:
+            skills.append(Path(dirpath))
 
     return sorted(skills)
 

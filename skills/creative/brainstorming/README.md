@@ -209,13 +209,13 @@ python scripts/random_prompt.py --multiple 5    # Get 5 prompts
 
 ```bash
 # Install to personal directory
-skillz install brainstorming
+skillin install brainstorming
 
 # Install to project
-skillz install brainstorming --target project
+skillin install brainstorming --target project
 
 # View detailed info
-skillz info brainstorming
+skillin info brainstorming
 ```
 
 ## Usage Examples
@@ -280,7 +280,7 @@ Based on established creativity and brainstorming methodologies including:
 
 ## License
 
-This skill is part of the skillz repository and follows the repository's MIT license.
+This skill is part of the skillin repository and follows the repository's MIT license.
 
 ## Support
 

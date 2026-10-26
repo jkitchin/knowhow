@@ -205,13 +205,13 @@ pip install pyjwt
 
 ```bash
 # Install to personal directory
-skillz hooks install lab-notebook
+skillin hooks install lab-notebook
 
 # Install to project directory
-skillz hooks install lab-notebook --target project
+skillin hooks install lab-notebook --target project
 
 # Preview what would be installed
-skillz hooks install lab-notebook --dry-run
+skillin hooks install lab-notebook --dry-run
 ```
 
 ## Tips

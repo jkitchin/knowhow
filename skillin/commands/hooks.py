@@ -1,4 +1,4 @@
-"""Hooks command group for skillz."""
+"""Hooks command group for skillin."""
 
 import json
 import os
@@ -10,15 +10,15 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config, InvalidPlatformError, validate_platform
-from cli.utils import (
+from skillin.config import Config, InvalidPlatformError, validate_platform
+from skillin.utils import (
     PathTraversalError,
     confirm_action,
     copy_directory,
     find_hook_directories,
     safe_path_join,
 )
-from cli.validator import HookValidator
+from skillin.validator import HookValidator
 
 console = Console()
 
@@ -53,7 +53,7 @@ def list_hooks(ctx, target, platform):
         repo_path = config.get_repository_path()
         if not repo_path or not repo_path.exists():
             console.print("[red]Error: Repository path not configured.[/red]")
-            console.print("Run: skillz config set repository <path>")
+            console.print("Run: skillin config set repository <path>")
             return
 
         hooks_dir = repo_path / "hooks"
@@ -132,7 +132,7 @@ def install(ctx, name, target, platform, force, dry_run, yes):
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
         console.print("[red]Error: Repository path not configured.[/red]")
-        console.print("Run: skillz config set repository <path>")
+        console.print("Run: skillin config set repository <path>")
         raise click.Abort()
 
     # Find hook in repository
@@ -341,7 +341,7 @@ def search(ctx, query):
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
         console.print("[red]Error: Repository path not configured.[/red]")
-        console.print("Run: skillz config set repository <path>")
+        console.print("Run: skillin config set repository <path>")
         raise click.Abort()
 
     hooks_dir = repo_path / "hooks"
@@ -519,7 +519,7 @@ if __name__ == "__main__":
     console.print(f"  - {hook_path / 'hook.py'}")
     if not prompt:
         console.print("\n[dim]Edit these files, then run:[/dim]")
-        console.print(f"  skillz hooks install {name} --target {target}")
+        console.print(f"  skillin hooks install {name} --target {target}")
 
 
 # Helper functions

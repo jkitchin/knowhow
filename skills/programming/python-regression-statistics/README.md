@@ -181,4 +181,4 @@ See `examples/` directory for complete working examples:
 
 ## Contributing
 
-This skill is part of the skillz repository. See the main repository documentation for contribution guidelines.
+This skill is part of the skillin repository. See the main repository documentation for contribution guidelines.
