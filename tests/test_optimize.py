@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from skillin.commands.optimize import (
+from skillpack.commands.optimize import (
     _find_skill_path,
     _read_skill_description,
     _run_claude_cli,
@@ -147,7 +147,7 @@ class TestFindSkillPath:
 class TestOptimizeCommand:
     def test_skill_not_found(self, temp_dir):
         runner = CliRunner()
-        with patch("skillin.commands.optimize.Config") as mock_config:
+        with patch("skillpack.commands.optimize.Config") as mock_config:
             mock_config.return_value.get_repository_path.return_value = temp_dir / "nonexistent"
             mock_config.return_value.get_skills_dir.return_value = temp_dir / "nonexistent"
             result = runner.invoke(optimize, ["no-such-skill"])
@@ -157,8 +157,8 @@ class TestOptimizeCommand:
     def test_evals_only_exits_after_evals(self, skill_dir):
         runner = CliRunner()
         mock_evals = "## Should-Trigger Queries\n1. test query\n"
-        with patch("skillin.commands.optimize._find_skill_path", return_value=skill_dir):
-            with patch("skillin.commands.optimize._run_claude_cli", return_value=mock_evals):
+        with patch("skillpack.commands.optimize._find_skill_path", return_value=skill_dir):
+            with patch("skillpack.commands.optimize._run_claude_cli", return_value=mock_evals):
                 result = runner.invoke(optimize, ["test-skill", "--evals-only"])
         assert result.exit_code == 0
         assert "test query" in result.output
@@ -169,9 +169,9 @@ class TestOptimizeCommand:
         runner = CliRunner()
         mock_evals = "## Should-Trigger Queries\n1. query one\n"
         mock_desc = "Improved description text."
-        with patch("skillin.commands.optimize._find_skill_path", return_value=skill_dir):
+        with patch("skillpack.commands.optimize._find_skill_path", return_value=skill_dir):
             with patch(
-                "skillin.commands.optimize._run_claude_cli",
+                "skillpack.commands.optimize._run_claude_cli",
                 side_effect=[mock_evals, mock_desc],
             ):
                 result = runner.invoke(optimize, ["test-skill", "--dry-run"])
@@ -183,8 +183,8 @@ class TestOptimizeCommand:
 
     def test_claude_cli_failure_aborts(self, skill_dir):
         runner = CliRunner()
-        with patch("skillin.commands.optimize._find_skill_path", return_value=skill_dir):
-            with patch("skillin.commands.optimize._run_claude_cli", return_value=None):
+        with patch("skillpack.commands.optimize._find_skill_path", return_value=skill_dir):
+            with patch("skillpack.commands.optimize._run_claude_cli", return_value=None):
                 result = runner.invoke(optimize, ["test-skill"])
         assert result.exit_code != 0
 
@@ -192,12 +192,12 @@ class TestOptimizeCommand:
         runner = CliRunner()
         mock_evals = "## Should-Trigger Queries\n1. query\n"
         mock_desc = "Brand new optimized description."
-        with patch("skillin.commands.optimize._find_skill_path", return_value=skill_dir):
+        with patch("skillpack.commands.optimize._find_skill_path", return_value=skill_dir):
             with patch(
-                "skillin.commands.optimize._run_claude_cli",
+                "skillpack.commands.optimize._run_claude_cli",
                 side_effect=[mock_evals, mock_desc],
             ):
-                with patch("skillin.commands.optimize.confirm_action", return_value=True):
+                with patch("skillpack.commands.optimize.confirm_action", return_value=True):
                     result = runner.invoke(optimize, ["test-skill"])
         assert result.exit_code == 0
         assert "updated" in result.output
@@ -208,12 +208,12 @@ class TestOptimizeCommand:
         runner = CliRunner()
         mock_evals = "## Should-Trigger Queries\n1. query\n"
         mock_desc = "Proposed description."
-        with patch("skillin.commands.optimize._find_skill_path", return_value=skill_dir):
+        with patch("skillpack.commands.optimize._find_skill_path", return_value=skill_dir):
             with patch(
-                "skillin.commands.optimize._run_claude_cli",
+                "skillpack.commands.optimize._run_claude_cli",
                 side_effect=[mock_evals, mock_desc],
             ):
-                with patch("skillin.commands.optimize.confirm_action", return_value=False):
+                with patch("skillpack.commands.optimize.confirm_action", return_value=False):
                     result = runner.invoke(optimize, ["test-skill"])
         assert result.exit_code == 0
         assert "cancelled" in result.output.lower()

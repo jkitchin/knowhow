@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from skillin.config import Config
+from skillpack.config import Config
 
 
 class TestConfig:

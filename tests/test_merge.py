@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from skillin.commands.merge import (
+from skillpack.commands.merge import (
     _format_skills_for_analysis,
     _get_all_skills_summary,
     merge,
@@ -82,19 +82,19 @@ class TestMergeCommand:
     def test_detect_overlaps(self, skill_repo):
         runner = CliRunner()
         mock_analysis = "## Group 1: Testing\n**Skills:** skill-one, skill-two\n"
-        with patch("skillin.commands.merge.Config") as mock_config:
+        with patch("skillpack.commands.merge.Config") as mock_config:
             mock_config.return_value.get_repository_path.return_value = skill_repo
-            with patch("skillin.commands.merge._run_claude_cli", return_value=mock_analysis):
+            with patch("skillpack.commands.merge._run_claude_cli", return_value=mock_analysis):
                 result = runner.invoke(merge, [])
         assert result.exit_code == 0
         assert "skill-one" in result.output
 
     def test_no_overlaps_found(self, skill_repo):
         runner = CliRunner()
-        with patch("skillin.commands.merge.Config") as mock_config:
+        with patch("skillpack.commands.merge.Config") as mock_config:
             mock_config.return_value.get_repository_path.return_value = skill_repo
             with patch(
-                "skillin.commands.merge._run_claude_cli",
+                "skillpack.commands.merge._run_claude_cli",
                 return_value="No significant overlaps detected.",
             ):
                 result = runner.invoke(merge, [])
@@ -104,16 +104,16 @@ class TestMergeCommand:
     def test_dry_run(self, skill_repo):
         runner = CliRunner()
         mock_analysis = "## Group 1: Testing\n"
-        with patch("skillin.commands.merge.Config") as mock_config:
+        with patch("skillpack.commands.merge.Config") as mock_config:
             mock_config.return_value.get_repository_path.return_value = skill_repo
-            with patch("skillin.commands.merge._run_claude_cli", return_value=mock_analysis):
+            with patch("skillpack.commands.merge._run_claude_cli", return_value=mock_analysis):
                 result = runner.invoke(merge, ["--dry-run"])
         assert result.exit_code == 0
         assert "Dry run" in result.output
 
     def test_execute_merge_skill_not_found(self, skill_repo):
         runner = CliRunner()
-        with patch("skillin.commands.merge.Config") as mock_config:
+        with patch("skillpack.commands.merge.Config") as mock_config:
             mock_config.return_value.get_repository_path.return_value = skill_repo
             result = runner.invoke(merge, ["--execute", "nonexistent", "skill-one"])
         assert result.exit_code != 0

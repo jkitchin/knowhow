@@ -1,5 +1,5 @@
 [project]
-name = "skillin"
+name = "skillpack"
 version = "0.1.0"
 description = "Install and manage AI agent skills from any git repo (npx skills compatible) for Claude Code, Codex, OpenCode, Gemini and more"
 authors = [
@@ -38,28 +38,28 @@ templates = [
 ]
 
 [project.scripts]
-skillin = "skillin.main:cli"
-skillz = "skillin.main:cli"
+skillpack = "skillpack.main:cli"
+skillz = "skillpack.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/jkitchin/skillz"
-Documentation = "https://github.com/jkitchin/skillz#readme"
-Repository = "https://github.com/jkitchin/skillz"
-Issues = "https://github.com/jkitchin/skillz/issues"
+Homepage = "https://github.com/jkitchin/skillpack"
+Documentation = "https://github.com/jkitchin/skillpack#readme"
+Repository = "https://github.com/jkitchin/skillpack"
+Issues = "https://github.com/jkitchin/skillpack/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["skillin"]
+packages = ["skillpack"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=skillin --cov-report=term-missing --cov-report=html"
+addopts = "--cov=skillpack --cov-report=term-missing --cov-report=html"
 
 [tool.ruff]
 line-length = 100
@@ -77,7 +77,7 @@ ignore = []
 "skills/**/examples/*.py" = ["N803", "N806", "E722", "F841", "E402", "UP028", "F401", "I001", "F541", "UP024", "UP015"]
 
 [tool.coverage.run]
-source = ["skillin"]
+source = ["skillpack"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

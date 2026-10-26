@@ -8,8 +8,8 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from skillin.config import Config, InvalidPlatformError, PlatformConfigError, validate_platform
-from skillin.main import cli
+from skillpack.config import Config, InvalidPlatformError, PlatformConfigError, validate_platform
+from skillpack.main import cli
 
 
 def write_config(home, data):
@@ -152,7 +152,7 @@ def test_hooks_install_needs_configured_dir(env):
     assert r.exit_code != 0 and "platforms.picoclaw.hooks_dir" in r.output
 
 
-# --- skillin add -----------------------------------------------------------
+# --- skillpack add -----------------------------------------------------------
 
 needs_git = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 

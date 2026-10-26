@@ -29,9 +29,9 @@ This example demonstrates how to use Ralph Wiggum mode to autonomously convert [
 
 ```bash
 # Install Ralph Wiggum skill
-skillin install ralph-wiggum
-skillin hooks install ralph-safety-check
-skillin hooks install ralph-cost-monitor
+skillpack install ralph-wiggum
+skillpack hooks install ralph-safety-check
+skillpack hooks install ralph-cost-monitor
 
 # Ensure Docker is installed
 docker --version

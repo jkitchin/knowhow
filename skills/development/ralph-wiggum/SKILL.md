@@ -260,10 +260,10 @@ Install these hooks for additional safety:
 
 ```bash
 # Block dangerous operations
-skillin hooks install ralph-safety-check
+skillpack hooks install ralph-safety-check
 
 # Track API costs
-skillin hooks install ralph-cost-monitor
+skillpack hooks install ralph-cost-monitor
 ```
 
 ## Troubleshooting

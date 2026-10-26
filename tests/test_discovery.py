@@ -2,7 +2,7 @@
 
 import json
 
-from skillin.discovery import discover_skills, install_dir_name
+from skillpack.discovery import discover_skills, install_dir_name
 
 
 def make_skill(path, name, description="A skill", extra=""):
@@ -55,7 +55,7 @@ def test_name_from_frontmatter_and_duplicates(tmp_path):
 
 
 def test_lenient_frontmatter(tmp_path):
-    # Fields skillin's strict validator would reject are fine for installation
+    # Fields skillpack's strict validator would reject are fine for installation
     make_skill(
         tmp_path / "skills" / "x",
         "Mixed Case Name",

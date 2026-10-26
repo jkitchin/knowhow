@@ -159,13 +159,13 @@ This skill is suitable for:
 ## Contributing
 
 If you find issues or have suggestions for improving this skill:
-1. Submit an issue to the skillin repository
+1. Submit an issue to the skillpack repository
 2. Suggest additional examples or workflows
 3. Share common problems you'd like documented
 
 ## License
 
-This skill documentation is part of the skillin project (MIT License).
+This skill documentation is part of the skillpack project (MIT License).
 
 ## Resources
 

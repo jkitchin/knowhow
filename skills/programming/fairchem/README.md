@@ -268,4 +268,4 @@ Claude: I'll set up a NEB calculation with FAIRChem's oc20 model...
 
 ## License
 
-This skill documentation is part of the skillin project (MIT License).
+This skill documentation is part of the skillpack project (MIT License).

@@ -209,13 +209,13 @@ python scripts/random_prompt.py --multiple 5    # Get 5 prompts
 
 ```bash
 # Install to personal directory
-skillin install brainstorming
+skillpack install brainstorming
 
 # Install to project
-skillin install brainstorming --target project
+skillpack install brainstorming --target project
 
 # View detailed info
-skillin info brainstorming
+skillpack info brainstorming
 ```
 
 ## Usage Examples
@@ -280,11 +280,11 @@ Based on established creativity and brainstorming methodologies including:
 
 ## License
 
-This skill is part of the skillin repository and follows the repository's MIT license.
+This skill is part of the skillpack repository and follows the repository's MIT license.
 
 ## Support
 
 For issues, suggestions, or contributions:
-- Repository: https://github.com/jkitchin/skillz
-- Issues: https://github.com/jkitchin/skillz/issues
+- Repository: https://github.com/jkitchin/skillpack
+- Issues: https://github.com/jkitchin/skillpack/issues
 - Category: creative/brainstorming

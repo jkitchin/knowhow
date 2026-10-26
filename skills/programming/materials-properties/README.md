@@ -359,11 +359,11 @@ See `PLAN.md` and individual reference files for complete citations.
 
 ## Contributing
 
-This skill is part of the skillin repository. See examples and references for detailed implementations of each method.
+This skill is part of the skillpack repository. See examples and references for detailed implementations of each method.
 
 ## License
 
-MIT License - Part of skillin project
+MIT License - Part of skillpack project
 
 ## Version Information
 

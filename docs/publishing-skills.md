@@ -4,7 +4,7 @@ This guide is for authors who want to publish their own skills in a git reposito
 so that anyone can install them with one command:
 
 ```bash
-uvx skillin add your-name/your-repo --skill my-skill
+uvx skillpack add your-name/your-repo --skill my-skill
 ```
 
 A repository that follows this guide also works with:
@@ -45,30 +45,30 @@ description: Extracts tables from PDF files into CSV or pandas DataFrames. Use w
 **2. Validate it.** This checks the spec rules and how installers will see your repo:
 
 ```bash
-uvx skillin validate .
+uvx skillpack validate .
 ```
 
 **3. Try installing it from your working copy** into a scratch project:
 
 ```bash
 mkdir /tmp/try && cd /tmp/try
-uvx skillin add ~/path/to/your-repo --list
-uvx skillin add ~/path/to/your-repo --skill pdf-tables
+uvx skillpack add ~/path/to/your-repo --list
+uvx skillpack add ~/path/to/your-repo --skill pdf-tables
 ls -l .claude/skills .agents/skills
 ```
 
 **4. Push it, then share the install line**, for example in your README:
 
 ```markdown
-uvx skillin add your-name/your-repo --skill pdf-tables
+uvx skillpack add your-name/your-repo --skill pdf-tables
 # or: npx skills add your-name/your-repo --skill pdf-tables
 ```
 
 **5. Help people find it.** Add the `agent-skills` topic to the GitHub repository. See
 [Sharing and discovery](#sharing-and-discovery).
 
-Until `skillin` is on PyPI, replace `uvx skillin` with
-`uvx --from git+https://github.com/jkitchin/skillz skillin`.
+Until `skillpack` is on PyPI, replace `uvx skillpack` with
+`uvx --from git+https://github.com/jkitchin/skillpack skillpack`.
 
 ## Choosing a layout
 
@@ -76,12 +76,12 @@ All of these layouts are discovered automatically.
 
 | Layout | Use it for | Users install with |
 |---|---|---|
-| `SKILL.md` at the repo root | A repo that is a single skill | `skillin add you/pdf-tables` |
-| `skills/<name>/SKILL.md` | A collection (recommended) | `skillin add you/repo -s <name>` |
-| `skills/<category>/<name>/SKILL.md` | Large collections, up to 3 levels inside `skills/` | `skillin add you/repo -s <name>` |
-| `<name>/SKILL.md` | A small collection without a `skills/` folder | `skillin add you/repo -s <name>` |
-| `tools/agents/skills/<name>/SKILL.md` | Skills inside a larger project | `skillin add you/repo/tools/agents/skills -s <name>` |
-| `.claude-plugin/marketplace.json` | Repos that are also Claude Code plugins | `skillin add you/repo -s <name>` |
+| `SKILL.md` at the repo root | A repo that is a single skill | `skillpack add you/pdf-tables` |
+| `skills/<name>/SKILL.md` | A collection (recommended) | `skillpack add you/repo -s <name>` |
+| `skills/<category>/<name>/SKILL.md` | Large collections, up to 3 levels inside `skills/` | `skillpack add you/repo -s <name>` |
+| `<name>/SKILL.md` | A small collection without a `skills/` folder | `skillpack add you/repo -s <name>` |
+| `tools/agents/skills/<name>/SKILL.md` | Skills inside a larger project | `skillpack add you/repo/tools/agents/skills -s <name>` |
+| `.claude-plugin/marketplace.json` | Repos that are also Claude Code plugins | `skillpack add you/repo -s <name>` |
 
 Things to avoid:
 
@@ -93,7 +93,7 @@ Things to avoid:
   folders, is only found as a last resort, or with `--full-depth`.
 - **Two skills with the same `name`.** Only the first one found can be installed.
 
-`skillin validate` reports each of these.
+`skillpack validate` reports each of these.
 
 ## Writing SKILL.md
 
@@ -179,7 +179,7 @@ pdf-tables/
 
 ## What happens when someone installs your skill
 
-`skillin add` (and `npx skills add`) clones your repository shallowly, finds the skill,
+`skillpack add` (and `npx skills add`) clones your repository shallowly, finds the skill,
 and copies its directory:
 
 - **Directory name.** The installed folder is named from `name`, not from your folder.
@@ -190,7 +190,7 @@ and copies its directory:
   Symlinks to directories, and symlinks pointing outside the repository, are skipped.
 - **Git LFS files are not downloaded.** Users get the small pointer file. Keep large
   binaries out of skills, or have a script download them on first use.
-- **Size.** Skills are copied for every install, so keep them small. `skillin validate`
+- **Size.** Skills are copied for every install, so keep them small. `skillpack validate`
   warns about files over 10 MB.
 - **Locations:**
 
@@ -207,8 +207,8 @@ which agents to install for.
 ## Versioning and updates
 
 - **Pinning.** Users can pin a branch, tag or commit with `#`:
-  `skillin add you/repo#v1.2 -s pdf-tables`. Tag releases if people depend on your skills.
-- **Updates.** `skillin check` and `skillin upgrade` (and `npx skills update`) compare a
+  `skillpack add you/repo#v1.2 -s pdf-tables`. Tag releases if people depend on your skills.
+- **Updates.** `skillpack check` and `skillpack upgrade` (and `npx skills update`) compare a
   hash of the installed skill's folder with your repository's. Any change to any file in
   the folder counts as an update. Changes elsewhere in the repo don't.
 - **Keep `name` stable.** Installs are tracked by name, so renaming a skill makes it a
@@ -219,14 +219,14 @@ which agents to install for.
 
 ## Validate in CI
 
-`skillin validate` checks every `SKILL.md` against the spec. It also checks how
+`skillpack validate` checks every `SKILL.md` against the spec. It also checks how
 installers will see the repo: hidden or duplicate skills, broken relative links, files
 dropped on install, Git LFS pointers and oversized files. It exits with status 1 on
 errors; `--strict` also fails on warnings.
 
 ```bash
-uvx skillin validate .            # errors fail; warnings are advice
-uvx skillin validate . --strict   # treat warnings as errors
+uvx skillpack validate .            # errors fail; warnings are advice
+uvx skillpack validate . --strict   # treat warnings as errors
 ```
 
 GitHub Actions (`.github/workflows/validate-skills.yml`):
@@ -240,16 +240,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v5
-      - run: uvx skillin validate .
+      - run: uvx skillpack validate .
 ```
 
-Before the PyPI release, use `uvx --from git+https://github.com/jkitchin/skillz skillin validate .`.
+Before the PyPI release, use `uvx --from git+https://github.com/jkitchin/skillpack skillpack validate .`.
 The spec's reference validator, [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)
 (`skills-ref validate ./my-skill`), checks frontmatter only.
 
 ## Commands, subagents, hooks and MCP servers
 
-`npx skills` only knows about skills. `skillin` can also install these items from the
+`npx skills` only knows about skills. `skillpack` can also install these items from the
 same repository. Commands, subagents and hooks are installed for Claude Code. MCP
 servers are installed for every selected agent: Claude Code, VS Code, Cursor, Codex,
 Gemini CLI, OpenCode, Copilot CLI and Windsurf.
@@ -273,7 +273,7 @@ Gemini CLI, OpenCode, Copilot CLI and Windsurf.
   (`*` is not accepted), and their scripts or config are shown for review before
   installing. Non-interactive installs need `-y`.
 
-Write MCP servers in the portable `.mcp.json` format, the one Claude Code uses. skillin
+Write MCP servers in the portable `.mcp.json` format, the one Claude Code uses. skillpack
 converts them for each agent. Use `command`, `args` and `env` for local servers, or
 `type` (`http`/`sse`), `url` and `headers` for remote ones. An optional `description` is
 shown in listings and stripped on install:
@@ -291,7 +291,7 @@ shown in listings and stripped on install:
 }
 ```
 
-Never commit secrets. Use `${VAR}` references; skillin rewrites them for each agent,
+Never commit secrets. Use `${VAR}` references; skillpack rewrites them for each agent,
 for example `${env:VAR}` for VS Code and Cursor, `{env:VAR}` for OpenCode, and
 `env_vars` for Codex. The forms that translate everywhere are:
 
@@ -299,15 +299,15 @@ for example `${env:VAR}` for VS Code and Cursor, `{env:VAR}` for OpenCode, and
 - `"headers": {"Authorization": "Bearer ${TOKEN}"}`;
 - a header whose whole value is `"${VAR}"`.
 
-`skillin add` warns about other uses it can't express for an agent.
+`skillpack add` warns about other uses it can't express for an agent.
 
 ## Sharing and discovery
 
 - Put the install command near the top of your README, and list your skills with their
-  descriptions. `uvx skillin add your-name/your-repo --list` prints that table.
-- Add the `agent-skills` topic to your GitHub repository. `skillin find` falls back to
+  descriptions. `uvx skillpack add your-name/your-repo --list` prints that table.
+- Add the `agent-skills` topic to your GitHub repository. `skillpack find` falls back to
   searching it.
-- [skills.sh](https://skills.sh) indexes public skills. `skillin find` and `npx skills find`
+- [skills.sh](https://skills.sh) indexes public skills. `skillpack find` and `npx skills find`
   search it first.
 - Choose a license (the `license` field and/or a `LICENSE` file) so people know they may
   use your skills.
@@ -320,14 +320,14 @@ for example `${env:VAR}` for VS Code and Cursor, `{env:VAR}` for OpenCode, and
 - [ ] SKILL.md is under 500 lines; details live in `references/`
 - [ ] Links and script paths are relative and stay inside the skill directory
 - [ ] No secrets, no Git LFS files, no `metadata.json`, no large binaries
-- [ ] `uvx skillin validate .` passes, ideally in CI
+- [ ] `uvx skillpack validate .` passes, ideally in CI
 - [ ] The README shows the install command; the repo has the `agent-skills` topic and a license
 
 ## Reference
 
 ### Discovery order
 
-`skillin add` searches in the same order as `npx skills`:
+`skillpack add` searches in the same order as `npx skills`:
 
 1. A `SKILL.md` at the repo root, or at the subpath given. If one exists, only that skill is used.
 2. Direct children of the repo root (`my-skill/SKILL.md`).
@@ -349,8 +349,8 @@ for example `${env:VAR}` for VS Code and Cursor, `{env:VAR}` for OpenCode, and
 | `https://gitlab.com/g/r/-/tree/main/skills` | GitLab URL |
 | `git@host:o/r.git`, `https://host/r.git` | Any git URL |
 | `./path`, `/abs/path` | Local directory |
-| `myalias` | Alias set with `skillin config set alias.myalias owner/repo` |
+| `myalias` | Alias set with `skillpack config set alias.myalias owner/repo` |
 
 Private repositories work wherever `git clone` works for the user (SSH keys or a git
-credential helper). For global GitHub installs, `skillin check` uses the GitHub API instead
+credential helper). For global GitHub installs, `skillpack check` uses the GitHub API instead
 of cloning. Setting `GITHUB_TOKEN` avoids rate limits.

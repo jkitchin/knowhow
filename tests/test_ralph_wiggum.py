@@ -11,7 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-safety-check"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-cost-monitor"))
 
-from skillin.validator import HookValidator, SkillValidator  # noqa: I001
+from skillpack.validator import HookValidator, SkillValidator  # noqa: I001
 
 
 class TestRalphWiggumSkill:

@@ -251,4 +251,4 @@ This skill is designed to recommend the simplest solution that works. If you fin
 
 ## License
 
-Part of the skillin repository.
+Part of the skillpack repository.

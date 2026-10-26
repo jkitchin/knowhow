@@ -14,8 +14,8 @@ Thank you for your interest in contributing to Claude Skills! This document prov
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/jkitchin/skillz.git
-cd skillz
+git clone https://github.com/jkitchin/skillpack.git
+cd skillpack
 ```
 
 2. Install in development mode with dev dependencies:
@@ -29,7 +29,7 @@ pip install -e ".[dev]"
 
 3. Configure the repository path:
 ```bash
-skillin config set repository "$(pwd)"
+skillpack config set repository "$(pwd)"
 ```
 
 ## Development Workflow
@@ -43,7 +43,7 @@ pytest
 
 Run with coverage:
 ```bash
-pytest --cov=skillin --cov-report=html
+pytest --cov=skillpack --cov-report=html
 ```
 
 Run specific tests:
@@ -95,8 +95,8 @@ ruff format .
 3. Validate it and check that it installs (see [docs/publishing-skills.md](docs/publishing-skills.md)
    for what makes a good skill):
    ```bash
-   skillin validate .
-   skillin add . --skill skill-name --dry-run
+   skillpack validate .
+   skillpack add . --skill skill-name --dry-run
    ```
    CI (`.github/workflows/validate-skills.yml`) also runs the strict `SkillValidator`
    (lowercase hyphenated `name`, known `allowed-tools`) on every skill.
@@ -236,7 +236,7 @@ def test_feature_name(fixture):
 
 ## Getting Help
 
-- Check existing issues: https://github.com/jkitchin/skillz/issues
+- Check existing issues: https://github.com/jkitchin/skillpack/issues
 - Ask questions in discussions
 - Review documentation: README.md and docs/
 
