@@ -1,6 +1,6 @@
 [project]
 name = "knowhow"
-version = "0.2.0"
+version = "0.3.0"
 description = "Install and manage AI agent skills from any git repo (npx skills compatible) for Claude Code, Codex, OpenCode, Gemini and more"
 authors = [
     {name = "John Kitchin", email = "jkitchin@andrew.cmu.edu"}
