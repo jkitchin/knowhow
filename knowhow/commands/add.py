@@ -291,7 +291,12 @@ def _add_conflicts(skills, extras, agents, global_, copy, cwd, registry, mcp_pla
 )
 @click.option("--global", "-g", "global_", is_flag=True, help="Install for the user, not project")
 @click.option("--list", "-l", "list_only", is_flag=True, help="List the source's contents and exit")
-@click.option("--all", "all_skills", is_flag=True, help="Install every skill (no selection prompt)")
+@click.option(
+    "--all",
+    "all_items",
+    is_flag=True,
+    help="Install every skill, command and subagent (not hooks or MCP servers)",
+)
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts")
 @click.option("--copy", is_flag=True, help="Copy skills into each agent dir instead of symlinking")
 @click.option("--full-depth", is_flag=True, help="Search all subdirectories for skills")
@@ -311,7 +316,7 @@ def add(
     agent_names,
     global_,
     list_only,
-    all_skills,
+    all_items,
     yes,
     copy,
     full_depth,
@@ -326,8 +331,9 @@ def add(
     a local path, or an alias from `knowhow config set alias.NAME SOURCE`.
 
     Skills and MCP servers install for the detected agents (or --agent);
-    commands, subagents and hooks install for Claude Code. --all selects skills
-    only; hooks and MCP servers must be named and are shown for review first.
+    commands, subagents and hooks install for Claude Code. --all selects every
+    skill, command and subagent; hooks and MCP servers run code, so they must be
+    named and are shown for review first.
 
     \b
     Examples:
@@ -352,9 +358,10 @@ def add(
         "hook": _split_names(hook_names),
         "mcp": _split_names(mcp_names),
     }
-    wants_extras = any(extra_names.values())
-    if all_skills:
+    if all_items:
         names = ["*"]
+        extra_names["command"] = extra_names["subagent"] = ["*"]
+    wants_extras = any(extra_names.values())
 
     try:
         registry = build_registry(config)

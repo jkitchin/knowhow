@@ -100,6 +100,23 @@ def test_list_shows_all_kinds(env):
         assert word in out
 
 
+def test_all_installs_commands_and_subagents_not_hooks_or_mcp(env):
+    r = run("add", env["url"], "--all", "-y")
+    assert r.exit_code == 0, r.output
+    claude = env["proj"] / ".claude"
+    assert (claude / "commands" / "commit.md").exists()
+    assert (claude / "commands" / "review.md").exists()
+    assert (claude / "agents" / "reviewer.md").exists()
+    # hooks and MCP servers run code, so --all never selects them
+    assert not (claude / "hooks").exists()
+    assert not (claude / "settings.json").exists()
+    assert not (env["proj"] / ".mcp.json").exists()
+    lock = json.loads((claude / "knowhow-lock.json").read_text())
+    assert set(lock["commands"]) == {"commit", "review"}
+    assert set(lock["subagents"]) == {"reviewer"}
+    assert not lock.get("hooks") and not lock.get("mcp")
+
+
 def test_install_command_subagent_hook(env):
     r = run(
         "add", env["url"], "--command", "commit", "--subagent", "reviewer", "--hook", "fmt", "-y"
