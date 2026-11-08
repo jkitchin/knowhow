@@ -498,7 +498,7 @@ ruff format .
 See the `skills/` directory, or run `uvx knowhow add jkitchin/knowhow --list`:
 
 - **Programming & materials science**: ASE, pymatgen, VASP, FAIRChem, pycalphad, IDAES, JAX, materials properties, Python best practices, plotting, optimization (single and multiobjective), regression & statistics, Emacs Lisp, Claude-Light
-- **Laboratory automation**: Opentrons (API, gripper, heater-shaker, thermocycler, temperature module, magnetic block, absorbance reader)
+- **Laboratory automation**: Opentrons (API, gripper, heater-shaker, thermocycler, temperature module, magnetic block, absorbance reader), Hamilton STAR/STARlet (PyLabRobot)
 - **Research**: literature review, scientific data extraction, scientific reviewer, materials databases, scientific workflows, electronic lab notebooks, citation verification, design of experiments, pycse
 - **Communication & creative**: scientific writing, presentations, image generation, video storytelling, ElevenLabs audio, brainstorming
 - **Development & productivity**: version control, code review, TDD, Ralph Wiggum autonomous loop, troubleshooting, planning
