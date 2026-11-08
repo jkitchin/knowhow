@@ -25,8 +25,6 @@ def warn(msg):
 
 
 print(f"Python {sys.version.split()[0]}")
-if sys.version_info < (3, 9):
-    report(False, "pylabrobot 0.2.x needs Python >= 3.9")
 
 try:
     import pylabrobot
